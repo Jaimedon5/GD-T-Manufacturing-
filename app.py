@@ -3,19 +3,20 @@ import plotly.graph_objects as go
 import numpy as np
 
 # --- CONFIGURACIÓN ---
-st.set_page_config(layout="wide", page_title="Laboratorio GD&T")
+st.set_page_config(layout="wide", page_title="Laboratorio Virtual GD&T")
 
-# Estilos (Quitamos el padding agresivo para evitar cortes)
 st.markdown("""
 <style>
+    .block-container {padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. MOTOR DE BLUEPRINTS (MONTAJES)
+# 1. MOTOR DE BLUEPRINTS (CORREGIDO)
 # ==========================================
+
 def create_base_blueprint(title):
     fig = go.Figure()
     fig.update_layout(
@@ -24,10 +25,10 @@ def create_base_blueprint(title):
         yaxis=dict(range=[-2, 8], showgrid=False, visible=False),
         height=650,
         margin=dict(l=10, r=10, t=50, b=10),
-        plot_bgcolor='#f0f2f6', # Fondo gris claro para contraste
+        plot_bgcolor='#f4f4f4', # Gris muy suave para descanso visual
         updatemenus=[dict(
             type="buttons", showactive=False, x=0.5, y=0.05, xanchor="center",
-            buttons=[dict(label="▶️ REPRODUCIR ANIMACIÓN DE INSPECCIÓN", method="animate", 
+            buttons=[dict(label="▶️ REPRODUCIR INSPECCIÓN", method="animate", 
             args=[None, dict(frame=dict(duration=40, redraw=True), fromcurrent=True, mode='immediate')])]
         )]
     )
@@ -37,35 +38,63 @@ def plot_real_inspection_anim(feature):
     fig = create_base_blueprint(feature.upper())
     frames = []
     
-    # --- GRUPO 1: DESLIZAMIENTO (Rectitud, Paralelismo, Planicidad, Perfiles)
+    # --- GRUPO 1: DESLIZAMIENTO HORIZONTAL (Rectitud, etc.) ---
     if feature in ['Rectitud', 'Paralelismo', 'Planicidad', 'Perfil de una línea', 'Perfil de una superficie']:
-        fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#444", line=dict(color="black"))
-        fig.add_annotation(x=5, y=-0.5, text="DATUM A (Mesa de Granito)", font=dict(color="white"), showarrow=False)
+        # 1. ELEMENTOS ESTÁTICOS (No se mueven)
+        # Mármol (Datum)
+        fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#666", line=dict(color="black"))
+        fig.add_annotation(x=5, y=-0.5, text="DATUM A (Mármol)", font=dict(color="white"), showarrow=False)
         
+        # Pieza (LÍNEA GRUESA Y VISIBLE) - TRACE 0
         x_path = np.linspace(0, 10, 60)
         y_surf = 1.5 + 0.2 * np.sin(x_path * 1.5) if 'Perfil' not in feature else 1.5 + 0.3*np.sin(x_path)
         
-        fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="blue", width=4), name="Pieza"))
+        fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="black", width=6), name="Pieza"))
         
-        for i in range(len(x_path)):
-            xi, yi = x_path[i], y_surf[i]; yc = yi + 3
-            dx = 0.5 * np.cos(i*0.5); dy = 0.5 * np.sin(i*0.5)
-            frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4)),
-                go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2))
-            ]))
+        # 2. ELEMENTOS MÓVILES (Inicialización) - TRACES 1, 2, 3
+        # Vástago Inicial
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
+        # Reloj Inicial
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
+        # Aguja Inicial
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
-    # --- GRUPO 2: ROTACIÓN (Redondez, Cilindricidad, etc)
+        # 3. ANIMACIÓN
+        for i in range(len(x_path)):
+            xi, yi = x_path[i], y_surf[i]
+            yc = yi + 3 # Centro del reloj
+            
+            # Simulación aguja
+            angle = (yi - 1.5) * 5 # Amplificar movimiento
+            dx = 0.5 * np.cos(angle); dy = 0.5 * np.sin(angle)
+            
+            frames.append(go.Frame(
+                data=[
+                    # Actualizamos SOLO los traces móviles (1, 2, 3)
+                    go.Scatter(x=[xi, xi], y=[yi, yc]), # Trace 1: Vástago
+                    go.Scatter(x=[xi], y=[yc]),         # Trace 2: Reloj
+                    go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy]) # Trace 3: Aguja
+                ],
+                traces=[1, 2, 3] # ¡CRUCIAL! Decimos a Plotly que solo toque estos traces
+            ))
+
+    # --- GRUPO 2: ROTACIÓN (Redondez, etc.) ---
     elif feature in ['Redondez', 'Cilindricidad', 'Alabeo Circular', 'Alabeo Total', 'Concentricidad']:
-        fig.add_shape(type="rect", x0=-1, y0=1, x1=1, y1=5, fillcolor="#333", line=dict(color="black"))
+        # Estáticos
+        fig.add_shape(type="rect", x0=-1, y0=1, x1=1, y1=5, fillcolor="#333", line=dict(color="black")) # Chuck
         fig.add_annotation(x=0, y=5.5, text="Chuck", showarrow=False)
-        fig.add_shape(type="rect", x0=1, y0=2, x1=9, y1=4, line=dict(color="blue", width=3))
-        fig.add_annotation(x=5, y=3, text="↺ Giro", showarrow=False, font=dict(size=20, color="blue"))
+        # Pieza (Rectángulo giratorio simulado)
+        fig.add_shape(type="rect", x0=1, y0=2, x1=9, y1=4, line=dict(color="black", width=3))
+        fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", showarrow=False, font=dict(size=20))
         
+        # Trace Fantasma (Para mantener índice 0 ocupado y no romper lógica)
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(opacity=0), showlegend=False))
+
+        # Móviles Iniciales (Traces 1, 2, 3)
+        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers+text", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
+        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
+
         t = np.linspace(0, 4*np.pi, 60)
         x_pos = np.linspace(2, 8, 60) if feature in ['Cilindricidad', 'Alabeo Total'] else np.full(60, 5)
 
@@ -73,76 +102,84 @@ def plot_real_inspection_anim(feature):
             xi = x_pos[i]; yi = 4; yc = yi + 2.5
             dx = 0.5 * np.cos(t[i]); dy = 0.5 * np.sin(t[i])
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4)),
-                go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2))
-            ]))
+                go.Scatter(x=[xi, xi], y=[yi, yc]),
+                go.Scatter(x=[xi], y=[yc]),
+                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
+            ], traces=[1, 2, 3]))
+
+    # --- GRUPO 3: PERPENDICULARIDAD ---
+    elif feature == 'Perpendicularidad':
+        # Estáticos
+        fig.add_shape(type="path", path="M 2,0 L 2,6 L 3,6 L 3,1 L 6,1 L 6,0 Z", fillcolor="#aaa", line=dict(color="black")) # Escuadra
+        fig.add_annotation(x=4, y=0.5, text="Escuadra Patrón", showarrow=False)
+        # Pieza (Trace 0)
+        fig.add_trace(go.Scatter(x=[7, 6.5], y=[0, 6], mode="lines", line=dict(color="black", width=6), name="Pieza"))
+        
+        # Móviles Iniciales
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
-    # --- GRUPO 3: PERPENDICULARIDAD
-    elif feature == 'Perpendicularidad':
-        fig.add_shape(type="path", path="M 2,0 L 2,6 L 3,6 L 3,1 L 6,1 L 6,0 Z", fillcolor="#aaa", line=dict(color="black"))
-        fig.add_annotation(x=4, y=0.5, text="Escuadra", showarrow=False)
-        fig.add_trace(go.Scatter(x=[7, 6.5], y=[0, 6], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
-        
         y_path = np.linspace(0.5, 5.5, 50); x_surf = np.linspace(7, 6.5, 50)
         for i in range(len(y_path)):
             yi = y_path[i]; xi = x_surf[i]; xc = xi - 2.5
             dx = 0.5 * np.cos(i*0.2); dy = 0.5 * np.sin(i*0.2)
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xc], y=[yi, yi], mode="lines", line=dict(color="gray", width=4)),
-                go.Scatter(x=[xc], y=[yi], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
-                go.Scatter(x=[xc, xc+dx], y=[yi, yi+dy], mode="lines", line=dict(color="red", width=2))
-            ]))
-        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
-        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
+                go.Scatter(x=[xi, xc], y=[yi, yi]),
+                go.Scatter(x=[xc], y=[yi]),
+                go.Scatter(x=[xc, xc+dx], y=[yi, yi+dy])
+            ], traces=[1, 2, 3]))
 
-    # --- GRUPO 4: ANGULARIDAD
+    # --- GRUPO 4: ANGULARIDAD ---
     elif feature == 'Angularidad':
         fig.add_shape(type="path", path="M 1,0 L 9,3 L 9,0 Z", fillcolor="#ddd", line=dict(color="black"))
-        fig.add_annotation(x=5, y=1, text="Seno", showarrow=False)
-        fig.add_trace(go.Scatter(x=[1,9], y=[3.2, 6.2], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
+        fig.add_annotation(x=5, y=1, text="Mesa de Senos", showarrow=False)
+        # Pieza (Trace 0)
+        fig.add_trace(go.Scatter(x=[1,9], y=[3.2, 6.2], mode="lines", line=dict(color="black", width=6), name="Pieza"))
         
+        # Móviles
+        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4)))
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
+        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2)))
+
         x_path = np.linspace(1, 9, 50); y_path = np.linspace(3.2, 6.2, 50)
         for i in range(len(x_path)):
             xi = x_path[i]; yi = y_path[i]; yc = yi + 2.5
             dx = 0.5 * np.cos(i); dy = 0.5 * np.sin(i)
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4)),
-                go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2))
-            ]))
-        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
-        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
+                go.Scatter(x=[xi, xi], y=[yi, yc]),
+                go.Scatter(x=[xi], y=[yc]),
+                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
+            ], traces=[1, 2, 3]))
 
-    # --- GRUPO 5: POSICIÓN
+    # --- GRUPO 5: POSICIÓN ---
     elif feature == 'Posición':
-        fig.add_shape(type="rect", x0=2, y0=0, x1=8, y1=3, fillcolor="lightgray", line=dict(color="black"))
+        fig.add_shape(type="rect", x0=2, y0=0, x1=8, y1=3, fillcolor="#ddd", line=dict(color="black"))
+        fig.add_annotation(x=3, y=1.5, text="Pieza", showarrow=False)
         fig.add_shape(type="line", x0=4.5, y0=3, x1=4.5, y1=1, line=dict(color="black", width=2))
         fig.add_shape(type="line", x0=6.5, y0=3, x1=6.5, y1=1, line=dict(color="black", width=2))
         
+        # Trace Fantasma (0)
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(opacity=0)))
+        
+        # Móviles (1, 2)
+        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=3), name="Vástago"))
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=15, color="red"), name="Punta"))
+
         y_path = np.concatenate([np.linspace(6, 2, 30), np.linspace(2, 6, 30)])
         x_pos = 5.5
-        
         for i in range(len(y_path)):
             yi = y_path[i]
             frames.append(go.Frame(data=[
-                go.Scatter(x=[x_pos, x_pos], y=[yi, yi+4], mode="lines", line=dict(color="red", width=3)),
-                go.Scatter(x=[x_pos], y=[yi], mode="markers", marker=dict(size=15, color="red")),
-            ]))
-        fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=3), name="Stylus"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=15, color="red"), name="Tip"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="lines", name="Dummy"))
+                go.Scatter(x=[x_pos, x_pos], y=[yi, yi+4]),
+                go.Scatter(x=[x_pos], y=[yi])
+            ], traces=[1, 2]))
 
     fig.frames = frames
     return fig
 
 # ==========================================
-# 2. SIMULACIONES 3D
+# 2. SIMULACIONES 3D (TEÓRICAS)
 # ==========================================
 RESOLUTION = 30
 def get_3d_layout(title):
@@ -236,12 +273,11 @@ cat = st.sidebar.selectbox("Categoría", list(menu_dict.keys()))
 feat = st.sidebar.selectbox("Característica", menu_dict[cat])
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
 
-# --- SELECTOR DE VISTA EN SIDEBAR (MÁS ROBUSTO QUE PESTAÑAS) ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 👁️ Modo de Visualización")
+# --- SELECTOR DE VISTA EN SIDEBAR (MÁS ROBUSTO) ---
+st.sidebar.markdown("### 👁️ Vista")
 view_mode = st.sidebar.radio(
     "Seleccione una vista:",
-    ["📐 Simulación 3D (Teórica)", "🏭 Montaje Real (Esquemático)"],
+    ["📐 Simulación 3D", "🏭 Plano de Montaje Real"],
     index=0
 )
 
@@ -249,13 +285,13 @@ st.sidebar.markdown("---")
 st.sidebar.info("Profesor: Ing. Jaime Silva")
 
 # --- LÓGICA DE VISUALIZACIÓN ---
-if view_mode == "📐 Simulación 3D (Teórica)":
+if view_mode == "📐 Simulación 3D":
     st.subheader(f"Simulación 3D: {feat}")
     fig_3d = plot_3d_simulation(feat, tol)
     st.plotly_chart(fig_3d, use_container_width=True)
 
-elif view_mode == "🏭 Montaje Real (Esquemático)":
+elif view_mode == "🏭 Plano de Montaje Real":
     st.subheader(f"Montaje Físico: {feat}")
     fig_real = plot_real_inspection_anim(feat)
     st.plotly_chart(fig_real, use_container_width=True)
-    st.info("ℹ️ Instrucción: Haga clic en el botón '▶️ Iniciar Inspección' dentro del gráfico para ver la animación del palpador.")
+    st.info("ℹ️ Instrucción: Haga clic en el botón '▶️ REPRODUCIR ANIMACIÓN' debajo del título para ver la inspección.")
