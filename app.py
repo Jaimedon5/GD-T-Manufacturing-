@@ -42,9 +42,9 @@ def create_base_blueprint(title):
     fig.update_layout(
         title=dict(text=f"Esquema de Inspección: {title}", font=dict(size=20, color="black")),
         xaxis=dict(range=[-2, 12], showgrid=False, visible=False),
-        yaxis=dict(range=[-1, 9], showgrid=False, visible=False), # Rango Y aumentado para ver el reloj arriba
+        yaxis=dict(range=[-1, 9], showgrid=False, visible=False),
         height=600,
-        margin=dict(l=10, r=10, t=60, b=10), # Margen superior aumentado
+        margin=dict(l=10, r=10, t=60, b=10),
         plot_bgcolor='white',
         paper_bgcolor='white',
         updatemenus=[dict(
@@ -78,7 +78,7 @@ def plot_real_inspection_anim(feature):
 
         fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
-        # --- CALCULO INICIAL (Para posicionar el reloj correctamente antes de animar) ---
+        # --- CALCULO INICIAL ---
         xi_start, yi_start = x_path[0], y_surf[0]
         yc_start = yi_start + 3
         dx_start = 0.5 * np.cos(0); dy_start = 0.5 * np.sin(0)
@@ -94,7 +94,7 @@ def plot_real_inspection_anim(feature):
                 go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
             ], traces=[1, 2, 3]))
             
-        # Trazas iniciales (CORREGIDAS: Usan coordenadas reales de inicio)
+        # Trazas iniciales
         fig.add_trace(go.Scatter(x=[xi_start, xi_start], y=[yi_start, yc_start], mode="lines", line=dict(color="gray", width=4), name="Vástago")) 
         fig.add_trace(go.Scatter(x=[xi_start], y=[yc_start], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj")) 
         fig.add_trace(go.Scatter(x=[xi_start, xi_start+dx_start], y=[yc_start, yc_start+dy_start], mode="lines", line=dict(color="red", width=2), name="Aguja")) 
@@ -123,7 +123,7 @@ def plot_real_inspection_anim(feature):
                 go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
             ], traces=[1, 2, 3]))
 
-        # Trazas iniciales (CORREGIDAS)
+        # Trazas iniciales
         fig.add_trace(go.Scatter(x=[xi_s, xi_s], y=[yi_s, yc_s], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[xi_s], y=[yc_s], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
         fig.add_trace(go.Scatter(x=[xi_s, xi_s+dx_s], y=[yc_s, yc_s+dy_s], mode="lines", line=dict(color="red", width=2), name="Aguja"))
@@ -247,7 +247,11 @@ def plot_3d_simulation(feature, tol):
 
     elif feature == 'Cilindricidad' or feature == 'Alabeo Total':
         r = 5 + 0.2 * np.sin(zg * np.pi / 5)
-        fig.add_trace(go.Surface(x=r*np.cos(tg), y=r*np.sin(tg), z=zg, colorscale='Spectral'))
+        # Superficie Real
+        fig.add_trace(go.Surface(x=r*np.cos(tg), y=r*np.sin(tg), z=zg, colorscale='Spectral', name='Sup. Real'))
+        # Eje Común (AGREGADO)
+        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Común'))
+        # Limites
         fig.add_trace(go.Scatter3d(x=(5+tol/2)*np.cos(theta), y=(5+tol/2)*np.sin(theta), z=np.zeros_like(theta), line=dict(color='red'), showlegend=False))
 
     elif feature == 'Angularidad':
@@ -272,10 +276,9 @@ def plot_3d_simulation(feature, tol):
         fig.add_trace(go.Surface(x=x, y=y, z=np.full_like(x, 5-tol/2), opacity=0.1, showscale=False))
 
     elif feature == 'Posición':
-        z_cyl = np.linspace(0, 4, 20); TH, Z = np.meshgrid(theta, z_cyl)
-        X = 0.5 * np.cos(TH) + 0.1; Y = 0.5 * np.sin(TH) + 0.1
-        fig.add_trace(go.Surface(x=X, y=Y, z=Z, colorscale='Ice', showscale=False))
-        fig.add_trace(go.Scatter3d(x=[0.1, 0.1], y=[0.1, 0.1], z=[0,4], line=dict(color='red', width=5)))
+        z_c = np.linspace(0,4,20); TH, Z = np.meshgrid(theta, z_c)
+        fig.add_trace(go.Surface(x=0.5*np.cos(TH)+0.1, y=0.5*np.sin(TH)+0.1, z=Z, colorscale='Ice', showscale=False))
+        fig.add_trace(go.Scatter3d(x=[0.1,0.1], y=[0.1,0.1], z=[0,4], line=dict(color='red', width=5)))
         fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,4], line=dict(color='black', dash='dash')))
         fig.add_trace(go.Surface(x=(tol/2)*np.cos(TH), y=(tol/2)*np.sin(TH), z=Z, opacity=0.2, showscale=False, colorscale=[[0,'yellow'],[1,'yellow']]))
 
@@ -287,15 +290,15 @@ def plot_3d_simulation(feature, tol):
         fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, showscale=False, colorscale=[[0,'yellow'],[1,'yellow']]))
 
     elif feature == 'Alabeo Circular':
-        x = 5.3 * np.cos(theta) + 0.2; y = 5.3 * np.sin(theta)
-        fig.add_trace(go.Scatter3d(x=x, y=y, z=np.zeros_like(theta), line=dict(color='purple', width=6)))
+        fig.add_trace(go.Scatter3d(x=5.3*np.cos(theta)+0.2, y=5.3*np.sin(theta), z=np.zeros_like(theta), line=dict(color='purple', width=6)))
         fig.add_trace(go.Scatter3d(x=(5+tol)*np.cos(theta), y=(5+tol)*np.sin(theta), z=np.zeros_like(theta), line=dict(color='red', dash='dot')))
-        fig.add_trace(go.Scatter3d(x=np.zeros(2), y=np.zeros(2), z=[0, 2], line=dict(color='black', width=5)))
+        # Eje Datum
+        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,2], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Datum'))
 
     elif feature == 'Perfil de una línea':
-        x_vals = np.linspace(0, 10, 50); z_nom = 2 * np.sin(x_vals)
-        fig.add_trace(go.Scatter3d(x=x_vals, y=np.zeros_like(x_vals), z=z_nom + 0.1*np.random.normal(0,1,x_vals.shape), line=dict(color='blue', width=5)))
-        xb = np.concatenate([x_vals, x_vals[::-1]]); zb = np.concatenate([z_nom+tol/2, (z_nom-tol/2)[::-1]])
+        x_v = np.linspace(0,10,50); z_n = 2*np.sin(x_v)
+        fig.add_trace(go.Scatter3d(x=x_v, y=np.zeros_like(x_v), z=z_n+0.1*np.random.normal(0,1,x_v.shape), line=dict(color='blue', width=5)))
+        xb = np.concatenate([x_v, x_v[::-1]]); zb = np.concatenate([z_n+tol/2, (z_n-tol/2)[::-1]])
         fig.add_trace(go.Mesh3d(x=xb, y=np.zeros_like(xb), z=zb, color='green', opacity=0.3))
 
     elif feature == 'Perfil de una superficie':
