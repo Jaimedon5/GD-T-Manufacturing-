@@ -41,7 +41,7 @@ def plot_real_inspection_anim(feature):
     fig = create_base_blueprint(feature.upper())
     frames = []
     
-    # --- GRUPO 1: DESLIZAMIENTO HORIZONTAL (Mármol + Reloj) ---
+    # --- GRUPO 1: DESLIZAMIENTO HORIZONTAL ---
     if feature in ['Rectitud', 'Paralelismo', 'Planicidad', 'Perfil de una línea', 'Perfil de una superficie']:
         # Mármol
         fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#e0e0e0", line=dict(color="black"))
@@ -58,16 +58,16 @@ def plot_real_inspection_anim(feature):
 
         fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
-        # Animación Reloj
+        # Animación
         for i in range(len(x_path)):
             xi, yi = x_path[i], y_surf[i]
             yc = yi + 3
             dx = 0.5 * np.cos(i*0.5); dy = 0.5 * np.sin(i*0.5)
             
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4)), # Vástago
-                go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))), # Cuerpo
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2)) # Aguja
+                go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4)),
+                go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
+                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2))
             ]))
             
         # Trazas iniciales
@@ -75,7 +75,7 @@ def plot_real_inspection_anim(feature):
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj")) 
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja")) 
 
-    # --- GRUPO 2: ROTACIÓN (Chuck + Reloj) ---
+    # --- GRUPO 2: ROTACIÓN ---
     elif feature in ['Redondez', 'Cilindricidad', 'Alabeo Circular', 'Alabeo Total', 'Concentricidad']:
         # Chuck
         fig.add_shape(type="rect", x0=-1, y0=1, x1=1, y1=5, fillcolor="#555", line=dict(color="black"))
@@ -83,7 +83,7 @@ def plot_real_inspection_anim(feature):
         
         # Pieza
         fig.add_shape(type="rect", x0=1, y0=2, x1=9, y1=4, line=dict(color="blue", width=3))
-        fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", showarrow=False, font=dict(size=18, color="black")) # Color cambiado a negro para visibilidad
+        fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", showarrow=False, font=dict(size=18, color="black"))
         
         # Animación
         t = np.linspace(0, 4*np.pi, 60)
@@ -163,7 +163,7 @@ def plot_real_inspection_anim(feature):
             ]))
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=3), name="Stylus"))
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=15, color="red"), name="Tip"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="lines", name="Placeholder")) # Dummy
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="lines", name="Placeholder"))
 
     fig.frames = frames
     return fig
@@ -291,7 +291,7 @@ feat = st.sidebar.selectbox("Característica", menu_dict[cat])
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
 
 st.sidebar.markdown("---")
-st.sidebar.info("VERSIÓN 2.0 - ACTUALIZADA")
+st.sidebar.info("VERSIÓN 2.0 - COMPLETA") # Cambio de texto para verificar actualización
 
 # --- PESTAÑAS DE VISUALIZACIÓN ---
 tab1, tab2 = st.tabs(["📐 Simulación 3D (Teórica)", "🏭 Montaje Real (Esquemático)"])
