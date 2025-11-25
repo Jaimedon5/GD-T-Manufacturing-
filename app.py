@@ -42,7 +42,6 @@ def plot_real_inspection_anim(feature):
     frames = []
     
     # --- GRUPO 1: DESLIZAMIENTO HORIZONTAL (Mármol + Reloj) ---
-    # Aplica a: Rectitud, Paralelismo, Planicidad, Perfiles
     if feature in ['Rectitud', 'Paralelismo', 'Planicidad', 'Perfil de una línea', 'Perfil de una superficie']:
         # Mármol
         fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#e0e0e0", line=dict(color="black"))
@@ -71,13 +70,12 @@ def plot_real_inspection_anim(feature):
                 go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2)) # Aguja
             ]))
             
-        # Trazas iniciales (Placeholders)
+        # Trazas iniciales
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago")) 
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj")) 
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja")) 
 
     # --- GRUPO 2: ROTACIÓN (Chuck + Reloj) ---
-    # Aplica a: Redondez, Cilindricidad, Alabeos, Concentricidad
     elif feature in ['Redondez', 'Cilindricidad', 'Alabeo Circular', 'Alabeo Total', 'Concentricidad']:
         # Chuck
         fig.add_shape(type="rect", x0=-1, y0=1, x1=1, y1=5, fillcolor="#555", line=dict(color="black"))
@@ -85,14 +83,14 @@ def plot_real_inspection_anim(feature):
         
         # Pieza
         fig.add_shape(type="rect", x0=1, y0=2, x1=9, y1=4, line=dict(color="blue", width=3))
-        fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", showarrow=False, font=dict(size=18, color="white"))
+        fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", showarrow=False, font=dict(size=18, color="black")) # Color cambiado a negro para visibilidad
         
         # Animación
         t = np.linspace(0, 4*np.pi, 60)
         if feature in ['Cilindricidad', 'Alabeo Total']:
-            x_pos = np.linspace(2, 8, 60) # Se mueve longitudinalmente
+            x_pos = np.linspace(2, 8, 60) 
         else:
-            x_pos = np.full(60, 5) # Fijo en el centro
+            x_pos = np.full(60, 5)
 
         for i in range(len(t)):
             xi = x_pos[i]; yi = 4; yc = yi + 2.5
@@ -108,42 +106,31 @@ def plot_real_inspection_anim(feature):
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
-    # --- GRUPO 3: PERPENDICULARIDAD (Vertical) ---
+    # --- GRUPO 3: PERPENDICULARIDAD ---
     elif feature == 'Perpendicularidad':
-        # Escuadra
         fig.add_shape(type="path", path="M 2,0 L 2,6 L 3,6 L 3,1 L 6,1 L 6,0 Z", fillcolor="lightgray", line=dict(color="black"))
         fig.add_annotation(x=4, y=0.5, text="Escuadra Patrón", showarrow=False)
-        
-        # Pieza
         fig.add_trace(go.Scatter(x=[7, 6.5], y=[0, 6], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
-        # Animación
-        y_path = np.linspace(0.5, 5.5, 50)
-        x_surf = np.linspace(7, 6.5, 50)
-        
+        y_path = np.linspace(0.5, 5.5, 50); x_surf = np.linspace(7, 6.5, 50)
         for i in range(len(y_path)):
             yi = y_path[i]; xi = x_surf[i]; xc = xi - 2.5
             dx = 0.5 * np.cos(i*0.2); dy = 0.5 * np.sin(i*0.2)
-
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xc], y=[yi, yi], mode="lines", line=dict(color="gray", width=4)), # Horizontal
+                go.Scatter(x=[xi, xc], y=[yi, yi], mode="lines", line=dict(color="gray", width=4)),
                 go.Scatter(x=[xc], y=[yi], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
                 go.Scatter(x=[xc, xc+dx], y=[yi, yi+dy], mode="lines", line=dict(color="red", width=2))
             ]))
-
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
-    # --- GRUPO 4: ANGULARIDAD (Seno) ---
+    # --- GRUPO 4: ANGULARIDAD ---
     elif feature == 'Angularidad':
-        # Mesa de senos
         fig.add_shape(type="path", path="M 1,0 L 9,3 L 9,0 Z", fillcolor="#ddd", line=dict(color="black"))
         fig.add_annotation(x=5, y=1, text="Mesa de Senos", showarrow=False)
-        # Pieza
         fig.add_trace(go.Scatter(x=[1,9], y=[3.2, 6.2], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
-        # Animación
         x_path = np.linspace(1, 9, 50); y_path = np.linspace(3.2, 6.2, 50)
         for i in range(len(x_path)):
             xi = x_path[i]; yi = y_path[i]; yc = yi + 2.5
@@ -153,24 +140,20 @@ def plot_real_inspection_anim(feature):
                 go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
                 go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2))
             ]))
-            
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", name="Reloj"))
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
-    # --- GRUPO 5: POSICIÓN (Agujero) ---
+    # --- GRUPO 5: POSICIÓN ---
     elif feature == 'Posición':
-        # Pieza
         fig.add_shape(type="rect", x0=2, y0=0, x1=8, y1=3, fillcolor="lightgray", line=dict(color="black"))
         fig.add_annotation(x=3, y=1.5, text="Pieza", showarrow=False)
-        # Agujero
         fig.add_shape(type="line", x0=4.5, y0=3, x1=4.5, y1=1, line=dict(color="black", width=2))
         fig.add_shape(type="line", x0=6.5, y0=3, x1=6.5, y1=1, line=dict(color="black", width=2))
         fig.add_shape(type="line", x0=4.5, y0=1, x1=6.5, y1=1, line=dict(color="black", width=2, dash="dot"))
         
-        # Sonda
         y_path = np.concatenate([np.linspace(6, 2, 30), np.linspace(2, 6, 30)])
-        x_pos = 5.5 # Descentrado
+        x_pos = 5.5
         
         for i in range(len(y_path)):
             yi = y_path[i]
@@ -178,16 +161,15 @@ def plot_real_inspection_anim(feature):
                 go.Scatter(x=[x_pos, x_pos], y=[yi, yi+4], mode="lines", line=dict(color="red", width=3)), # Vástago
                 go.Scatter(x=[x_pos], y=[yi], mode="markers", marker=dict(size=15, color="red")), # Punta
             ]))
-            
         fig.add_trace(go.Scatter(x=[0,0], y=[0,0], mode="lines", line=dict(color="red", width=3), name="Stylus"))
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(size=15, color="red"), name="Tip"))
-        fig.add_trace(go.Scatter(x=[0], y=[0], mode="lines", name="Aguja")) # Dummy para evitar error de índice
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="lines", name="Placeholder")) # Dummy
 
     fig.frames = frames
     return fig
 
 # ==========================================
-# 2. SIMULACIONES 3D (TEÓRICAS) - OPTIMIZADO
+# 2. SIMULACIONES 3D (TEÓRICAS)
 # ==========================================
 RESOLUTION = 30
 
@@ -320,6 +302,6 @@ with tab1:
 
 with tab2:
     st.markdown(f"### Montaje de Inspección: {feat}")
+    st.caption("Haga clic en '▶️ Iniciar Inspección' para ver la animación del procedimiento.")
     fig_real = plot_real_inspection_anim(feat)
     st.plotly_chart(fig_real, use_container_width=True)
-    st.caption("Nota: El esquema muestra la configuración típica de inspección. Presione 'Iniciar Inspección' para ver el movimiento del palpador.")
