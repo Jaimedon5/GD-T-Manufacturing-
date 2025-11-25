@@ -291,7 +291,7 @@ feat = st.sidebar.selectbox("Característica", menu_dict[cat])
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
 
 st.sidebar.markdown("---")
-st.sidebar.info("Profesor: Ing. Jaime Silva")
+st.sidebar.info("VERSIÓN 2.0 - ACTUALIZADA")
 
 # --- PESTAÑAS DE VISUALIZACIÓN ---
 tab1, tab2 = st.tabs(["📐 Simulación 3D (Teórica)", "🏭 Montaje Real (Esquemático)"])
