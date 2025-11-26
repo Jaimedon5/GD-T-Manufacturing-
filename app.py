@@ -6,163 +6,177 @@ import numpy as np
 st.set_page_config(layout="wide", page_title="Laboratorio Virtual GD&T")
 
 # ==========================================
-# 0. ESTILOS CSS (TEMA "DARK ENGINEERING" CORREGIDO)
+# 0. ESTILOS CSS (TEMA "DARK ENGINEERING" OPTIMIZADO)
 # ==========================================
-# Paleta de Colores Industriales
-MAIN_BG = "#D5D5D7"      # Gris Acero (Fondo Principal)
-SIDEBAR_BG = "#1E1E1E"   # Gris Carbón (Barra Lateral)
-CARD_BG = "#D5D5D7"      # Mismo que el fondo (transparente visualmente)
-TEXT_MAIN = "#000000"    # Negro para el contenido principal
-TEXT_SIDE = "#FFFFFF"    # Blanco para la barra lateral
-ACCENT = "#0d6efd"       # Azul Ingeniería
+BG_COLOR = "#E6E6EA"
+CARD_COLOR = "#FFFFFF"
+TEXT_COLOR = "#000000"
+ACCENT_COLOR = "#0d6efd"
 
 st.markdown(f"""
 <style>
-    /* 1. FONDO PRINCIPAL (Área de trabajo) */
-    .stApp {{
-        background-color: {MAIN_BG};
-        color: {TEXT_MAIN};
-    }}
+    .stApp {{ background-color: {BG_COLOR}; color: {TEXT_COLOR}; }}
+    .block-container {{ padding-top: 2rem; padding-bottom: 2rem; padding-left: 3rem; padding-right: 3rem; }}
     
-    /* 2. BARRA LATERAL (Corrección de contraste) */
-    [data-testid="stSidebar"] {{
-        background-color: {SIDEBAR_BG};
-    }}
-    /* Forzar texto blanco SOLO en la barra lateral */
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
-        color: {TEXT_SIDE} !important;
-    }}
-    
-    /* 3. TARJETAS DE DEFINICIÓN (Integradas al fondo) */
+    /* Tarjetas de Definición */
     .gdt-card {{
-        background-color: {CARD_BG}; /* Mismo color que el fondo */
-        border: 1px solid #999;      /* Borde sutil para definir límites */
-        border-left: 8px solid {ACCENT};
+        background-color: {CARD_COLOR};
+        border-left: 8px solid {ACCENT_COLOR};
         padding: 20px;
-        border-radius: 8px;
-        color: {TEXT_MAIN};
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        color: {TEXT_COLOR};
         margin-bottom: 20px;
     }}
-    
-    /* 4. FUENTES DEL ÁREA PRINCIPAL (Negro forzado para legibilidad) */
-    .main h1, .main h2, .main h3, .main p, .main li, .main span {{
-        color: {TEXT_MAIN} !important;
+
+    /* Tarjetas de Explicación Visual (Debajo del gráfico) */
+    .visual-card {{
+        background-color: #f1f3f5;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        color: {TEXT_COLOR};
+        font-size: 0.95em;
+        margin-top: 10px;
     }}
     
-    /* 5. ICONOS GIGANTES */
+    /* Forzar texto negro */
+    h1, h2, h3, p, li, span, div, label, .stMarkdown {{ color: {TEXT_COLOR} !important; }}
+    
+    /* Iconos */
     .big-icon {{
-        font-size: 120px;
+        font-size: 100px;
         text-align: center;
         font-weight: bold;
-        color: {TEXT_MAIN};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
+        color: {TEXT_COLOR};
+        display: flex; align-items: center; justify-content: center; height: 100%;
     }}
-
-    /* Ajustes de espaciado */
-    .block-container {{padding-top: 2rem; padding-bottom: 1rem; padding-left: 2rem; padding-right: 2rem;}}
+    
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. BASE DE DATOS
+# 1. BASE DE DATOS PEDAGÓGICA COMPLETA
 # ==========================================
 gdt_data = {
     'Rectitud': {
         'symbol': '⏤',
-        'def': 'Condición donde cada elemento lineal de una superficie debe estar dentro de una línea recta perfecta.',
-        'compare': '🆚 <b>Diferencia:</b> Es en 2D (una línea). No confundir con <b>Planicidad</b>, que es para toda una superficie 3D.',
-        'app': '🔩 <b>Aplicación Real:</b> Vástagos de cilindros hidráulicos.',
-        'why': '⚠️ <b>Importancia:</b> Si el vástago no es recto, dañará los sellos al entrar y salir, causando fugas de aceite.'
+        'def': 'Controla qué tan recta es una línea específica (como el eje central o una línea en la superficie).',
+        'compare': '🆚 <b>Diferencia:</b> Se evalúa en 2D. No confundir con <b>Planicidad</b> (superficies) ni <b>Cilindricidad</b> (3D).',
+        'app': '🔩 <b>Aplicación Real:</b> Vástagos de cilindros hidráulicos, rieles de guías lineales.',
+        'why': '⚠️ <b>Importancia:</b> Un vástago doblado dañará los sellos prematuramente, causando fugas.',
+        'sim_3d_desc': '🔵 <b>Línea Azul:</b> Representa el eje real de la pieza (exageradamente doblado).<br>🟠 <b>Cilindro Naranja:</b> Es la zona de tolerancia. Si la línea azul toca o sale del cilindro, la pieza se rechaza.',
+        'real_desc': '🏭 <b>Montaje:</b> La pieza se apoya sobre bloques V o entre centros. Se coloca un reloj comparador sobre la generatriz superior.<br>👁️ <b>Acción:</b> Al desplazar el reloj longitudinalmente, la aguja indicará cuánto sube o baja la superficie.'
     },
     'Planicidad': {
         'symbol': '⏥',
         'def': 'Condición donde todos los puntos de una superficie deben estar contenidos entre dos planos paralelos.',
-        'compare': '🆚 <b>Diferencia:</b> No requiere un Datum. Es una cualidad intrínseca de la superficie.',
-        'app': '🚗 <b>Aplicación Real:</b> La cabeza del motor (culata) y el bloque del motor.',
-        'why': '⚠️ <b>Importancia:</b> Si no es plana, la junta (empaque) no sellará bien, provocando fugas de compresión.'
+        'compare': '🆚 <b>Diferencia:</b> No requiere Datum. Es una cualidad propia de la superficie.',
+        'app': '🚗 <b>Aplicación Real:</b> Culatas de motor (cabezas) y mesas de mármol de metrología.',
+        'why': '⚠️ <b>Importancia:</b> Una culata deformada no sellará con el empaque, mezclando aceite y refrigerante.',
+        'sim_3d_desc': '🌈 <b>Superficie Colorida:</b> Es la pieza real con valles y crestas.<br>🔴 <b>Planos Rojos:</b> Son los límites superior e inferior de la tolerancia (como un "sándwich"). La pieza no debe tocarlos.',
+        'real_desc': '🏭 <b>Montaje:</b> Se usa un reloj comparador montado en un soporte que se desliza sobre la superficie (o la superficie se mueve sobre un mármol con un agujero para el palpador).'
     },
     'Redondez': {
         'symbol': '○',
-        'def': 'Condición donde todos los puntos de una superficie circular (en cualquier corte transversal) equidistan de un centro.',
-        'compare': '🆚 <b>Diferencia:</b> Se mide en cortes 2D. No confundir con <b>Cilindricidad</b> que evalúa todo el cilindro a la vez.',
-        'app': '⚙️ <b>Aplicación Real:</b> Pistas de rodamientos (baleros).',
-        'why': '⚠️ <b>Importancia:</b> Una mala redondez causa vibraciones y ruido excesivo a alta velocidad.'
+        'def': 'Condición donde todos los puntos de una superficie circular (en un corte 2D) equidistan de un centro.',
+        'compare': '🆚 <b>Diferencia:</b> Se mide por sección transversal. No confundir con <b>Cilindricidad</b> (3D) ni <b>Alabeo</b> (con Datum).',
+        'app': '⚙️ <b>Aplicación Real:</b> Pistas de rodamientos, muñones de cigüeñal.',
+        'why': '⚠️ <b>Importancia:</b> La falta de redondez causa vibración y ruido en rotación a alta velocidad.',
+        'sim_3d_desc': '🔵 <b>Línea Azul:</b> Perfil real medido (ovalado o lobulado).<br>🔴 <b>Círculos Rojos:</b> Límites concéntricos de tolerancia. La línea azul debe vivir entre ambos rojos.',
+        'real_desc': '🏭 <b>Montaje:</b> La pieza gira en un plato giratorio de precisión (o se usa una máquina de redondez Talyrond). El palpador toca la superficie y registra la variación radial.'
     },
     'Cilindricidad': {
         'symbol': '⌭',
         'def': 'Controla la redondez, rectitud y conicidad de todo el cilindro simultáneamente.',
-        'compare': '🆚 <b>Diferencia:</b> Es más estricta que la Redondez. Controla la forma 3D completa.',
-        'app': '💉 <b>Aplicación Real:</b> Pistones de inyección diésel.',
-        'why': '⚠️ <b>Importancia:</b> Garantiza que el pistón se deslice suavemente sin atorarse y sin perder presión.'
+        'compare': '🆚 <b>Diferencia:</b> Es la tolerancia de forma más estricta para ejes. Incluye a la redondez y rectitud.',
+        'app': '💉 <b>Aplicación Real:</b> Pistones de inyección diésel, pernos maestros.',
+        'why': '⚠️ <b>Importancia:</b> Crítica para sellos dinámicos metal-metal sin empaques.',
+        'sim_3d_desc': '🌈 <b>Superficie:</b> Muestra la pieza real deformada (abarrilada o cónica).<br>🔴 <b>Mallas Rojas:</b> Dos cilindros coaxiales perfectos que definen la frontera permitida.',
+        'real_desc': '🏭 <b>Montaje:</b> Requiere medir múltiples secciones circulares y combinarlas matemáticamente, o usar una máquina de medición por coordenadas (CMM) que escanee el cilindro en espiral.'
     },
     'Angularidad': {
         'symbol': '∠',
         'def': 'Controla una superficie o eje para que esté a un ángulo específico (diferente a 90°) respecto a un Datum.',
-        'compare': '🆚 <b>Diferencia:</b> Define una "zona de tolerancia" entre dos planos paralelos inclinados.',
-        'app': '📐 <b>Aplicación Real:</b> Rampas de guías de deslizamiento.',
-        'why': '⚠️ <b>Importancia:</b> Asegura contacto uniforme en superficies inclinadas que transmiten carga.'
+        'compare': '🆚 <b>Diferencia:</b> Define una zona de tolerancia milimétrica entre dos planos paralelos (no es una tolerancia en grados ±).',
+        'app': '📐 <b>Aplicación Real:</b> Guías de cola de milano, rampas de levas.',
+        'why': '⚠️ <b>Importancia:</b> Asegura el contacto completo entre superficies deslizantes inclinadas.',
+        'sim_3d_desc': '🌈 <b>Plano Inclinado:</b> Superficie real.<br>🟢 <b>Planos Verdes:</b> Límites paralelos inclinados al ángulo básico exacto. La superficie debe caber ahí.',
+        'real_desc': '🏭 <b>Montaje:</b> Se usa una <b>Mesa de Senos</b> para compensar el ángulo y dejar la superficie "plana" respecto al reloj comparador. Si el ángulo es correcto, el reloj no debe variar al deslizarse.'
     },
     'Perpendicularidad': {
         'symbol': '⟂',
         'def': 'Condición donde una superficie o eje debe estar a 90° exactos respecto a un Datum.',
         'compare': '🆚 <b>Diferencia:</b> Es un caso especial de Angularidad fija a 90°.',
-        'app': '🏗️ <b>Aplicación Real:</b> Escuadras de fijación.',
-        'why': '⚠️ <b>Importancia:</b> Si no es perpendicular, el ensamble quedará torcido.'
+        'app': '🏗️ <b>Aplicación Real:</b> Escuadras de fijación, caras de bridas.',
+        'why': '⚠️ <b>Importancia:</b> Si la cara no es perpendicular al eje, la tuerca asentará mal y doblará el tornillo.',
+        'sim_3d_desc': '🌈 <b>Pared Vertical:</b> Superficie real inclinada.<br>🔵 <b>Planos Azules:</b> Zona de tolerancia perfectamente perpendicular al suelo (Datum).',
+        'real_desc': '🏭 <b>Montaje:</b> Se apoya la pieza contra una <b>Escuadra Patrón</b> de gran precisión. El reloj comparador se desliza verticalmente comparando la pieza contra la escuadra.'
     },
     'Paralelismo': {
         'symbol': '∥',
         'def': 'Condición donde todos los puntos de una superficie deben estar a la misma distancia de un plano Datum.',
-        'compare': '🆚 <b>Diferencia:</b> Controla orientación y planicidad simultáneamente.',
-        'app': '🛤️ <b>Aplicación Real:</b> Rieles de trenes o guías lineales.',
-        'why': '⚠️ <b>Importancia:</b> Si no son paralelos, el carro se amarrará o tendrá juego excesivo.'
+        'compare': '🆚 <b>Diferencia:</b> Controla orientación (ángulo 0) y planicidad simultáneamente.',
+        'app': '🛤️ <b>Aplicación Real:</b> Rieles de máquinas herramienta, caras opuestas de bloques patrón.',
+        'why': '⚠️ <b>Importancia:</b> Evita que los carros móviles se atasquen o tengan juego excesivo.',
+        'sim_3d_desc': '🌈 <b>Superficie Superior:</b> Pieza real.<br>🟣 <b>Planos Morados:</b> Zona de tolerancia paralela al Datum inferior. Todo punto debe estar en esa zona.',
+        'real_desc': '🏭 <b>Montaje:</b> La pieza se apoya en el mármol (Datum). Se desliza el reloj comparador sobre la cara superior. La aguja indica la desviación de paralelismo.'
     },
     'Concentricidad': {
         'symbol': '◎',
         'def': 'Controla que los puntos medios de secciones opuestas del cilindro caigan dentro de una zona cilíndrica teórica.',
-        'compare': '🆚 <b>Diferencia:</b> Es teórica (balanceo). A menudo se prefiere usar <b>Alabeo</b> para superficies.',
-        'app': '⚖️ <b>Aplicación Real:</b> Ejes de alta velocidad.',
-        'why': '⚠️ <b>Importancia:</b> Reduce la vibración por desbalanceo de masas.'
+        'compare': '🆚 <b>Diferencia:</b> Es una tolerancia de balanceo (teórica). Difícil de medir. Suele reemplazarse por <b>Alabeo</b>.',
+        'app': '⚖️ <b>Aplicación Real:</b> Ejes de alta velocidad, rotores de turbinas.',
+        'why': '⚠️ <b>Importancia:</b> Minimiza la vibración rotacional por desbalanceo de masas.',
+        'sim_3d_desc': '🔴 <b>Línea Roja Central:</b> Es el "Lugar Geométrico" de los puntos medios derivados de la pieza. Debe estar dentro del cilindro amarillo pequeño.',
+        'real_desc': '🏭 <b>Montaje:</b> Complejo. Requiere girar la pieza y medir puntos opuestos simultáneamente para calcular matemáticamente el centro de cada sección.'
     },
     'Posición': {
         'symbol': '⌖',
         'def': 'Controla la ubicación exacta del centro de una característica (agujero) respecto a los Datums.',
-        'compare': '🆚 <b>Diferencia:</b> Garantiza la intercambiabilidad de partes atornilladas.',
-        'app': '🔩 <b>Aplicación Real:</b> Patrones de agujeros en tapas de motor.',
-        'why': '⚠️ <b>Importancia:</b> Asegura que los tornillos pasen por los agujeros y coincidan con la contraparte.'
+        'compare': '🆚 <b>Diferencia:</b> Garantiza intercambiabilidad (ensamble) incluso con tolerancias de tamaño (MMC).',
+        'app': '🔩 <b>Aplicación Real:</b> Patrones de pernos en rines de auto, bridas de tubería.',
+        'why': '⚠️ <b>Importancia:</b> Si los agujeros están desplazados, los tornillos no entrarán en la pieza contraria.',
+        'sim_3d_desc': '🧊 <b>Bloque Gris:</b> Pieza teórica.<br>🔴 <b>Eje Rojo:</b> Eje del agujero taladrado real.<br>🟡 <b>Cilindro Amarillo:</b> Zona de tolerancia centrada en la posición exacta. El eje rojo debe estar dentro.',
+        'real_desc': '🏭 <b>Montaje:</b> Se usa una Máquina de Medición por Coordenadas (CMM) o un "Gage funcional" (pasa-no pasa) con pernos fijos en las posiciones teóricas.'
     },
     'Alabeo Circular': {
         'symbol': '↗',
-        'def': '(Runout). Controla la variación de la superficie en una sección circular mientras la pieza gira.',
-        'compare': '🆚 <b>Diferencia:</b> Mide "corte por corte".',
-        'app': '🛑 <b>Aplicación Real:</b> Discos de freno.',
-        'why': '⚠️ <b>Importancia:</b> Evita vibraciones en el pedal al frenar.'
+        'def': '(Runout). Controla la variación de la superficie en una sección circular mientras la pieza gira sobre su Datum.',
+        'compare': '🆚 <b>Diferencia:</b> Suma errores de redondez + concentricidad en esa sección específica.',
+        'app': '🛑 <b>Aplicación Real:</b> Discos de freno, ejes de motores eléctricos.',
+        'why': '⚠️ <b>Importancia:</b> Evita pulsaciones en frenos y desgaste irregular.',
+        'sim_3d_desc': '🟣 <b>Línea Morada:</b> Trayectoria que dibuja el reloj al girar la pieza.<br>🔴 <b>Líneas Rojas:</b> Máximo y mínimo permitido.',
+        'real_desc': '🏭 <b>Montaje:</b> La pieza gira sobre bloques V (Datum). El reloj toca la superficie en un punto fijo (no se desplaza). Se mide la variación total de la aguja (TIR).'
     },
     'Alabeo Total': {
         'symbol': '⌰',
         'def': '(Total Runout). Controla toda la superficie cilíndrica simultáneamente mientras la pieza gira y el indicador se desplaza.',
-        'compare': '🆚 <b>Diferencia:</b> Controla conicidad, rectitud, redondez y concentricidad a la vez.',
-        'app': '💧 <b>Aplicación Real:</b> Ejes de bombas en la zona del sello.',
-        'why': '⚠️ <b>Importancia:</b> Imperfecciones causan fugas inmediatas.'
+        'compare': '🆚 <b>Diferencia:</b> Suma rectitud + angularidad + redondez + concentricidad. Muy estricta.',
+        'app': '💧 <b>Aplicación Real:</b> Zona de sellos mecánicos en bombas, rodillos de impresión.',
+        'why': '⚠️ <b>Importancia:</b> Asegura que toda la superficie sea funcionalmente perfecta para rodar o sellar.',
+        'sim_3d_desc': '🌈 <b>Superficie:</b> Pieza real girando.<br>🔴 <b>Mallas Rojas:</b> Cilindros límite coaxiales al eje de giro Datum.',
+        'real_desc': '🏭 <b>Montaje:</b> Similar al circular, pero el reloj se desplaza a lo largo de todo el eje mientras la pieza gira muchas veces, "barriendo" toda la superficie.'
     },
     'Perfil de una línea': {
         'symbol': '⌒',
-        'def': 'Controla la forma de una línea curva (2D) en cualquier sección transversal.',
-        'compare': '🆚 <b>Diferencia:</b> Solo aplica a la línea de corte.',
-        'app': '✈️ <b>Aplicación Real:</b> Perfil de ala de avión.',
-        'why': '⚠️ <b>Importancia:</b> Crítico para la aerodinámica.'
+        'def': 'Controla la forma de una curva 2D en una sección transversal.',
+        'compare': '🆚 <b>Diferencia:</b> Solo aplica al borde cortado, no al resto de la pieza.',
+        'app': '✈️ <b>Aplicación Real:</b> Perfil de un álabe de turbina o ala.',
+        'why': '⚠️ <b>Importancia:</b> Define el rendimiento aerodinámico.',
+        'sim_3d_desc': '🔵 <b>Línea Azul:</b> Curva real fabricada.<br>🟢 <b>Banda Verde:</b> Zona de tolerancia (ancho uniforme) que sigue la forma teórica perfecta.',
+        'real_desc': '🏭 <b>Montaje:</b> Se usa un comparador óptico (proyector de perfiles) o una plantilla física a contraluz para ver si hay luz entre la pieza y la plantilla.'
     },
     'Perfil de una superficie': {
         'symbol': '⌓',
         'def': 'Controla la forma, orientación y ubicación de una superficie 3D compleja.',
-        'compare': '🆚 <b>Diferencia:</b> Crea una "piel" de tolerancia tridimensional.',
-        'app': '🚗 <b>Aplicación Real:</b> Carrocería de autos.',
-        'why': '⚠️ <b>Importancia:</b> Estética y aerodinámica.'
+        'compare': '🆚 <b>Diferencia:</b> Es una "piel" tridimensional de espesor constante.',
+        'app': '🚗 <b>Aplicación Real:</b> Cofre de auto, carcasa de teléfono, moldes.',
+        'why': '⚠️ <b>Importancia:</b> Estética visual y ensamblaje de formas orgánicas.',
+        'sim_3d_desc': '🌈 <b>Superficie:</b> Forma real.<br>🔵 <b>Capas Azules:</b> Límites superior e inferior (Envelope) que siguen la curvatura teórica.',
+        'real_desc': '🏭 <b>Montaje:</b> Generalmente requiere una CMM (Máquina de Coordenadas) que toca cientos de puntos para reconstruir la superficie y compararla con el modelo CAD.'
     }
 }
 
@@ -171,11 +185,11 @@ gdt_data = {
 # ==========================================
 
 def get_plot_layout(title, is_3d=True):
-    """Configura el fondo GRIS para las gráficas"""
+    """Configura el fondo GRIS y texto NEGRO"""
     layout = dict(
         title=dict(text=title, font=dict(size=18, color='black')),
-        paper_bgcolor=MAIN_BG, # Fondo Gris Acero
-        plot_bgcolor=MAIN_BG,
+        paper_bgcolor=BG_COLOR,
+        plot_bgcolor=BG_COLOR,
         font=dict(color='black'),
         margin=dict(l=20, r=20, t=50, b=20),
         height=600
@@ -185,27 +199,27 @@ def get_plot_layout(title, is_3d=True):
         layout['scene'] = dict(
             aspectmode='manual', aspectratio=dict(x=1, y=1, z=0.6),
             camera=dict(eye=dict(x=1.4, y=1.4, z=0.5)),
-            xaxis=dict(visible=False, backgroundcolor=MAIN_BG),
-            yaxis=dict(visible=False, backgroundcolor=MAIN_BG),
-            zaxis=dict(visible=True, backgroundcolor=MAIN_BG, gridcolor="#bbb", showbackground=True)
+            xaxis=dict(visible=False, backgroundcolor=BG_COLOR),
+            yaxis=dict(visible=False, backgroundcolor=BG_COLOR),
+            zaxis=dict(visible=True, backgroundcolor=BG_COLOR, gridcolor="#cccccc", showbackground=True)
         )
-        layout['legend'] = dict(bgcolor="rgba(255,255,255,0.5)", bordercolor="#333", borderwidth=1, font=dict(color="black"))
+        layout['legend'] = dict(bgcolor="rgba(255,255,255,0.6)", bordercolor="#333", borderwidth=1, font=dict(color="black"))
     else:
         layout['xaxis'] = dict(visible=False, showgrid=False)
         layout['yaxis'] = dict(visible=False, showgrid=False)
-        layout['plot_bgcolor'] = '#FFFFFF' # El papel del plano técnico se queda blanco para contraste
+        layout['plot_bgcolor'] = '#FFFFFF'
         
     return layout
 
-# --- A. SIMULACIONES 3D ---
+# --- A. SIMULACIONES 3D (CON NOMBRES CORREGIDOS PARA LEYENDA) ---
 def plot_3d_simulation(feature, tol):
     z = np.linspace(0, 10, 30); theta = np.linspace(0, 2 * np.pi, 30); tg, zg = np.meshgrid(theta, z)
     fig = go.Figure()
     
     if feature == 'Rectitud':
-        fig.add_trace(go.Scatter3d(x=np.sin(z/1.5)*0.2, y=np.cos(z/1.5)*0.15, z=z, mode='lines', line=dict(color='blue', width=10), name='Eje Real'))
-        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, showscale=False, colorscale=[[0,'orange'],[1,'orange']], name='Zona Tol'))
-        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Nominal'))
+        fig.add_trace(go.Scatter3d(x=np.sin(z/1.5)*0.2, y=np.cos(z/1.5)*0.15, z=z, mode='lines', line=dict(color='blue', width=10), name='Eje Real (Desviado)'))
+        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, showscale=False, colorscale=[[0,'orange'],[1,'orange']], name='Zona Tolerancia'))
+        fig.add_trace(go.Scatter3d(x=np.zeros_like(z), y=np.zeros_like(z), z=z, mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Nominal'))
     
     elif feature == 'Planicidad':
         x = np.linspace(-5,5,30); y = np.linspace(-5,5,30); xg,yg = np.meshgrid(x,y)
@@ -223,7 +237,7 @@ def plot_3d_simulation(feature, tol):
         r = 5 + 0.2 * np.sin(zg * np.pi / 5)
         fig.add_trace(go.Surface(x=r*np.cos(tg), y=r*np.sin(tg), z=zg, colorscale='Spectral', name='Sup. Real'))
         fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=6, dash='longdash'), name='Eje Común'))
-        fig.add_trace(go.Scatter3d(x=(5+tol/2)*np.cos(theta), y=(5+tol/2)*np.sin(theta), z=np.zeros_like(theta), line=dict(color='red'), name='Límites', showlegend=True))
+        fig.add_trace(go.Scatter3d(x=(5+tol/2)*np.cos(theta), y=(5+tol/2)*np.sin(theta), z=np.zeros_like(theta), line=dict(color='red'), name='Tolerancia', showlegend=True))
 
     elif feature == 'Angularidad':
         x, y = np.meshgrid(np.linspace(0,10,20), np.linspace(0,10,20)); z_nom = x * np.tan(np.radians(45))
@@ -259,7 +273,7 @@ def plot_3d_simulation(feature, tol):
         fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.4, showscale=False, colorscale=[[0,'yellow'],[1,'yellow']], name='Zona Tol'))
 
     elif feature == 'Alabeo Circular':
-        fig.add_trace(go.Scatter3d(x=5.3*np.cos(theta)+0.2, y=5.3*np.sin(theta), z=np.zeros_like(theta), line=dict(color='purple', width=6), name='Medición'))
+        fig.add_trace(go.Scatter3d(x=5.3*np.cos(theta)+0.2, y=5.3*np.sin(theta), z=np.zeros_like(theta), line=dict(color='purple', width=6), name='Trayectoria Medida'))
         fig.add_trace(go.Scatter3d(x=(5+tol)*np.cos(theta), y=(5+tol)*np.sin(theta), z=np.zeros_like(theta), line=dict(color='red', dash='dot'), name='Límites'))
         fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,2], mode='lines', line=dict(color='black', width=5, dash='longdash'), name='Eje Datum'))
 
@@ -429,7 +443,6 @@ st.sidebar.markdown("---")
 st.sidebar.info("Profesor: Ing. Jaime Silva")
 
 # --- RENDERIZADO ---
-# Tarjeta de Definición
 def_data = gdt_data.get(feat, {'symbol': '?', 'def': 'Sin definición.', 'compare': '', 'app': '', 'why': ''})
 
 st.markdown(f"""
@@ -450,7 +463,9 @@ st.markdown(f"""
 if view_mode == "📐 Simulación 3D":
     fig_3d = plot_3d_simulation(feat, tol)
     st.plotly_chart(fig_3d, use_container_width=True)
+    st.markdown(f"""<div class='visual-card'><b>🔍 Explicación Visual:</b><br>{def_data.get('sim_3d_desc', 'Detalles en 3D')}</div>""", unsafe_allow_html=True)
 
 elif view_mode == "🏭 Plano de Montaje Real":
     fig_real = plot_real_inspection_anim(feat)
     st.plotly_chart(fig_real, use_container_width=True)
+    st.markdown(f"""<div class='visual-card'><b>🏭 Explicación del Montaje:</b><br>{def_data.get('real_desc', 'Detalles del montaje')}</div>""", unsafe_allow_html=True)
