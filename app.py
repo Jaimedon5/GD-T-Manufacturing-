@@ -1,416 +1,489 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
+import time
 
 # --- CONFIGURACIÓN GENERAL ---
-st.set_page_config(layout="wide", page_title="Laboratorio Virtual GD&T")
+st.set_page_config(layout="wide", page_title="Laboratorio GD&T - Ing. Jaime Silva")
 
 # ==========================================
-# 0. ESTILOS CSS (TEMA "DARK ENGINEERING" FINAL)
+# 0. ESTILOS CSS (TEMA INDUSTRIAL DE ALTO CONTRASTE)
 # ==========================================
-MAIN_BG = "#D5D5D7"      # Gris Acero (Fondo Principal)
-SIDEBAR_BG = "#1E1E1E"   # Negro Carbón (Barra Lateral)
-CARD_BG = "#FFFFFF"      # Blanco Puro (Tarjetas)
-TEXT_COLOR = "#000000"   # Negro (Texto Principal)
-TEXT_SIDE = "#FFFFFF"    # Blanco (Texto Lateral)
-ACCENT = "#0d6efd"       # Azul Ingeniería
+MAIN_BG = "#E0E0E0"      # Gris claro industrial (descanso visual)
+SIDEBAR_BG = "#121212"   # Negro profundo
+TEXT_COLOR = "#000000"   # Negro absoluto para textos
+ACCENT = "#0055A4"       # Azul Ingeniería fuerte
 
 st.markdown(f"""
 <style>
-    /* FONDO PRINCIPAL */
     .stApp {{ background-color: {MAIN_BG}; color: {TEXT_COLOR}; }}
     
     /* BARRA LATERAL */
     section[data-testid="stSidebar"] {{ background-color: {SIDEBAR_BG}; }}
-    
-    /* Textos del Sidebar (Blancos) */
     section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, 
     section[data-testid="stSidebar"] h3, section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span {{
-        color: {TEXT_SIDE} !important;
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] li {{
+        color: #FFFFFF !important;
     }}
-    
-    /* CORRECCIÓN CRÍTICA: Inputs del Sidebar (Fondo blanco, texto negro) */
+    /* Corrección para inputs en sidebar */
     div[data-baseweb="select"] > div {{ background-color: white !important; color: black !important; }}
     div[data-baseweb="select"] span {{ color: black !important; }}
     
-    /* TARJETAS DE DEFINICIÓN SUPERIOR */
+    /* TARJETAS */
     .gdt-card {{
-        background-color: {CARD_BG};
+        background-color: #FFFFFF;
         border-left: 8px solid {ACCENT};
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         color: {TEXT_COLOR};
         margin-bottom: 20px;
     }}
-
-    /* CAJA DE INTERPRETACIÓN DE PLANO (AZUL) */
-    .interpretation-box {{
-        background-color: #e8f4f8; 
-        border-left: 6px solid {ACCENT};
-        padding: 20px; 
-        border-radius: 5px; 
-        margin-top: 15px;
-        font-family: sans-serif; 
-        color: {TEXT_COLOR};
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }}
     
-    /* CAJA DE EXPLICACIÓN VISUAL (GRIS) */
-    .visual-card {{
-        background-color: #f1f3f5;
-        border: 1px solid #ccc;
+    /* RECUADROS DE INTERPRETACIÓN */
+    .info-box {{
+        background-color: #D1E7DD;
+        border-left: 6px solid #0f5132;
         padding: 15px;
-        border-radius: 8px;
-        color: {TEXT_COLOR};
-        font-size: 0.95em;
+        border-radius: 5px;
         margin-top: 10px;
-    }}
-
-    /* TEXTO NEGRO EN ÁREA PRINCIPAL */
-    .main h1, .main h2, .main h3, .main p, .main li, .main span, .main label {{
-        color: {TEXT_COLOR} !important;
+        color: #000000;
     }}
     
-    /* ICONOS */
     .big-icon {{
-        font-size: 80px;
-        text-align: center;
-        font-weight: bold;
-        color: {TEXT_COLOR};
-        display: flex; align-items: center; justify-content: center; height: 100%;
+        font-size: 90px; text-align: center; font-weight: bold;
+        color: {TEXT_COLOR}; display: flex; align-items: center; justify-content: center;
     }}
     
-    /* MÁRGENES */
-    .block-container {{padding-top: 3rem; padding-bottom: 2rem;}}
+    h1, h2, h3 {{ color: {TEXT_COLOR} !important; }}
+    .block-container {{padding-top: 2rem; padding-bottom: 2rem;}}
     #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. BASE DE DATOS COMPLETA
+# 1. BASE DE DATOS (Basada en el PDF proporcionado)
 # ==========================================
 gdt_data = {
     'Rectitud': {
         'symbol': '⏤', 'type': 'surf', 'datum': False,
-        'def': 'Controla qué tan recta es una línea específica (eje o superficie).',
-        'compare': 'Es 2D. No confundir con Planicidad (3D).', 'app': 'Vástagos, rieles.', 'why': 'Evita fugas.',
-        'desc': 'la rectitud de la línea superior', 'zone': 'dos líneas paralelas',
-        'sim_3d_desc': '🔵 <b>Eje Real:</b> Línea curvada azul.<br>🟠 <b>Zona Tolerancia:</b> Cilindro naranja semitransparente.',
-        'real_desc': 'Se desplaza el reloj a lo largo de la pieza. La variación total de la aguja es el error.'
+        'def': 'Condición donde cada elemento lineal de una superficie debe estar dentro de una línea recta perfecta.',
+        'app': 'Vástagos de cilindros, ejes largos.',
+        'desc': 'la rectitud del elemento', 'zone': 'dos líneas paralelas separadas por la tolerancia',
+        'geo': 'cylinder'
     },
     'Planicidad': {
         'symbol': '⏥', 'type': 'surf', 'datum': False,
-        'def': 'Controla la planitud de una superficie.',
-        'compare': 'No usa Datum. Intrínseca.', 'app': 'Culatas, mesas.', 'why': 'Sellado.',
-        'desc': 'la planicidad de la superficie', 'zone': 'dos planos paralelos',
-        'sim_3d_desc': '🌈 <b>Superficie:</b> Mapa de error.<br>🔴 <b>Límites:</b> Planos superior e inferior.',
-        'real_desc': 'El reloj barre toda la superficie. La diferencia entre el punto más alto y más bajo es el error.'
+        'def': 'Condición donde todos los puntos de una superficie deben estar contenidos entre dos planos paralelos.',
+        'app': 'Culatas de motor, mesas de referencia.',
+        'desc': 'la planicidad de la superficie', 'zone': 'dos planos paralelos separados por la tolerancia',
+        'geo': 'cube'
     },
     'Redondez': {
         'symbol': '○', 'type': 'axis', 'datum': False,
-        'def': 'Controla la circularidad de una sección (2D).',
-        'compare': 'Sección por sección. No es 3D.', 'app': 'Rodamientos.', 'why': 'Vibración.',
-        'desc': 'la circularidad', 'zone': 'dos círculos concéntricos',
-        'sim_3d_desc': '🔵 <b>Perfil Azul:</b> Forma real del corte.<br>🔴 <b>Círculos Rojos:</b> Límites coaxiales.',
-        'real_desc': 'La pieza gira, el reloj está fijo. Se mide la variación radial.'
+        'def': 'Condición donde todos los puntos de una superficie circular (corte 2D) equidistan de un centro.',
+        'app': 'Pistas de rodamientos, muñones.',
+        'desc': 'la circularidad en cualquier sección', 'zone': 'dos círculos concéntricos',
+        'geo': 'cylinder'
     },
     'Cilindricidad': {
         'symbol': '⌭', 'type': 'axis', 'datum': False,
-        'def': 'Controla la forma cilíndrica total (3D).',
-        'compare': 'Incluye redondez, rectitud y conicidad.', 'app': 'Pistones.', 'why': 'Sellado dinámico.',
-        'desc': 'la cilindricidad', 'zone': 'dos cilindros coaxiales',
-        'sim_3d_desc': '🌈 <b>Superficie 3D:</b> Deformada.<br>🔴 <b>Límites:</b> Mallas cilíndricas.',
-        'real_desc': 'Se escanea toda la superficie (espiral o múltiples cortes).'
-    },
-    'Angularidad': {
-        'symbol': '∠', 'type': 'surf', 'datum': 'A',
-        'def': 'Controla la inclinación respecto a un Datum.',
-        'compare': 'Zona en mm, no grados.', 'app': 'Guías.', 'why': 'Contacto.',
-        'desc': 'la angularidad', 'zone': 'dos planos paralelos inclinados',
-        'sim_3d_desc': '🌈 <b>Plano:</b> Superficie inclinada.<br>🟢 <b>Límites:</b> Planos verdes.',
-        'real_desc': 'Uso de Mesa de Senos para nivelar y medir variación.'
+        'def': 'Controla la redondez, rectitud y conicidad de todo el cilindro simultáneamente.',
+        'app': 'Pistones hidráulicos, pernos maestros.',
+        'desc': 'la forma cilíndrica total', 'zone': 'dos cilindros coaxiales',
+        'geo': 'cylinder'
     },
     'Perpendicularidad': {
         'symbol': '⟂', 'type': 'surf', 'datum': 'A',
-        'def': 'Controla los 90° respecto a un Datum.',
-        'compare': 'Caso especial de Angularidad.', 'app': 'Escuadras.', 'why': 'Alineación.',
-        'desc': 'la perpendicularidad', 'zone': 'dos planos a 90°',
-        'sim_3d_desc': '🌈 <b>Pared:</b> Superficie real.<br>🔵 <b>Límites:</b> Planos azules.',
-        'real_desc': 'Comparación contra una escuadra patrón de granito.'
+        'def': 'Condición donde una superficie o eje debe estar a 90° exactos respecto a un Datum.',
+        'app': 'Escuadras de fijación, bridas.',
+        'desc': 'la perpendicularidad (90°)', 'zone': 'dos planos paralelos perpendiculares al Datum',
+        'geo': 'L-bracket'
     },
     'Paralelismo': {
         'symbol': '∥', 'type': 'surf', 'datum': 'A',
-        'def': 'Controla el paralelismo respecto a un Datum.',
-        'compare': 'Orientación y forma.', 'app': 'Rieles.', 'why': 'Atascamiento.',
+        'def': 'Condición donde todos los puntos de una superficie deben estar a la misma distancia de un plano Datum.',
+        'app': 'Rieles, guías lineales.',
         'desc': 'el paralelismo', 'zone': 'dos planos paralelos al Datum',
-        'sim_3d_desc': '🟣 <b>Límites:</b> Planos morados paralelos.',
-        'real_desc': 'Deslizamiento del reloj sobre la cara superior.'
+        'geo': 'block'
+    },
+    'Angularidad': {
+        'symbol': '∠', 'type': 'surf', 'datum': 'A',
+        'def': 'Controla una superficie o eje a un ángulo específico (no 90°) respecto a un Datum.',
+        'app': 'Guías de cola de milano, rampas.',
+        'desc': 'la inclinación angular exacta', 'zone': 'dos planos paralelos inclinados al ángulo básico',
+        'geo': 'wedge'
     },
     'Posición': {
-        'symbol': '⌖', 'type': 'axis', 'datum': 'A B',
-        'def': 'Controla la ubicación exacta del centro.',
-        'compare': 'Garantiza ensamble.', 'app': 'Pernos.', 'why': 'Intercambiabilidad.',
-        'desc': 'la posición del centro', 'zone': 'cilindro en posición teórica',
-        'sim_3d_desc': '🔴 <b>Línea Roja:</b> Eje real del agujero.<br>🟡 <b>Cilindro Amarillo:</b> Zona de tolerancia.',
-        'real_desc': 'Verificación con Máquina de Coordenadas (CMM) o Gage funcional.'
+        'symbol': '⌖', 'type': 'axis', 'datum': 'A B C',
+        'def': 'Controla la ubicación exacta del centro de una característica (agujero) respecto a Datums.',
+        'app': 'Patrones de pernos, ensambles múltiples.',
+        'desc': 'la posición verdadera del centro', 'zone': 'un cilindro centrado en la posición teórica',
+        'geo': 'plate_holes'
     },
     'Concentricidad': {
         'symbol': '◎', 'type': 'axis', 'datum': 'A',
-        'def': 'Controla el eje mediano (balanceo).',
-        'compare': 'Difícil de medir.', 'app': 'Rotores.', 'why': 'Balanceo.',
-        'desc': 'la concentricidad', 'zone': 'cilindro coaxial',
-        'sim_3d_desc': '🔴 <b>Puntos Rojos:</b> Centros medianos derivados.<br>🟡 <b>Zona Amarilla:</b> Tolerancia.',
-        'real_desc': 'Medición diferencial de puntos opuestos al girar.'
+        'def': 'Controla que los puntos medios de secciones opuestas caigan en una zona cilíndrica (Balanceo).',
+        'app': 'Rotores de alta velocidad.',
+        'desc': 'la coaxialidad de los puntos medios', 'zone': 'un cilindro coaxial al Datum',
+        'geo': 'stepped_shaft'
     },
     'Alabeo Circular': {
         'symbol': '↗', 'type': 'axis', 'datum': 'A-B',
-        'def': 'Variación circular al girar (Runout).',
-        'compare': 'Mide corte a corte.', 'app': 'Frenos.', 'why': 'Vibración.',
-        'desc': 'el alabeo circular', 'zone': 'distancia radial (sección)',
-        'sim_3d_desc': '🟣 <b>Línea Morada:</b> Trayectoria medida.<br>🔴 <b>Líneas Punteadas:</b> Límites.',
-        'real_desc': 'Giro de la pieza sobre bloques V con reloj fijo.'
+        'def': 'Variación de la superficie en una sección circular al girar (Runout).',
+        'app': 'Discos de freno, ejes de motor.',
+        'desc': 'el alabeo en cada sección circular', 'zone': 'distancia radial entre círculos coaxiales',
+        'geo': 'shaft'
     },
     'Alabeo Total': {
         'symbol': '⌰', 'type': 'axis', 'datum': 'A-B',
-        'def': 'Variación total al girar.',
-        'compare': 'Controla toda la pieza.', 'app': 'Ejes bomba.', 'why': 'Fugas.',
-        'desc': 'el alabeo total', 'zone': 'distancia radial (total)',
-        'sim_3d_desc': '🔴 <b>Mallas Rojas:</b> Cilindros límite coaxiales.',
-        'real_desc': 'Giro de la pieza mientras el reloj se desplaza longitudinalmente.'
+        'def': 'Variación de toda la superficie al girar y desplazarse.',
+        'app': 'Ejes de bombas, rodillos.',
+        'desc': 'el alabeo de toda la superficie', 'zone': 'distancia radial entre dos cilindros',
+        'geo': 'shaft'
     },
     'Perfil de una línea': {
         'symbol': '⌒', 'type': 'surf', 'datum': False,
-        'def': 'Forma de línea 2D.',
-        'compare': 'Solo el borde.', 'app': 'Alas.', 'why': 'Aerodinámica.',
-        'desc': 'el perfil de línea', 'zone': 'banda uniforme',
-        'sim_3d_desc': '🔵 <b>Línea Azul:</b> Perfil real.<br>🟢 <b>Líneas Verdes:</b> Banda de tolerancia.',
-        'real_desc': 'Proyector de perfiles con plantilla transparente.'
+        'def': 'Controla la forma de una curva 2D en una sección transversal.',
+        'app': 'Alas de avión, levas.',
+        'desc': 'el perfil de la línea', 'zone': 'una banda uniforme siguiendo el perfil ideal',
+        'geo': 'curved_surface'
     },
     'Perfil de una superficie': {
         'symbol': '⌓', 'type': 'surf', 'datum': False,
-        'def': 'Forma de superficie 3D.',
-        'compare': 'Piel tridimensional.', 'app': 'Carrocerías.', 'why': 'Estética.',
-        'desc': 'el perfil de superficie', 'zone': 'dos superficies envolventes',
-        'sim_3d_desc': '🔵 <b>Capas Azules:</b> Límites envolventes superior e inferior.',
-        'real_desc': 'Escaneo de puntos con CMM comparado contra CAD.'
+        'def': 'Controla la forma de una superficie 3D compleja.',
+        'app': 'Carrocerías de autos, moldes.',
+        'desc': 'el perfil de toda la superficie', 'zone': 'dos superficies envolventes',
+        'geo': 'curved_surface'
     }
 }
 
 # ==========================================
-# 2. HERRAMIENTAS DE DIBUJO (Trazo Seguro)
+# 2. HERRAMIENTAS DE DIBUJO ROBUSTAS
 # ==========================================
-def get_plot_layout(title, is_3d=True):
+def get_clean_layout(title, is_3d=True):
+    """Configuración gráfica para evitar fondos negros y letras invisibles"""
+    bg_color = MAIN_BG if is_3d else "white"
     layout = dict(
-        title=dict(text=title, font=dict(size=18, color='black')),
-        paper_bgcolor=MAIN_BG, plot_bgcolor=MAIN_BG,
+        title=dict(text=title, font=dict(size=20, color='black')),
+        paper_bgcolor=bg_color,
+        plot_bgcolor=bg_color,
         font=dict(color='black'),
-        margin=dict(l=20, r=20, t=50, b=20),
+        margin=dict(l=10, r=10, t=40, b=10),
         height=600,
         autosize=True
     )
     if is_3d:
         layout['scene'] = dict(
             aspectmode='manual', aspectratio=dict(x=1, y=1, z=0.6),
-            xaxis=dict(visible=False, backgroundcolor=MAIN_BG),
-            yaxis=dict(visible=False, backgroundcolor=MAIN_BG),
-            zaxis=dict(visible=True, backgroundcolor=MAIN_BG, gridcolor="#ccc")
+            xaxis=dict(visible=False, backgroundcolor=bg_color),
+            yaxis=dict(visible=False, backgroundcolor=bg_color),
+            zaxis=dict(visible=True, backgroundcolor=bg_color, gridcolor="#ccc", title='')
         )
-        layout['legend'] = dict(bgcolor="rgba(255,255,255,0.8)", font=dict(color="black"), yanchor="top", y=0.95, xanchor="right", x=0.99)
+        # LEYENDA RESTAURADA
+        layout['legend'] = dict(
+            yanchor="top", y=0.99, xanchor="right", x=0.99,
+            bgcolor="rgba(255,255,255,0.9)", bordercolor="black", borderwidth=1
+        )
     else:
-        layout['xaxis'] = dict(visible=False, showgrid=False, range=[-1, 14])
-        layout['yaxis'] = dict(visible=False, showgrid=False, range=[-2, 9])
-        layout['shapes'] = [dict(type='rect', xref='paper', yref='paper', x0=0, y0=0, x1=1, y1=1, line=dict(color='black', width=2))]
-        layout['paper_bgcolor'] = 'white'
-        layout['plot_bgcolor'] = 'white'
+        layout['xaxis'] = dict(visible=False, showgrid=False, range=[-1, 15])
+        layout['yaxis'] = dict(visible=False, showgrid=False, range=[-2, 10])
+        layout['shapes'] = [dict(type='rect', xref='paper', yref='paper', x0=0, y0=0, x1=1, y1=1, line=dict(color='black', width=3))]
     return layout
 
-def draw_line_trace(fig, x0, y0, x1, y1, color="black", width=2, dash=None):
-    fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], line=dict(color=color, width=width, dash=dash), mode='lines', showlegend=False, hoverinfo='skip'))
+def draw_trace_line(fig, x, y, color="black", width=2, dash=None, name=None):
+    show = True if name else False
+    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color=color, width=width, dash=dash), showlegend=show, name=name, hoverinfo='skip'))
 
-def draw_rect_trace(fig, x0, y0, x1, y1, color="black", width=2, fill=None):
-    x = [x0, x1, x1, x0, x0]; y = [y0, y0, y1, y1, y0]
+def draw_trace_rect(fig, x0, y0, w, h, color="black", fill=None):
+    x = [x0, x0+w, x0+w, x0, x0]
+    y = [y0, y0, y0+h, y0+h, y0]
     fill_val = "toself" if fill else "none"
-    fig.add_trace(go.Scatter(x=x, y=y, fill=fill_val, fillcolor=fill, line=dict(color=color, width=width), mode='lines', showlegend=False, hoverinfo='skip'))
-
-def plot_control_frame_manual(fig, x, y, sym, tol, datum):
-    """Dibuja el marco de control usando trazos en lugar de shapes para garantizar visibilidad"""
-    w, h = 1.5, 1.0
-    # Caja 1
-    draw_rect_trace(fig, x, y, x+w, y+h, width=2)
-    fig.add_annotation(x=x+w/2, y=y+h/2, text=f"<b>{sym}</b>", showarrow=False, font=dict(size=24, color="black"))
-    # Caja 2
-    draw_rect_trace(fig, x+w, y, x+w*2.5, y+h, width=2)
-    fig.add_annotation(x=x+w*1.75, y=y+h/2, text=f"<b>{tol}</b>", showarrow=False, font=dict(size=20, color="black"))
-    # Caja 3
-    if datum:
-        draw_rect_trace(fig, x+w*2.5, y, x+w*3.5, y+h, width=2)
-        fig.add_annotation(x=x+w*3, y=y+h/2, text=f"<b>{datum}</b>", showarrow=False, font=dict(size=20, color="black"))
-        return x+w*3.5
-    return x+w*2.5
+    fig.add_trace(go.Scatter(x=x, y=y, fill=fill_val, fillcolor=fill, mode='lines', line=dict(color=color, width=2), showlegend=False, hoverinfo='skip'))
 
 # ==========================================
-# VISTA 1: SIMULACIÓN 3D (ESTABLE)
+# 3. VISTA 1: SIMULACIÓN 3D (GEOMETRÍAS ESPECÍFICAS)
 # ==========================================
-def plot_3d_simulation(feature, tol):
-    z = np.linspace(0, 10, 30); theta = np.linspace(0, 2 * np.pi, 30); tg, zg = np.meshgrid(theta, z)
+def plot_3d(feature, tol):
     fig = go.Figure()
+    geo_type = gdt_data[feature]['geo']
     
-    if feature == 'Rectitud':
-        fig.add_trace(go.Scatter3d(x=0.3*np.sin(z*0.5), y=np.zeros_like(z), z=z, mode='lines', line=dict(color='blue', width=10), name='Eje Real'))
-        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, colorscale=[[0,'orange'],[1,'orange']], showscale=False, name='Zona'))
-    elif feature == 'Planicidad':
-        x = np.linspace(-5,5,30); y = np.linspace(-5,5,30); xg,yg = np.meshgrid(x,y)
-        fig.add_trace(go.Surface(z=0.15*np.sin(xg/2)*np.cos(yg/2), x=xg, y=yg, colorscale='Viridis', name='Real'))
-        fig.add_trace(go.Surface(z=np.full_like(xg, tol/2), x=xg, y=yg, opacity=0.2, colorscale=[[0,'red'],[1,'red']], showscale=False, name='Lim'))
-        fig.add_trace(go.Surface(z=np.full_like(xg, -tol/2), x=xg, y=yg, opacity=0.2, colorscale=[[0,'red'],[1,'red']], showscale=False, name='Lim'))
-    elif feature in ['Cilindricidad', 'Alabeo Total']:
-        r = 5 + 0.2 * np.sin(zg * np.pi / 5)
-        fig.add_trace(go.Surface(x=r*np.cos(tg), y=r*np.sin(tg), z=zg, colorscale='Spectral', name='Real'))
-        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje'))
-    elif feature == 'Redondez':
-        th = np.linspace(0, 2*np.pi, 100); r = 5 + 0.2 * np.cos(3*th)
-        fig.add_trace(go.Scatter3d(x=r*np.cos(th), y=r*np.sin(th), z=np.zeros_like(th), mode='lines', line=dict(color='blue', width=6), name='Real'))
-        fig.add_trace(go.Scatter3d(x=(5+tol/2)*np.cos(th), y=(5+tol/2)*np.sin(th), z=np.zeros_like(th), line=dict(color='red', dash='dash'), name='Max'))
-        fig.add_trace(go.Scatter3d(x=(5-tol/2)*np.cos(th), y=(5-tol/2)*np.sin(th), z=np.zeros_like(th), line=dict(color='red', dash='dash'), name='Min'))
-    elif feature == 'Posición':
-        fig.add_trace(go.Surface(x=0.5*np.cos(tg)+0.1, y=0.5*np.sin(tg)+0.1, z=zg, colorscale='Ice', showscale=False, name='Agujero'))
-        fig.add_trace(go.Scatter3d(x=[0.1,0.1], y=[0.1,0.1], z=[0,10], line=dict(color='red', width=5), name='Eje Real'))
-        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, colorscale=[[0,'yellow'],[1,'yellow']], showscale=False, name='Zona'))
-    else:
-        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', name='Eje'))
-        fig.add_trace(go.Surface(x=2*np.cos(tg), y=2*np.sin(tg), z=zg, opacity=0.1, showscale=False))
+    # Mallas base
+    res = 40
+    z = np.linspace(0, 10, res); theta = np.linspace(0, 2*np.pi, res)
+    tg, zg = np.meshgrid(theta, z)
 
-    fig.update_layout(**get_plot_layout(f"Simulación 3D: {feature}", is_3d=True))
+    if geo_type == 'cylinder': # Rectitud, Redondez, Cilindricidad, Alabeos
+        r = 5
+        if feature == 'Rectitud':
+            # Eje doblado
+            fig.add_trace(go.Scatter3d(x=0.5*np.sin(z), y=np.zeros_like(z), z=z, mode='lines', line=dict(color='blue', width=10), name='Eje Real'))
+            fig.add_trace(go.Surface(x=(tol)*np.cos(tg), y=(tol)*np.sin(tg), z=zg, opacity=0.3, colorscale='Oranges', showscale=False, name='Zona Tol'))
+        elif feature == 'Redondez':
+            # Un solo anillo
+            th_ring = np.linspace(0, 2*np.pi, 100)
+            r_error = 5 + 0.3*np.sin(5*th_ring)
+            fig.add_trace(go.Scatter3d(x=r_error*np.cos(th_ring), y=r_error*np.sin(th_ring), z=np.zeros_like(th_ring), mode='lines', line=dict(color='blue', width=8), name='Perfil Real'))
+            fig.add_trace(go.Scatter3d(x=(5+tol)*np.cos(th_ring), y=(5+tol)*np.sin(th_ring), z=np.zeros_like(th_ring), line=dict(color='red', dash='dash'), name='Límite Sup'))
+            fig.add_trace(go.Scatter3d(x=(5-tol)*np.cos(th_ring), y=(5-tol)*np.sin(th_ring), z=np.zeros_like(th_ring), line=dict(color='red', dash='dash'), name='Límite Inf'))
+            fig.update_layout(scene_camera=dict(eye=dict(x=0, y=0, z=2.5))) # Vista superior
+        else:
+            # Cilindro completo
+            r_def = 5 + 0.2*np.sin(zg)
+            fig.add_trace(go.Surface(x=r_def*np.cos(tg), y=r_def*np.sin(tg), z=zg, colorscale='Viridis', name='Superficie Real'))
+            fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Datum'))
+
+    elif geo_type == 'plate_holes': # Posición
+        # Placa con agujero
+        x = np.linspace(-5, 5, res); y = np.linspace(-5, 5, res); xg, yg = np.meshgrid(x, y)
+        fig.add_trace(go.Surface(z=np.zeros_like(xg), x=xg, y=yg, opacity=0.2, showscale=False, colorscale='Greys', name='Placa'))
+        # Agujero
+        hc_x, hc_y = 1, 1 # Centro desplazado
+        fig.add_trace(go.Scatter3d(x=[hc_x, hc_x], y=[hc_y, hc_y], z=[-1, 5], line=dict(color='red', width=8), name='Eje Real'))
+        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[-1, 5], line=dict(color='black', width=4, dash='dash'), name='Posición Verdadera'))
+        # Cilindro tolerancia
+        fig.add_trace(go.Surface(x=tol*np.cos(tg), y=tol*np.sin(tg), z=zg*0.5, opacity=0.4, colorscale='YlOrRd', showscale=False, name='Zona Tol'))
+
+    elif geo_type == 'L-bracket': # Perpendicularidad
+        # Pared vertical
+        y_wall = np.linspace(0, 8, res); x_wall = np.linspace(-4, 4, res); Y, X = np.meshgrid(y_wall, x_wall)
+        Z_wall = 0.3 * Y/8 # Inclinación
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z_wall, colorscale='Blues', name='Cara Real'))
+        # Datum
+        fig.add_trace(go.Surface(x=X, y=np.zeros_like(Y), z=Y, opacity=0.5, colorscale='Greys', showscale=False, name='Datum A'))
+        # Planos tol
+        fig.add_trace(go.Surface(x=X, y=Y, z=np.full_like(Y, tol), opacity=0.2, showscale=False, colorscale='Reds', name='Lim +'))
+        fig.add_trace(go.Surface(x=X, y=Y, z=np.full_like(Y, -tol), opacity=0.2, showscale=False, colorscale='Reds', name='Lim -'))
+
+    else: # Planicidad, Paralelismo (Bloque)
+        x = np.linspace(0, 10, res); y = np.linspace(0, 10, res); xg, yg = np.meshgrid(x, y)
+        z_surf = 0.2 * np.sin(xg) * np.cos(yg)
+        fig.add_trace(go.Surface(z=z_surf, x=xg, y=yg, colorscale='Plasma', name='Superficie'))
+        fig.add_trace(go.Surface(z=np.full_like(xg, tol), x=xg, y=yg, opacity=0.2, showscale=False, colorscale='Greens', name='Plano Sup'))
+        fig.add_trace(go.Surface(z=np.full_like(xg, -tol), x=xg, y=yg, opacity=0.2, showscale=False, colorscale='Greens', name='Plano Inf'))
+
+    fig.update_layout(**get_clean_layout(f"Simulación 3D: {feature}", is_3d=True))
     return fig
 
 # ==========================================
-# VISTA 2: MONTAJE REAL (ANIMADO)
+# VISTA 2: MONTAJE REAL (ANIMACIÓN CORREGIDA)
 # ==========================================
-def plot_real_inspection_anim(feature):
+def plot_real_anim(feature):
     fig = go.Figure()
-    layout = get_plot_layout(f"Montaje: {feature}", is_3d=False)
-    layout['updatemenus'] = [dict(type="buttons", showactive=False, x=0.5, y=0.05, xanchor="center", buttons=[dict(label="▶️ PLAY", method="animate", args=[None])])]
+    layout = get_clean_layout(f"Montaje de Inspección: {feature}", is_3d=False)
+    layout['updatemenus'] = [dict(type="buttons", showactive=False, x=0.5, y=0.05, xanchor="center", buttons=[dict(label="▶️ INICIAR", method="animate", args=[None, dict(frame=dict(duration=30, redraw=True), fromcurrent=True)])])]
     fig.update_layout(**layout)
+
+    # Escenario base según tipo
+    geo_type = gdt_data[feature]['geo']
     
-    draw_rect_trace(fig, -1, -1, 11, 0, color="black", fill="#ccc") # Mesa
-    fig.add_trace(go.Scatter(x=np.linspace(0,10,50), y=1.5+0.2*np.sin(np.linspace(0,10,50)), mode='lines', line=dict(color='blue', width=4), name='Pieza'))
-    
-    # Frames
     frames = []
-    for i in range(0, 50, 2):
-        x = i/5; y = 1.5+0.2*np.sin(x)
-        frames.append(go.Frame(data=[
-            go.Scatter(x=np.linspace(0,10,50), y=1.5+0.2*np.sin(np.linspace(0,10,50))),
-            go.Scatter(x=[x, x], y=[y, y+3], mode="lines", line=dict(color="#444", width=4)),
-            go.Scatter(x=[x], y=[y+3], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2))),
-            go.Scatter(x=[x, x+0.5*np.cos(i)], y=[y+3, y+3+0.5*np.sin(i)], mode="lines", line=dict(color="red", width=2))
-        ]))
     
-    fig.add_trace(go.Scatter(x=[0,0], y=[1.5, 4.5], mode="lines", line=dict(color="#444", width=4), name="Vástago"))
-    fig.add_trace(go.Scatter(x=[0], y=[4.5], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
-    fig.add_trace(go.Scatter(x=[0,0.5], y=[4.5, 4.5], mode="lines", line=dict(color="red", width=2), name="Aguja"))
-    
+    if geo_type == 'L-bracket' or feature == 'Perpendicularidad':
+        # Escuadra y pieza
+        draw_trace_rect(fig, 0, 0, 4, 6, color="black", fill="#ccc") # Escuadra patrón
+        draw_trace_line(fig, 4.2, 0, 4.2+2, 6, color="blue", width=4, name="Pieza") # Pieza inclinada
+        
+        # Animación vertical
+        for i in range(0, 60, 2):
+            y_pos = i/10
+            x_contact = 4.2 + (y_pos * 0.05) # Sigue la inclinación
+            frames.append(go.Frame(data=[
+                go.Scatter(x=[x_contact-1.5, x_contact], y=[y_pos, y_pos], mode='lines+markers', marker=dict(size=10), line=dict(color='red')), # Reloj
+            ]))
+        # Trace inicial
+        fig.add_trace(go.Scatter(x=[2.7, 4.2], y=[0.5, 0.5], mode='lines+markers', line=dict(color='red'), name='Reloj'))
+
+    elif feature == 'Redondez' or feature == 'Cilindricidad' or 'Alabeo' in feature:
+        # Chuck y Pieza giratoria
+        draw_trace_rect(fig, 0, 2, 2, 6, color="black", fill="#555") # Chuck
+        draw_trace_rect(fig, 2, 3, 8, 5, color="blue") # Eje
+        fig.add_annotation(x=5, y=4, text="↻", font=dict(size=40))
+        
+        # Animación (Aguja oscilando)
+        for i in range(60):
+            angle = i * 0.2
+            needle_x = 5 + 0.5*np.cos(angle)
+            frames.append(go.Frame(data=[
+                go.Scatter(x=[5, 5], y=[5, 6.5], mode='lines', line=dict(color='gray')), # Vástago
+                go.Scatter(x=[5, needle_x], y=[6.5, 7.5], mode='lines', line=dict(color='red', width=3)) # Aguja
+            ]))
+        
+        fig.add_trace(go.Scatter(x=[5, 5], y=[5, 6.5], mode='lines', line=dict(color='gray'), name='Soporte'))
+        fig.add_trace(go.Scatter(x=[5, 5], y=[6.5, 7.5], mode='lines', line=dict(color='red'), name='Indicador'))
+
+    else: # Rectitud, Planicidad (Deslizamiento horizontal)
+        draw_trace_rect(fig, 0, 0, 12, 1, color="black", fill="#ccc") # Mesa
+        y_surf = np.linspace(1, 1, 100) + 0.2*np.sin(np.linspace(0, 10, 100))
+        fig.add_trace(go.Scatter(x=np.linspace(1,11,100), y=y_surf+1, mode='lines', line=dict(color='blue', width=4), name='Superficie'))
+        
+        for i in range(0, 100, 2):
+            x_pos = 1 + i/10
+            y_pos = 2 + 0.2*np.sin(i/10)
+            frames.append(go.Frame(data=[
+                go.Scatter(x=[x_pos, x_pos], y=[y_pos, y_pos+2], mode='lines+markers', marker=dict(symbol='circle', size=15), line=dict(color='red'))
+            ]))
+        fig.add_trace(go.Scatter(x=[1, 1], y=[2, 4], mode='lines+markers', line=dict(color='red'), name='Palpador'))
+
     fig.frames = frames
     return fig
 
 # ==========================================
-# VISTA 3: PLANO DE INGENIERÍA (ESTÁTICO CON COTA MANUAL)
+# VISTA 3: PLANO TÉCNICO (COTAS CORREGIDAS)
 # ==========================================
-def draw_engineering_blueprint(feature, tol_val):
-    info = gdt_data.get(feature, gdt_data['Rectitud'])
-    ftype = info['type']; sym = info['symbol']; datum = info.get('datum', None)
+def draw_blueprint(feature, tol_val):
+    info = gdt_data[feature]
+    geo = info['geo']
+    sym = info['symbol']
+    datum = info['datum']
     
     fig = go.Figure()
-    # Fondo blanco para papel
-    fig.update_layout(xaxis=dict(range=[0, 14], visible=False, scaleanchor="y", scaleratio=1), yaxis=dict(range=[0, 9], visible=False), plot_bgcolor='white', margin=dict(l=20, r=20, t=20, b=20), height=500, shapes=[dict(type='rect', xref='paper', yref='paper', x0=0, y0=0, x1=1, y1=1, line=dict(color='black', width=4))])
+    fig.update_layout(**get_clean_layout(f"Plano de Ingeniería: {feature}", is_3d=False))
     
-    # Dibujo de la Pieza
-    draw_rect_trace(fig, 2, 2, 10, 6, width=3) 
-    draw_line_trace(fig, 1, 4, 11, 4, width=1, dash='longdashdot')
+    # --- 1. DIBUJO DE LA PIEZA SEGÚN GEOMETRÍA ---
+    if geo == 'cylinder' or geo == 'shaft':
+        # Eje
+        draw_trace_rect(fig, 2, 3, 8, 4, width=3)
+        draw_trace_line(fig, 1, 5, 10, 5, width=1, dash='longdashdot', name='Centro')
+        # Cotas de tamaño
+        draw_trace_line(fig, 10, 3, 11, 3, width=1)
+        draw_trace_line(fig, 10, 7, 11, 7, width=1)
+        fig.add_annotation(x=10.5, y=5, text="Ø 40 ±0.1", font=dict(size=14), showarrow=False)
+        draw_arrow_manual(fig, 10.5, 5.5, 10.5, 7) # Flecha arriba
+        draw_arrow_manual(fig, 10.5, 4.5, 10.5, 3) # Flecha abajo
+        
+        leader_target = (10.5, 4.5) # Apunta al texto de la cota (para ejes)
+        if info['type'] == 'surf': leader_target = (6, 7) # Si es superficie (rectitud), apunta a la línea
+            
+    elif geo == 'plate_holes':
+        # Placa vista superior
+        draw_trace_rect(fig, 2, 1, 8, 6, width=3)
+        # 4 Agujeros
+        for px in [4, 6]:
+            for py in [3, 5]:
+                draw_trace_circle(fig, px, py, 0.5)
+                draw_trace_line(fig, px-0.8, py, px+0.8, py, width=1, dash='dash') # Cruces
+                draw_trace_line(fig, px, py-0.8, px, py+0.8, width=1, dash='dash')
 
-    # Dibujo de Cotas de Tamaño
-    draw_line_trace(fig, 10, 6, 10.5, 6, width=1)
-    draw_line_trace(fig, 10, 2, 10.5, 2, width=1)
-    fig.add_annotation(x=10.25, y=6, ax=10.25, ay=4.5, arrowhead=2, arrowwidth=1, arrowcolor="black")
-    fig.add_annotation(x=10.25, y=2, ax=10.25, ay=3.5, arrowhead=2, arrowwidth=1, arrowcolor="black")
-    fig.add_annotation(x=10.25, y=5.5, text="Ø 40 ±0.1", font=dict(size=14, color="black", weight="bold"), bgcolor="white", showarrow=False)
+        # Cota de tamaño (apunta a un agujero)
+        fig.add_annotation(x=7.5, y=5.5, ax=6.5, ay=5.2, text="4X Ø 10 ±0.1", arrowhead=2, arrowcolor="black")
+        leader_target = (7.5, 5.3) # Apunta al texto
 
-    # Datum (Si aplica)
+    elif geo == 'L-bracket':
+        # Escuadra
+        x_pts = [2, 8, 8, 4, 4, 2, 2]
+        y_pts = [1, 1, 3, 3, 7, 7, 1]
+        fig.add_trace(go.Scatter(x=x_pts, y=y_pts, mode='lines', line=dict(color='black', width=3), showlegend=False))
+        leader_target = (4, 5) # Apunta a la cara vertical
+
+    else: # Bloque genérico
+        draw_trace_rect(fig, 2, 2, 8, 4, width=3)
+        leader_target = (6, 6)
+
+    # --- 2. DATUM (SI APLICA) ---
     if datum:
-        fig.add_trace(go.Scatter(x=[3, 4, 3.5, 3], y=[2, 2, 1.2, 2], fill="toself", fillcolor="black", line=dict(color="black"), showlegend=False))
-        draw_rect_trace(fig, 3.1, 0.4, 3.9, 1.2, width=1)
-        fig.add_annotation(x=3.5, y=0.8, text="<b>A</b>", font=dict(size=14, color="black"), showarrow=False)
+        # Triángulo en la base
+        fig.add_trace(go.Scatter(x=[3, 4, 3.5, 3], y=[1, 1, 0.2, 1], fill="toself", fillcolor="black", line=dict(color="black"), showlegend=False))
+        draw_trace_rect(fig, 3.1, -0.6, 0.8, 0.8, width=1)
+        fig.add_annotation(x=3.5, y=-0.2, text="<b>A</b>", font=dict(size=14), showarrow=False)
 
-    # Marco de Control y Líder (Manual)
-    if ftype == 'surf':
-        leader_x, leader_y = 6, 6; frame_x, frame_y = 6, 7.5 
-    else:
-        leader_x, leader_y = 10.25, 4.8; frame_x, frame_y = 10.25, 1.5 
-
-    w_box = 1.5; start_x = frame_x - w_box
-    # Dibujar marco usando la función auxiliar
-    plot_control_frame_manual(fig, start_x, frame_y, sym, f"Ø {tol_val}" if ftype=='axis' else str(tol_val), datum)
+    # --- 3. MARCO DE CONTROL Y LÍDER (QUEBRADO) ---
+    # Posición del marco (Arriba derecha)
+    frame_x, frame_y = 9, 8
     
-    # Línea líder manual (Trazo sólido)
-    draw_line_trace(fig, leader_x, leader_y, frame_x, frame_y, width=2)
-    # Flecha en la punta
-    fig.add_annotation(x=leader_x, y=leader_y, ax=leader_x + (frame_x-leader_x)*0.1, ay=leader_y + (frame_y-leader_y)*0.1, arrowhead=2, arrowcolor="black")
+    # Línea líder quebrada (Codo)
+    # Desde el target hasta el lado del marco
+    elbow_x = frame_x - 0.5
+    fig.add_trace(go.Scatter(x=[leader_target[0], elbow_x, frame_x], y=[leader_target[1], frame_y+0.5, frame_y+0.5], mode='lines', line=dict(color='black', width=2), showlegend=False))
+    # Punta de flecha en el target
+    draw_arrow_manual(fig, elbow_x, frame_y+0.5, leader_target[0], leader_target[1])
+
+    # Dibujar Marco
+    w_sym, w_tol, w_dat = 1.2, 1.8, 1.2
+    h = 1.0
+    
+    # Celda Símbolo
+    draw_trace_rect(fig, frame_x, frame_y, w_sym, h, width=2)
+    fig.add_annotation(x=frame_x+w_sym/2, y=frame_y+h/2, text=f"<b>{sym}</b>", font=dict(size=24), showarrow=False)
+    
+    # Celda Tolerancia
+    draw_trace_rect(fig, frame_x+w_sym, frame_y, w_tol, h, width=2)
+    t_txt = f"Ø {tol_val}" if info['type'] == 'axis' else str(tol_val)
+    fig.add_annotation(x=frame_x+w_sym+w_tol/2, y=frame_y+h/2, text=f"<b>{t_txt}</b>", font=dict(size=18), showarrow=False)
+
+    # Celda Datum
+    if datum:
+        draw_trace_rect(fig, frame_x+w_sym+w_tol, frame_y, w_dat, h, width=2)
+        fig.add_annotation(x=frame_x+w_sym+w_tol+w_dat/2, y=frame_y+h/2, text=f"<b>{datum[0]}</b>", font=dict(size=18), showarrow=False)
 
     return fig
 
-# ==========================================
-# VISTA 4: CONSTRUCTOR DE PLANO MAESTRO
-# ==========================================
-def draw_interactive_blueprint(active_features):
+# --- VISTA 4: CONSTRUCTOR DE PLANOS ---
+def draw_master_blueprint(active_features):
     fig = go.Figure()
-    fig.update_layout(xaxis=dict(range=[0, 14], visible=False, scaleanchor="y"), yaxis=dict(range=[0, 9], visible=False), plot_bgcolor='white', height=600, shapes=[dict(type='rect', xref='paper', yref='paper', x0=0, y0=0, x1=1, y1=1, line=dict(color='black', width=3))])
+    fig.update_layout(**get_clean_layout("Plano Maestro Interactivo", is_3d=False))
     
-    draw_rect_trace(fig, 1, 1, 11, 3, width=3) # Base
-    draw_rect_trace(fig, 2, 3, 4, 7, width=3) # Torreta
-    draw_line_trace(fig, 3, 4, 3, 6, width=1, dash='longdashdot', name='Eje')
+    # Pieza compleja (Base + Torre + Agujero + Chaflán)
+    x_pts = [1, 11, 11, 9, 9, 4, 4, 1, 1]
+    y_pts = [1, 1, 3, 3, 5, 5, 8, 8, 1]
+    fig.add_trace(go.Scatter(x=x_pts, y=y_pts, mode='lines', line=dict(color='black', width=3), showlegend=False))
     
-    fig.add_annotation(x=6, y=1, text="<b>A</b>", showarrow=True, arrowhead=2, ay=20, ax=0)
+    # Eje
+    draw_trace_line(fig, 0.5, 6.5, 11.5, 6.5, dash='longdashdot')
     
-    locs = {
-        'Rectitud': (7, 1.5, 7, 0.5, ''), 'Posición': (3, 7, 3, 8, 'A B'), 'Planicidad': (6, 3.5, 6, 5.5, ''), 
-        'Perpendicularidad': (1.5, 5, 0.5, 5, 'A'), 'Angularidad': (10, 4, 11, 5, 'A')
-    }
-
-    for feat in active_features:
-        if feat in locs:
-            x_arr, y_arr, x_frm, y_frm, dat = locs[feat]
-            sym = gdt_data[feat]['symbol']
-            draw_line_trace(fig, x_arr, y_arr, x_frm, y_frm, width=1)
-            fig.add_annotation(x=x_arr, y=y_arr, ax=x_arr + (x_frm-x_arr)*0.1, ay=y_arr+(y_frm-y_arr)*0.1, arrowhead=2, arrowcolor="black")
-            plot_control_frame_manual(fig, x_frm, y_frm, sym, "0.1", dat)
+    # Iterar activas
+    slot_y = 9
+    for i, feat in enumerate(active_features):
+        info = gdt_data[feat]
+        # Dibujar marco en lista vertical a la derecha
+        fx = 12; fy = slot_y - (i*1.5)
+        draw_trace_rect(fig, fx, fy, 4, 1, width=2)
+        txt = f"{info['symbol']} 0.1 {info['datum'] if info['datum'] else ''}"
+        fig.add_annotation(x=fx+2, y=fy+0.5, text=f"<b>{txt}</b>", font=dict(size=16), showarrow=False)
+        
+        # Flecha apuntando a la pieza (genérica para el ejemplo)
+        fig.add_annotation(x=6, y=5, ax=fx, ay=fy+0.5, arrowhead=2, arrowcolor="gray")
 
     return fig
 
+# --- UTILIDADES DE DIBUJO ---
+def draw_trace_line(fig, x0, y0, x1, y1, color="black", width=1, dash=None, name=None):
+    fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], mode='lines', line=dict(color=color, width=width, dash=dash), name=name, showlegend=False))
+
+def draw_trace_rect(fig, x0, y0, w, h, color="black", fill=None, width=2):
+    x = [x0, x0+w, x0+w, x0, x0]; y = [y0, y0, y0+h, y0+h, y0]
+    f = "toself" if fill else "none"
+    fig.add_trace(go.Scatter(x=x, y=y, fill=f, fillcolor=fill, mode='lines', line=dict(color=color, width=width), showlegend=False))
+
+def draw_trace_circle(fig, x, y, r):
+    th = np.linspace(0, 2*np.pi, 30)
+    fig.add_trace(go.Scatter(x=x+r*np.cos(th), y=y+r*np.sin(th), mode='lines', line=dict(color='black'), showlegend=False))
+
+def draw_arrow_manual(fig, x0, y0, x1, y1):
+    fig.add_annotation(x=x1, y=y1, ax=x0, ay=y0, axref='x', ayref='y', arrowhead=2, arrowsize=1.5, arrowwidth=2, arrowcolor="black")
+
 # ==========================================
-# 4. INTERFAZ PRINCIPAL
+# 4. LÓGICA PRINCIPAL
 # ==========================================
 st.sidebar.title("🎛️ Controles GD&T")
 st.sidebar.markdown("---")
 
-# SELECTOR DE MODO
-mode_select = st.sidebar.radio("Modo de Trabajo:", ["🔬 Análisis Individual", "📝 Constructor de Plano Maestro"])
+mode = st.sidebar.radio("Modo de Trabajo:", ["🔬 Análisis Individual", "📝 Constructor de Plano"])
 st.sidebar.markdown("---")
 
-if mode_select == "🔬 Análisis Individual":
+if mode == "🔬 Análisis Individual":
     menu = {'1. Forma': ['Rectitud', 'Planicidad', 'Redondez', 'Cilindricidad'], '2. Orientación': ['Angularidad', 'Perpendicularidad', 'Paralelismo'], '3. Perfil': ['Perfil de una línea', 'Perfil de una superficie'], '4. Control': ['Alabeo Circular', 'Alabeo Total'], '5. Posición': ['Posición', 'Concentricidad']}
     cat = st.sidebar.selectbox("Categoría", list(menu.keys()))
     feat = st.sidebar.selectbox("Característica", menu[cat])
-    tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
+    tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
+    view = st.sidebar.radio("Vista:", ["📐 Simulación 3D", "🏭 Montaje Real", "📝 Plano Técnico"])
     
-    view_mode = st.sidebar.radio("Vista:", ["📐 Simulación 3D", "🏭 Montaje Real", "📝 Plano Técnico"])
+    # CLAVE ÚNICA PARA EVITAR CONGELAMIENTOS
+    g_key = f"{feat}_{view}_{tol}_{time.time()}"
     
-    st.sidebar.info("Profesor: Ing. Jaime Silva")
+    info = gdt_data[feat]
     
-    info = gdt_data.get(feat, gdt_data['Rectitud'])
-    
-    # 1. DEFINICIÓN (SIEMPRE VISIBLE EN MODO ANÁLISIS)
+    # TARJETA DE INFORMACIÓN SUPERIOR
     st.markdown(f"""
     <div class="gdt-card">
         <div style="display: flex; align-items: center;">
@@ -418,30 +491,28 @@ if mode_select == "🔬 Análisis Individual":
             <div style="flex: 4; padding-left: 20px;">
                 <h3 style="margin:0; color: #0d6efd;">{feat}</h3>
                 <p><strong>Definición:</strong> {info['def']}</p>
-                <p>🆚 <b>Comparación:</b> {info['compare']}</p>
-                <p>🛠️ <b>Aplicación:</b> {info['app']} | {info['why']}</p>
+                <p>⚙️ <strong>Aplicación:</strong> {info['app']}</p>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # CLAVE ÚNICA PARA ESTABILIDAD
-    chart_key = f"{feat}_{view_mode}_{tol}"
+    if view == "📐 Simulación 3D":
+        st.plotly_chart(plot_3d(feat, tol), use_container_width=True, key=g_key)
+        st.markdown(f"<div class='visual-card'><b>🔍 Detalle:</b> {info['sim_3d_desc']}</div>", unsafe_allow_html=True)
+    elif view == "🏭 Montaje Real":
+        st.plotly_chart(plot_real_anim(feat), use_container_width=True, key=g_key)
+        st.markdown(f"<div class='visual-card'><b>🏭 Procedimiento:</b> {info['real_desc']}</div>", unsafe_allow_html=True)
+    elif view == "📝 Plano Técnico":
+        st.plotly_chart(draw_blueprint(feat, tol), use_container_width=True, config={'staticPlot': True}, key=g_key)
+        st.markdown(f"""
+        <div class="interpretation-box">
+            <h4>🤓 Interpretación:</h4>
+            <p>Controla <b>{info['desc']}</b> dentro de una zona de <b>{info['zone']}</b> de valor <b>{tol}</b>.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    if view_mode == "📐 Simulación 3D":
-        st.plotly_chart(plot_3d_simulation(feat, tol), use_container_width=True, key=chart_key)
-        st.markdown(f"""<div class='visual-card'><b>🔍 Detalle Visual:</b><br>{info.get('sim_3d_desc', '...')}</div>""", unsafe_allow_html=True)
-    elif view_mode == "🏭 Montaje Real":
-        st.plotly_chart(plot_real_inspection_anim(feat), use_container_width=True, key=chart_key)
-        st.markdown(f"""<div class='visual-card'><b>🏭 Procedimiento:</b><br>{info.get('real_desc', '...')}</div>""", unsafe_allow_html=True)
-    elif view_mode == "📝 Plano Técnico":
-        st.plotly_chart(draw_engineering_blueprint(feat, tol), use_container_width=True, config={'staticPlot': True}, key=chart_key)
-        tol_str = f"Ø {tol} mm" if info.get('type') == 'axis' else f"{tol} mm"
-        st.markdown(f"""<div class='interpretation-box'><h4>🤓 Interpretación del Plano:</h4><p>Controla <b>{info.get('desc','')}</b> dentro de una zona de <b>{info.get('zone','')}</b> de tamaño <b>{tol_str}</b>.</p></div>""", unsafe_allow_html=True)
-
-elif mode_select == "📝 Constructor de Plano Maestro":
-    st.sidebar.info("Agregue múltiples cotas al plano:")
-    feats_avail = ['Rectitud', 'Planicidad', 'Perpendicularidad', 'Posición', 'Angularidad']
-    selected = st.sidebar.multiselect("Agregar:", feats_avail, default=['Rectitud', 'Posición'])
-    st.markdown("## 📐 Plano de Ingeniería Maestro")
-    st.plotly_chart(draw_interactive_blueprint(selected), use_container_width=True)
+elif mode == "📝 Constructor de Plano":
+    st.sidebar.info("Agregue características al plano:")
+    sel = st.sidebar.multiselect("Agregar:", list(gdt_data.keys()), default=['Rectitud', 'Posición'])
+    st.plotly_chart(draw_master_blueprint(sel), use_container_width=True, key=f"master_{len(sel)}")
