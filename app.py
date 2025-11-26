@@ -7,29 +7,126 @@ st.set_page_config(layout="wide", page_title="Laboratorio Virtual GD&T")
 
 st.markdown("""
 <style>
-    .block-container {padding-top: 3rem; padding-bottom: 0rem; padding-left: 2rem; padding-right: 2rem;}
+    .block-container {padding-top: 2rem; padding-bottom: 0rem; padding-left: 2rem; padding-right: 2rem;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    /* Estilo para las tarjetas de definición */
+    .gdt-card {
+        background-color: #f8f9fa;
+        border-left: 5px solid #0d6efd;
+        padding: 15px;
+        border-radius: 5px;
+        color: black;
+    }
+    .big-icon {
+        font-size: 80px;
+        text-align: center;
+        line-height: 100px;
+        display: block;
+    }
+    .section-title {
+        font-weight: bold;
+        color: #0d6efd;
+        font-size: 1.1em;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 0. DICCIONARIO DE DEFINICIONES
+# 0. BASE DE DATOS DE CONOCIMIENTO (DICCIONARIO ENRIQUECIDO)
 # ==========================================
-definitions = {
-    'Rectitud': "Es una condición en la que todos los puntos forman una línea recta. La tolerancia se especifica con la representación de dos líneas paralelas.",
-    'Planicidad': "Todos los puntos en una superficie están en un plano. La tolerancia se especifica con dos planos paralelos.",
-    'Redondez': "Todos los puntos de una superficie forman un círculo. La tolerancia se especifica con la definición de dos círculos concéntricos.",
-    'Cilindricidad': "Todos los puntos de una superficie son equidistantes a un eje común. Una tolerancia cilíndrica especifica una zona de tolerancia definida por dos cilindros concéntricos.",
-    'Angularidad': "Es la condición de una superficie o eje que forma un ángulo específico (aparte de 90°) con otro eje o plano. La zona de tolerancia está definida por dos planos paralelos al ángulo básico específico desde el eje o plano de un dato.",
-    'Perpendicularidad': "Es la condición de una superficie o eje que forma un ángulo recto con otro plano o eje. La tolerancia especifica una zona definida por dos planos perpendiculares al dato.",
-    'Paralelismo': "Es la condición de una superficie o eje equidistantes a todos los puntos desde el plano o eje del dato. La tolerancia especifica una zona definida por dos planos o líneas paralelas al dato.",
-    'Concentricidad': "Los ejes de todos los elementos locales cruzados de una superficie de revolución son comunes a la característica del eje del dato. La tolerancia especifica una zona cilíndrica cuyo eje coincide con el dato.",
-    'Posición': "Define una zona en la que el eje central o plano central puede variar desde la posición real (teóricamente exacta). Las dimensiones básicas establecen la posición real a partir de los datos.",
-    'Alabeo Circular': "(Control Circular). Permite controlar los elementos circulares de una superficie. La tolerancia se aplica de manera independiente a cualquier posición circular de medición ya que la pieza se puede rotar 360°.",
-    'Alabeo Total': "(Control Total). Ofrece control de todos los elementos de la superficie. La tolerancia se aplica de forma simultánea a elementos circulares y longitudinales ya que la pieza se rota 360°.",
-    'Perfil de una línea': "Método para controlar superficies irregulares, líneas o arcos. La tolerancia especifica un límite uniforme a lo largo del perfil real dentro del que se deben situar los elementos de la línea.",
-    'Perfil de una superficie': "Método para controlar superficies irregulares. La tolerancia especifica un límite uniforme (zona tridimensional) a lo largo del perfil real dentro del que se deben situar los elementos de la superficie."
+gdt_data = {
+    'Rectitud': {
+        'symbol': '⏤',
+        'def': 'Condición donde cada elemento lineal de una superficie debe estar dentro de una línea recta perfecta.',
+        'compare': '🆚 **Diferencia:** Es en 2D (una línea). No confundir con **Planicidad**, que es para toda una superficie 3D.',
+        'app': '🔩 **Aplicación Real:** Vástagos de cilindros hidráulicos.',
+        'why': '⚠️ **¿Por qué importa?** Si el vástago no es recto, dañará los sellos al entrar y salir, causando fugas de aceite.'
+    },
+    'Planicidad': {
+        'symbol': '⏥',
+        'def': 'Condición donde todos los puntos de una superficie deben estar contenidos entre dos planos paralelos.',
+        'compare': '🆚 **Diferencia:** No requiere un "Datum" (referencia). Es una cualidad intrínseca de la superficie.',
+        'app': '🚗 **Aplicación Real:** La cabeza del motor (culata) y el bloque del motor.',
+        'why': '⚠️ **¿Por qué importa?** Si no es plana, la junta (empaque) no sellará bien, provocando fugas de compresión o mezcla de aceite y agua.'
+    },
+    'Redondez': {
+        'symbol': '○',
+        'def': 'Condición donde todos los puntos de una superficie circular (en cualquier corte transversal) equidistan de un centro.',
+        'compare': '🆚 **Diferencia:** Se mide en cortes 2D. No confundir con **Cilindricidad** que evalúa todo el cilindro a la vez.',
+        'app': '⚙️ **Aplicación Real:** Pistas de rodamientos (baleros).',
+        'why': '⚠️ **¿Por qué importa?** Una mala redondez causa vibraciones, ruido excesivo y desgaste prematuro al girar a alta velocidad.'
+    },
+    'Cilindricidad': {
+        'symbol': '⌭',
+        'def': 'Controla la redondez, rectitud y conicidad de todo el cilindro simultáneamente. La superficie debe estar entre dos cilindros concéntricos.',
+        'compare': '🆚 **Diferencia:** Es más estricta que la Redondez. Controla la forma 3D completa.',
+        'app': '💉 **Aplicación Real:** Pistones de inyección diésel o pernos maestros.',
+        'why': '⚠️ **¿Por qué importa?** Garantiza que el pistón se deslice suavemente sin atorarse y sin perder presión en toda su carrera.'
+    },
+    'Angularidad': {
+        'symbol': '∠',
+        'def': 'Controla una superficie o eje para que esté a un ángulo específico (diferente a 90°) respecto a un Datum.',
+        'compare': '🆚 **Diferencia:** A diferencia de la tolerancia dimensional de ángulo (±1°), aquí se define una "zona de tolerancia" milimétrica entre dos planos.',
+        'app': '📐 **Aplicación Real:** Rampas de guías de deslizamiento o bloques en V.',
+        'why': '⚠️ **¿Por qué importa?** Asegura contacto uniforme en superficies inclinadas que transmiten carga.'
+    },
+    'Perpendicularidad': {
+        'symbol': '⟂',
+        'def': 'Condición donde una superficie o eje debe estar a 90° exactos respecto a un Datum.',
+        'compare': '🆚 **Diferencia:** Es un caso especial de Angularidad fija a 90°. Controla qué tan "chueca" está una pared respecto al piso.',
+        'app': '🏗️ **Aplicación Real:** Escuadras de fijación o la base de una columna de taladro.',
+        'why': '⚠️ **¿Por qué importa?** Si un agujero no es perpendicular, el tornillo entrará torcido y la cabeza no asentará bien.'
+    },
+    'Paralelismo': {
+        'symbol': '∥',
+        'def': 'Condición donde todos los puntos de una superficie deben estar a la misma distancia de un plano de referencia (Datum).',
+        'compare': '🆚 **Diferencia:** Controla tanto la orientación (ángulo 0) como la forma (planicidad) indirectamente.',
+        'app': '🛤️ **Aplicación Real:** Rieles de trenes o guías lineales de máquinas CNC.',
+        'why': '⚠️ **¿Por qué importa?** Si los rieles no son paralelos, el carro se amarrará o tendrá juego excesivo en ciertos puntos.'
+    },
+    'Concentricidad': {
+        'symbol': '◎',
+        'def': 'Controla que los puntos medios (medianos) de secciones opuestas del cilindro caigan dentro de una zona cilíndrica teórica.',
+        'compare': '🆚 **Diferencia:** Es difícil de medir. A menudo se prefiere usar **Alabeo (Runout)** porque la concentricidad es teórica (balanceo), no de superficie.',
+        'app': '⚖️ **Aplicación Real:** Ejes de alta velocidad que requieren balanceo dinámico.',
+        'why': '⚠️ **¿Por qué importa?** Reduce la vibración por desbalanceo de masas.'
+    },
+    'Posición': {
+        'symbol': '⌖',
+        'def': 'Controla la ubicación exacta del centro de una característica (como un agujero) respecto a los Datums.',
+        'compare': '🆚 **Diferencia:** Es la tolerancia más poderosa. Permite usar "Condición de Máximo Material" (bonus tolerance) para salvar piezas.',
+        'app': '🔩 **Aplicación Real:** Patrones de agujeros para atornillar la tapa de una caja de cambios.',
+        'why': '⚠️ **¿Por qué importa?** Garantiza la **Intercambiabilidad**. Asegura que los tornillos pasen por los agujeros y coincidan con la contraparte.'
+    },
+    'Alabeo Circular': {
+        'symbol': '↗',
+        'def': '(Runout). Controla la variación de la superficie en una sección circular específica mientras la pieza gira 360° sobre su eje Datum.',
+        'compare': '🆚 **Diferencia:** Mide "corte por corte". Controla errores de redondez y concentricidad combinados en ese punto.',
+        'app': '🛑 **Aplicación Real:** Discos de freno.',
+        'why': '⚠️ **¿Por qué importa?** Si el disco tiene alabeo, el pedal del freno vibrará al frenar.'
+    },
+    'Alabeo Total': {
+        'symbol': '⌰',
+        'def': '(Total Runout). Controla toda la superficie cilíndrica simultáneamente mientras la pieza gira y el indicador se desplaza longitudinalmente.',
+        'compare': '🆚 **Diferencia:** Es más estricto que el Circular. Controla conicidad, rectitud, redondez y concentricidad, todo a la vez.',
+        'app': '💧 **Aplicación Real:** Ejes de bombas hidráulicas en la zona del sello mecánico.',
+        'why': '⚠️ **¿Por qué importa?** Cualquier imperfección en toda la superficie causará fugas inmediatas en el sello.'
+    },
+    'Perfil de una línea': {
+        'symbol': '⌒',
+        'def': 'Controla la forma de una línea curva (2D) en cualquier sección transversal de la pieza.',
+        'compare': '🆚 **Diferencia:** Solo aplica a la línea de corte, no a toda la superficie 3D.',
+        'app': '✈️ **Aplicación Real:** El borde de ataque de un ala de avión (sección transversal).',
+        'why': '⚠️ **¿Por qué importa?** Crítico para la aerodinámica en perfiles extruidos.'
+    },
+    'Perfil de una superficie': {
+        'symbol': '⌓',
+        'def': 'Controla la forma, orientación y ubicación de una superficie 3D compleja (curva).',
+        'compare': '🆚 **Diferencia:** Crea una "piel" o zona de tolerancia tridimensional alrededor de la forma ideal.',
+        'app': '🚗 **Aplicación Real:** El cofre (capó) de un auto o moldes de inyección de plástico.',
+        'why': '⚠️ **¿Por qué importa?** Asegura que las piezas estéticas y complejas encajen visualmente y funcionalmente con la carrocería.'
+    }
 }
 
 # Color de fondo agradable (Gris Ingeniería)
@@ -46,12 +143,11 @@ def create_base_blueprint(title):
         title=dict(text=f"Esquema de Inspección: {title}", font=dict(size=20, color="black")),
         xaxis=dict(range=[-2, 12], showgrid=False, visible=False),
         yaxis=dict(range=[-1, 9], showgrid=False, visible=False),
-        height=600,
+        height=550,
         margin=dict(l=10, r=10, t=60, b=10),
-        plot_bgcolor=BG_COLOR,
-        paper_bgcolor=BG_COLOR,
-        font=dict(color="black"), # FUERZA TEXTO NEGRO
-        legend=dict(bgcolor="rgba(255,255,255,0.5)", bordercolor="black", borderwidth=1, font=dict(color="black")),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(color="black"),
         updatemenus=[dict(
             type="buttons", showactive=False, x=0.5, y=0.05, xanchor="center",
             buttons=[dict(label="▶️ REPRODUCIR INSPECCIÓN", method="animate", 
@@ -61,78 +157,64 @@ def create_base_blueprint(title):
     return fig
 
 def plot_real_inspection_anim(feature):
-    """Genera la animación del montaje real según el tipo de característica"""
-    
     fig = create_base_blueprint(feature.upper())
     frames = []
     
     # --- GRUPO 1: DESLIZAMIENTO HORIZONTAL ---
     if feature in ['Rectitud', 'Paralelismo', 'Planicidad', 'Perfil de una línea', 'Perfil de una superficie']:
-        # Estáticos
-        fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#999999", line=dict(color="black"))
+        fig.add_shape(type="rect", x0=-1, y0=-1, x1=11, y1=0, fillcolor="#cccccc", line=dict(color="black"))
         fig.add_annotation(x=5, y=-0.5, text="DATUM A (Mármol)", font=dict(color="black", size=14), showarrow=False)
         
-        # Pieza
         x_path = np.linspace(0, 10, 60)
         if feature == 'Rectitud' or feature == 'Planicidad':
             y_surf = 1.5 + 0.2 * np.sin(x_path * 1.5)
         elif 'Perfil' in feature:
             y_surf = 1.5 + 0.3 * np.sin(x_path) + 0.1 * np.cos(x_path*3)
-        else: # Paralelismo
+        else: 
             y_surf = 1.5 + 0.1 * x_path 
 
-        fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="blue", width=4), name="Pieza"))
+        fig.add_trace(go.Scatter(x=x_path, y=y_surf, mode="lines", line=dict(color="blue", width=4), name="Pieza Real"))
         
-        # Calculo Inicial
-        xi_start, yi_start = x_path[0], y_surf[0]
-        yc_start = yi_start + 3
-        dx_start = 0.5 * np.cos(0); dy_start = 0.5 * np.sin(0)
-
-        # Animación
+        xi, yi = x_path[0], y_surf[0]; yc = yi + 3; dx=0.5; dy=0
+        
         for i in range(len(x_path)):
-            xi, yi = x_path[i], y_surf[i]
-            yc = yi + 3
+            xi, yi = x_path[i], y_surf[i]; yc = yi + 3
             dx = 0.5 * np.cos(i*0.5); dy = 0.5 * np.sin(i*0.5)
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc]),
-                go.Scatter(x=[xi], y=[yc]),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
+                go.Scatter(x=[xi, xi], y=[yi, yc]), go.Scatter(x=[xi], y=[yc]), go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
             ], traces=[1, 2, 3]))
             
-        # Trazas iniciales
-        fig.add_trace(go.Scatter(x=[xi_start, xi_start], y=[yi_start, yc_start], mode="lines", line=dict(color="#444", width=4), name="Vástago")) 
-        fig.add_trace(go.Scatter(x=[xi_start], y=[yc_start], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj")) 
-        fig.add_trace(go.Scatter(x=[xi_start, xi_start+dx_start], y=[yc_start, yc_start+dy_start], mode="lines", line=dict(color="red", width=2), name="Aguja")) 
+        fig.add_trace(go.Scatter(x=[xi, xi], y=[yi, yc], mode="lines", line=dict(color="gray", width=4), name="Vástago")) 
+        fig.add_trace(go.Scatter(x=[xi], y=[yc], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj")) 
+        fig.add_trace(go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy], mode="lines", line=dict(color="red", width=2), name="Aguja")) 
 
     # --- GRUPO 2: ROTACIÓN ---
     elif feature in ['Redondez', 'Cilindricidad', 'Alabeo Circular', 'Alabeo Total', 'Concentricidad']:
         fig.add_shape(type="rect", x0=-1, y0=1, x1=1, y1=5, fillcolor="#555", line=dict(color="black"))
-        fig.add_annotation(x=0, y=5.5, text="Chuck", font=dict(color="black", size=14), showarrow=False)
+        fig.add_annotation(x=0, y=5.5, text="Chuck", font=dict(color="black"), showarrow=False)
         fig.add_shape(type="rect", x0=1, y0=2, x1=9, y1=4, line=dict(color="blue", width=3))
         fig.add_annotation(x=5, y=3, text="Pieza Girando ↺", font=dict(size=18, color="black"), showarrow=False)
         fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", marker=dict(opacity=0), showlegend=False)) 
 
         t = np.linspace(0, 4*np.pi, 60)
         x_pos = np.linspace(2, 8, 60) if feature in ['Cilindricidad', 'Alabeo Total'] else np.full(60, 5)
-        xi_s = x_pos[0]; yi_s = 4; yc_s = yi_s + 2.5; dx_s = 0.5 * np.cos(0); dy_s = 0.5 * np.sin(0)
+        xi_s = x_pos[0]; yi_s = 4; yc_s = yi_s + 2.5; dx_s = 0.5; dy_s = 0
 
         for i in range(len(t)):
             xi = x_pos[i]; yi = 4; yc = yi + 2.5
             dx = 0.5 * np.cos(t[i]); dy = 0.5 * np.sin(t[i])
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc]),
-                go.Scatter(x=[xi], y=[yc]),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
+                go.Scatter(x=[xi, xi], y=[yi, yc]), go.Scatter(x=[xi], y=[yc]), go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
             ], traces=[1, 2, 3]))
 
-        fig.add_trace(go.Scatter(x=[xi_s, xi_s], y=[yi_s, yc_s], mode="lines", line=dict(color="#444", width=4), name="Vástago"))
+        fig.add_trace(go.Scatter(x=[xi_s, xi_s], y=[yi_s, yc_s], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[xi_s], y=[yc_s], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
         fig.add_trace(go.Scatter(x=[xi_s, xi_s+dx_s], y=[yc_s, yc_s+dy_s], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
     # --- GRUPO 3: PERPENDICULARIDAD ---
     elif feature == 'Perpendicularidad':
-        fig.add_shape(type="path", path="M 2,0 L 2,6 L 3,6 L 3,1 L 6,1 L 6,0 Z", fillcolor="#aaa", line=dict(color="black"))
-        fig.add_annotation(x=4, y=0.5, text="Escuadra", font=dict(color="black", size=14), showarrow=False)
+        fig.add_shape(type="path", path="M 2,0 L 2,6 L 3,6 L 3,1 L 6,1 L 6,0 Z", fillcolor="lightgray", line=dict(color="black"))
+        fig.add_annotation(x=4, y=0.5, text="Escuadra", font=dict(color="black"), showarrow=False)
         fig.add_trace(go.Scatter(x=[7, 6.5], y=[0, 6], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
         y_path = np.linspace(0.5, 5.5, 50); x_surf = np.linspace(7, 6.5, 50)
@@ -142,19 +224,17 @@ def plot_real_inspection_anim(feature):
             yi = y_path[i]; xi = x_surf[i]; xc = xi - 2.5
             dx = 0.5 * np.cos(i*0.2); dy = 0.5 * np.sin(i*0.2)
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xc], y=[yi, yi]),
-                go.Scatter(x=[xc], y=[yi]),
-                go.Scatter(x=[xc, xc+dx], y=[yi, yi+dy])
+                go.Scatter(x=[xi, xc], y=[yi, yi]), go.Scatter(x=[xc], y=[yi]), go.Scatter(x=[xc, xc+dx], y=[yi, yi+dy])
             ], traces=[1, 2, 3]))
             
-        fig.add_trace(go.Scatter(x=[xi_s, xc_s], y=[yi_s, yi_s], mode="lines", line=dict(color="#444", width=4), name="Vástago"))
+        fig.add_trace(go.Scatter(x=[xi_s, xc_s], y=[yi_s, yi_s], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[xc_s], y=[yi_s], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
         fig.add_trace(go.Scatter(x=[xc_s, xc_s+dx_s], y=[yi_s, yi_s+dy_s], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
     # --- GRUPO 4: ANGULARIDAD ---
     elif feature == 'Angularidad':
         fig.add_shape(type="path", path="M 1,0 L 9,3 L 9,0 Z", fillcolor="#ddd", line=dict(color="black"))
-        fig.add_annotation(x=5, y=1, text="Seno", font=dict(color="black", size=14), showarrow=False)
+        fig.add_annotation(x=5, y=1, text="Seno", font=dict(color="black"), showarrow=False)
         fig.add_trace(go.Scatter(x=[1,9], y=[3.2, 6.2], mode="lines", line=dict(color="blue", width=4), name="Pieza"))
         
         x_path = np.linspace(1, 9, 50); y_path = np.linspace(3.2, 6.2, 50)
@@ -164,19 +244,17 @@ def plot_real_inspection_anim(feature):
             xi = x_path[i]; yi = y_path[i]; yc = yi + 2.5
             dx = 0.5 * np.cos(i); dy = 0.5 * np.sin(i)
             frames.append(go.Frame(data=[
-                go.Scatter(x=[xi, xi], y=[yi, yc]),
-                go.Scatter(x=[xi], y=[yc]),
-                go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
+                go.Scatter(x=[xi, xi], y=[yi, yc]), go.Scatter(x=[xi], y=[yc]), go.Scatter(x=[xi, xi+dx], y=[yc, yc+dy])
             ], traces=[1, 2, 3]))
             
-        fig.add_trace(go.Scatter(x=[xi_s, xi_s], y=[yi_s, yc_s], mode="lines", line=dict(color="#444", width=4), name="Vástago"))
+        fig.add_trace(go.Scatter(x=[xi_s, xi_s], y=[yi_s, yc_s], mode="lines", line=dict(color="gray", width=4), name="Vástago"))
         fig.add_trace(go.Scatter(x=[xi_s], y=[yc_s], mode="markers", marker=dict(size=40, color="white", line=dict(color="black", width=2)), name="Reloj"))
         fig.add_trace(go.Scatter(x=[xi_s, xi_s+dx_s], y=[yc_s, yc_s+dy_s], mode="lines", line=dict(color="red", width=2), name="Aguja"))
 
     # --- GRUPO 5: POSICIÓN ---
     elif feature == 'Posición':
         fig.add_shape(type="rect", x0=2, y0=0, x1=8, y1=3, fillcolor="lightgray", line=dict(color="black"))
-        fig.add_annotation(x=3, y=1.5, text="Pieza", font=dict(color="black", size=14), showarrow=False)
+        fig.add_annotation(x=3, y=1.5, text="Pieza", font=dict(color="black"), showarrow=False)
         fig.add_shape(type="line", x0=4.5, y0=3, x1=4.5, y1=1, line=dict(color="black", width=2))
         fig.add_shape(type="line", x0=6.5, y0=3, x1=6.5, y1=1, line=dict(color="black", width=2))
         fig.add_shape(type="line", x0=4.5, y0=1, x1=6.5, y1=1, line=dict(color="black", width=2, dash="dot"))
@@ -187,8 +265,7 @@ def plot_real_inspection_anim(feature):
         for i in range(len(y_path)):
             yi = y_path[i]
             frames.append(go.Frame(data=[
-                go.Scatter(x=[x_pos, x_pos], y=[yi, yi+4]),
-                go.Scatter(x=[x_pos], y=[yi])
+                go.Scatter(x=[x_pos, x_pos], y=[yi, yi+4]), go.Scatter(x=[x_pos], y=[yi])
             ], traces=[1, 2]))
             
         fig.add_trace(go.Scatter(x=[x_pos, x_pos], y=[yi_s, yi_s+4], mode="lines", line=dict(color="red", width=3), name="Stylus"))
@@ -216,7 +293,7 @@ def get_3d_layout(title):
         ),
         paper_bgcolor=BG_COLOR,
         plot_bgcolor=BG_COLOR,
-        font=dict(color="black"), # FUERZA TEXTO NEGRO
+        font=dict(color="black"),
         legend=dict(bgcolor="rgba(255,255,255,0.6)", bordercolor="black", borderwidth=1, font=dict(color="black")),
         height=650, margin=dict(l=0, r=0, t=40, b=0)
     )
@@ -233,9 +310,8 @@ def plot_3d_simulation(feature, tol):
         fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Nominal'))
 
     elif feature == 'Planicidad':
-        x = np.linspace(-5, 5, RESOLUTION); y = np.linspace(-5, 5, RESOLUTION); xg, yg = np.meshgrid(x, y)
-        zg = 0.15 * np.sin(xg/2) * np.cos(yg/2)
-        fig.add_trace(go.Surface(z=zg, x=xg, y=yg, colorscale='Viridis', name='Sup. Real'))
+        x = np.linspace(-5,5,RESOLUTION); y = np.linspace(-5,5,RESOLUTION); xg,yg = np.meshgrid(x,y)
+        fig.add_trace(go.Surface(z=0.15*np.sin(xg/2)*np.cos(yg/2), x=xg, y=yg, colorscale='Viridis', name='Sup. Real'))
         fig.add_trace(go.Surface(z=np.full_like(xg, tol/2), x=xg, y=yg, opacity=0.2, showscale=False, colorscale=[[0,'red'],[1,'red']], name='Plano Sup.'))
         fig.add_trace(go.Surface(z=np.full_like(xg, -tol/2), x=xg, y=yg, opacity=0.2, showscale=False, colorscale=[[0,'red'],[1,'red']], name='Plano Inf.'))
 
@@ -308,7 +384,7 @@ def plot_3d_simulation(feature, tol):
     return fig
 
 # ==========================================
-# 3. INTERFAZ DE USUARIO (STREAMLIT)
+# 3. INTERFAZ DE USUARIO
 # ==========================================
 st.sidebar.title("🎛️ Controles GD&T")
 st.sidebar.markdown("---")
@@ -325,29 +401,39 @@ cat = st.sidebar.selectbox("Categoría", list(menu_dict.keys()))
 feat = st.sidebar.selectbox("Característica", menu_dict[cat])
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
 
-# --- SELECTOR DE VISTA EN SIDEBAR ---
 st.sidebar.markdown("### 👁️ Vista")
-view_mode = st.sidebar.radio(
-    "Seleccione una vista:",
-    ["📐 Simulación 3D", "🏭 Plano de Montaje Real"],
-    index=0
-)
+view_mode = st.sidebar.radio("Seleccione una vista:", ["📐 Simulación 3D", "🏭 Plano de Montaje Real"])
 
 st.sidebar.markdown("---")
 st.sidebar.info("Profesor: Ing. Jaime Silva")
 
-# --- LÓGICA DE VISUALIZACIÓN ---
+# --- DESCRIPCIÓN ---
+def_data = gdt_data.get(feat, {'symbol': '?', 'def': 'Sin definición.', 'compare': '', 'app': '', 'why': ''})
 
-description_text = definitions.get(feat, "Definición técnica estándar de GD&T.")
-st.info(f"**📖 Definición de {feat}:** {description_text}")
+# CARD DE DEFINICIÓN
+st.markdown(f"""
+<div class="gdt-card">
+    <div style="display: flex; align-items: center;">
+        <div class="big-icon" style="flex: 1;">{def_data['symbol']}</div>
+        <div style="flex: 4; padding-left: 20px;">
+            <h3 style="margin:0; color: #0d6efd;">{feat}</h3>
+            <p><strong>Definición:</strong> {def_data['def']}</p>
+            <p>{def_data['compare']}</p>
+            <p>{def_data['app']}</p>
+            <p>{def_data['why']}</p>
+        </div>
+    </div>
+</div>
+<br>
+""", unsafe_allow_html=True)
 
 if view_mode == "📐 Simulación 3D":
-    st.subheader(f"Simulación 3D: {feat}")
+    st.markdown(f"<h3 style='text-align: center; color: black;'>Simulación 3D: {feat}</h3>", unsafe_allow_html=True)
     fig_3d = plot_3d_simulation(feat, tol)
     st.plotly_chart(fig_3d, use_container_width=True)
 
 elif view_mode == "🏭 Plano de Montaje Real":
-    st.subheader(f"Montaje Físico: {feat}")
+    st.markdown(f"<h3 style='text-align: center; color: black;'>Montaje Físico: {feat}</h3>", unsafe_allow_html=True)
     fig_real = plot_real_inspection_anim(feat)
     st.plotly_chart(fig_real, use_container_width=True)
-    st.caption("ℹ️ Instrucción: Haga clic en el botón '▶️ REPRODUCIR INSPECCIÓN' (dentro del gráfico) para ver la animación.")
+    st.caption("ℹ️ Haga clic en el botón '▶️ REPRODUCIR INSPECCIÓN' dentro del gráfico.")
