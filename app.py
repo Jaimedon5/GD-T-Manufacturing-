@@ -3,12 +3,11 @@ import plotly.graph_objects as go
 import numpy as np
 
 # --- CONFIGURACIÓN ---
-st.set_page_config(layout="wide", page_title="Interpretación de Planos GD&T")
+st.set_page_config(layout="wide", page_title="Interpretación GD&T")
 
 # ==========================================
 # 0. ESTILOS CSS (TEMA INDUSTRIAL CLARO)
 # ==========================================
-# Usamos un fondo claro para simular papel de ingeniería
 MAIN_BG = "#F0F2F6"
 SIDEBAR_BG = "#1E1E1E"
 TEXT_COLOR = "#000000"
@@ -26,6 +25,7 @@ st.markdown(f"""
         border-radius: 5px;
         margin-top: 10px;
         font-family: sans-serif;
+        color: #000000; /* Texto negro forzado */
     }}
     .tech-text {{ font-family: 'Courier New', monospace; font-weight: bold; }}
     
@@ -40,21 +40,21 @@ st.markdown(f"""
 # ==========================================
 gdt_data = {
     # Superficie (La flecha toca la superficie)
-    'Rectitud': {'sym': '⏤', 'type': 'surf', 'desc': 'la rectitud de la línea superior', 'zone': 'dos líneas paralelas'},
-    'Planicidad': {'sym': '⏥', 'type': 'surf', 'desc': 'la planicidad de la superficie superior', 'zone': 'dos planos paralelos'},
-    'Perfil de una línea': {'sym': '⌒', 'type': 'surf', 'desc': 'la forma 2D de la curva', 'zone': 'una banda uniforme'},
-    'Perfil de una superficie': {'sym': '⌓', 'type': 'surf', 'desc': 'la forma 3D de la superficie', 'zone': 'dos superficies envolventes'},
-    'Angularidad': {'sym': '∠', 'type': 'surf', 'datum': 'A', 'desc': 'la inclinación de la superficie', 'zone': 'dos planos paralelos inclinados'},
-    'Perpendicularidad': {'sym': '⟂', 'type': 'surf', 'datum': 'A', 'desc': 'la perpendicularidad de la cara', 'zone': 'dos planos paralelos a 90°'},
-    'Paralelismo': {'sym': '∥', 'type': 'surf', 'datum': 'A', 'desc': 'el paralelismo de la cara superior', 'zone': 'dos planos paralelos al Datum'},
+    'Rectitud': {'sym': '⏤', 'type': 'surf', 'desc': 'rectitud', 'zone': 'dos líneas paralelas'},
+    'Planicidad': {'sym': '⏥', 'type': 'surf', 'desc': 'planicidad', 'zone': 'dos planos paralelos'},
+    'Perfil de una línea': {'sym': '⌒', 'type': 'surf', 'desc': 'perfil de línea', 'zone': 'una banda uniforme'},
+    'Perfil de una superficie': {'sym': '⌓', 'type': 'surf', 'desc': 'perfil de superficie', 'zone': 'dos superficies envolventes'},
+    'Angularidad': {'sym': '∠', 'type': 'surf', 'datum': 'A', 'desc': 'angularidad', 'zone': 'dos planos paralelos inclinados'},
+    'Perpendicularidad': {'sym': '⟂', 'type': 'surf', 'datum': 'A', 'desc': 'perpendicularidad', 'zone': 'dos planos paralelos a 90°'},
+    'Paralelismo': {'sym': '∥', 'type': 'surf', 'datum': 'A', 'desc': 'paralelismo', 'zone': 'dos planos paralelos al Datum'},
 
     # Eje / Centro (La flecha toca la cota de tamaño)
-    'Cilindricidad': {'sym': '⌭', 'type': 'axis', 'desc': 'la forma cilíndrica total', 'zone': 'dos cilindros concéntricos'},
-    'Redondez': {'sym': '○', 'type': 'axis', 'desc': 'la circularidad en cualquier sección', 'zone': 'dos círculos concéntricos'},
-    'Posición': {'sym': '⌖', 'type': 'axis', 'datum': 'A B', 'desc': 'la ubicación exacta del centro del agujero', 'zone': 'un cilindro centrado en la posición teórica'},
-    'Concentricidad': {'sym': '◎', 'type': 'axis', 'datum': 'A', 'desc': 'la colinealidad de los ejes', 'zone': 'un cilindro coaxial al Datum'},
-    'Alabeo Circular': {'sym': '↗', 'type': 'axis', 'datum': 'A-B', 'desc': 'la variación circular al girar', 'zone': 'la distancia entre dos círculos coaxiales'},
-    'Alabeo Total': {'sym': '⌰', 'type': 'axis', 'datum': 'A-B', 'desc': 'la variación total de la superficie', 'zone': 'la distancia entre dos cilindros coaxiales'}
+    'Cilindricidad': {'sym': '⌭', 'type': 'axis', 'desc': 'cilindricidad', 'zone': 'dos cilindros concéntricos'},
+    'Redondez': {'sym': '○', 'type': 'axis', 'desc': 'redondez', 'zone': 'dos círculos concéntricos'},
+    'Posición': {'sym': '⌖', 'type': 'axis', 'datum': 'A B', 'desc': 'posición', 'zone': 'un cilindro centrado en la posición teórica'},
+    'Concentricidad': {'sym': '◎', 'type': 'axis', 'datum': 'A', 'desc': 'concentricidad', 'zone': 'un cilindro coaxial al Datum'},
+    'Alabeo Circular': {'sym': '↗', 'type': 'axis', 'datum': 'A-B', 'desc': 'alabeo circular', 'zone': 'la distancia radial entre dos círculos coaxiales'},
+    'Alabeo Total': {'sym': '⌰', 'type': 'axis', 'datum': 'A-B', 'desc': 'alabeo total', 'zone': 'la distancia radial entre dos cilindros coaxiales'}
 }
 
 # ==========================================
@@ -76,25 +76,19 @@ def draw_engineering_blueprint(feature, tol_val):
     
     fig = go.Figure()
     
-    # --- 1. LA PIEZA (Eje Escalonado) ---
+    # --- 1. LA PIEZA (Eje Escalonado Simplificado) ---
     # Cuerpo Principal
     draw_rect_trace(fig, 2, 2, 10, 6, width=3)
     # Eje Central
     fig.add_trace(go.Scatter(x=[1, 11], y=[4, 4], mode='lines', line=dict(color='black', width=1, dash='longdashdot'), showlegend=False))
     
-    # Vista Lateral (Círculo a la derecha) para dar contexto 3D
-    theta = np.linspace(0, 2*np.pi, 50)
-    fig.add_trace(go.Scatter(x=12 + np.cos(theta), y=4 + np.sin(theta)*2, mode='lines', line=dict(color='black', width=2), showlegend=False))
-    # Cruz de centro
-    fig.add_trace(go.Scatter(x=[11.5, 12.5], y=[4, 4], mode='lines', line=dict(color='black', width=1), showlegend=False))
-    fig.add_trace(go.Scatter(x=[12, 12], y=[3, 5], mode='lines', line=dict(color='black', width=1), showlegend=False))
-
     # --- 2. COTAS DE TAMAÑO (DIMENSIONES) ---
-    # Cota de diámetro (arriba)
+    # Cota de diámetro (arriba) - TEXTO NEGRO FORZADO
     fig.add_trace(go.Scatter(x=[10, 10.5], y=[6, 6], mode='lines', line=dict(color='black', width=1), showlegend=False)) # Extensión
     fig.add_trace(go.Scatter(x=[10, 10.5], y=[2, 2], mode='lines', line=dict(color='black', width=1), showlegend=False)) # Extensión
+    
     # Flecha de cota
-    fig.add_annotation(x=10.25, y=4, text="Ø 40 ±0.1", font=dict(size=14), showarrow=False)
+    fig.add_annotation(x=10.25, y=4, text="Ø 40 ±0.1", font=dict(size=14, color="black"), showarrow=False)
     fig.add_annotation(x=10.25, y=6, ax=10.25, ay=4.2, arrowhead=2, arrowwidth=1, arrowcolor="black")
     fig.add_annotation(x=10.25, y=2, ax=10.25, ay=3.8, arrowhead=2, arrowwidth=1, arrowcolor="black")
 
@@ -103,11 +97,11 @@ def draw_engineering_blueprint(feature, tol_val):
         # Triángulo de Datum en la base
         fig.add_trace(go.Scatter(x=[3, 4, 3.5, 3], y=[2, 2, 1.2, 2], fill="toself", fillcolor="black", line=dict(color="black"), showlegend=False))
         draw_rect_trace(fig, 3.1, 0.4, 3.9, 1.2, width=1)
-        fig.add_annotation(x=3.5, y=0.8, text="<b>A</b>", font=dict(size=14), showarrow=False)
+        fig.add_annotation(x=3.5, y=0.8, text="<b>A</b>", font=dict(size=14, color="black"), showarrow=False)
 
     # --- 4. MARCO DE CONTROL (FEATURE CONTROL FRAME) ---
     
-    # Lógica de Ubicación Inteligente
+    # Lógica de Ubicación
     if ftype == 'surf':
         # Apunta a la SUPERFICIE (Arriba)
         leader_x_start, leader_y_start = 6, 6 # Toca la línea de la pieza
@@ -123,18 +117,18 @@ def draw_engineering_blueprint(feature, tol_val):
     
     # Caja 1: Símbolo
     draw_rect_trace(fig, start_x_box, frame_y, start_x_box+w_box, frame_y+1, width=2, fill='white')
-    fig.add_annotation(x=start_x_box+w_box/2, y=frame_y+0.5, text=f"<b>{sym}</b>", font=dict(size=24), showarrow=False)
+    fig.add_annotation(x=start_x_box+w_box/2, y=frame_y+0.5, text=f"<b>{sym}</b>", font=dict(size=28, color="black"), showarrow=False)
     
     # Caja 2: Tolerancia
     draw_rect_trace(fig, start_x_box+w_box, frame_y, start_x_box+w_box*2.5, frame_y+1, width=2, fill='white')
     # Agregar símbolo de diámetro si es de eje
     tol_str = f"Ø {tol_val}" if ftype == 'axis' else f"{tol_val}"
-    fig.add_annotation(x=start_x_box+w_box*1.75, y=frame_y+0.5, text=f"<b>{tol_str}</b>", font=dict(size=20), showarrow=False)
+    fig.add_annotation(x=start_x_box+w_box*1.75, y=frame_y+0.5, text=f"<b>{tol_str}</b>", font=dict(size=22, color="black"), showarrow=False)
     
     # Caja 3: Datum (Opcional)
     if datum:
         draw_rect_trace(fig, start_x_box+w_box*2.5, frame_y, start_x_box+w_box*3.5, frame_y+1, width=2, fill='white')
-        fig.add_annotation(x=start_x_box+w_box*3, y=frame_y+0.5, text=f"<b>{datum}</b>", font=dict(size=20), showarrow=False)
+        fig.add_annotation(x=start_x_box+w_box*3, y=frame_y+0.5, text=f"<b>{datum}</b>", font=dict(size=22, color="black"), showarrow=False)
 
     # Líder (Flecha conectora)
     fig.add_annotation(
@@ -145,10 +139,11 @@ def draw_engineering_blueprint(feature, tol_val):
 
     # --- CONFIGURACIÓN DE LA "HOJA DE PAPEL" ---
     fig.update_layout(
+        title=dict(text=f"Plano de Ingeniería: {feature}", font=dict(size=20, color="black")),
         xaxis=dict(range=[0, 14], showgrid=False, visible=False, scaleanchor="y", scaleratio=1),
         yaxis=dict(range=[0, 9], showgrid=False, visible=False),
         plot_bgcolor='white',
-        margin=dict(l=20, r=20, t=20, b=20),
+        margin=dict(l=20, r=20, t=40, b=20),
         height=500,
         shapes=[dict(type='rect', xref='paper', yref='paper', x0=0, y0=0, x1=1, y1=1, line=dict(color='black', width=4))] # Marco del plano
     )
@@ -158,7 +153,7 @@ def draw_engineering_blueprint(feature, tol_val):
 # ==========================================
 # 3. INTERFAZ Y LÓGICA DE INTERPRETACIÓN
 # ==========================================
-st.sidebar.title("🎛️ GD&T Explorer")
+st.sidebar.title("🎛️ Controles de Plano")
 st.sidebar.markdown("---")
 
 menu = {
@@ -174,29 +169,26 @@ tol = st.sidebar.slider("Tolerancia (mm)", 0.01, 1.0, 0.1)
 
 st.sidebar.info("Profesor: Ing. Jaime Silva")
 
-# --- TÍTULO Y GRÁFICO ---
-st.markdown(f"## 📐 Plano de Ingeniería: {feat}")
-st.markdown("A continuación se muestra cómo se especifica esta característica en un dibujo técnico real.")
-
-# Dibujar el plano
+# --- GRÁFICO (PLANO) ---
+# Config staticPlot=True para que parezca una imagen y no se mueva
 fig = draw_engineering_blueprint(feat, tol)
 st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True, 'displayModeBar': False})
 
-# --- EL "INTERPRÉTE" (LO QUE PIDIÓ EL USUARIO) ---
+# --- EL "INTERPRÉTE" (TEXTO EDUCATIVO) ---
 info = gdt_data[feat]
 tol_str = f"Ø {tol} mm" if info['type'] == 'axis' else f"{tol} mm"
-datum_str = f" con respecto al Datum <b>{info.get('datum', '')}</b>" if 'datum' in info else " (No requiere Datum)"
+datum_text = f" con respecto al Datum <b>{info.get('datum', '')}</b>" if 'datum' in info else "."
 
 st.markdown(f"""
 <div class="interpretation-box">
-    <h4>🤓 ¿Cómo se lee este plano?</h4>
+    <h4>🤓 Interpretación del Plano:</h4>
     <p style="font-size: 1.1em;">
-        "Esta cota indica una característica de <span class="tech-text" style="color: #d63384;">{feat.upper()}</span>. 
-        Controla <b>{info['desc']}</b>."
+        "Esta línea/superficie tiene una característica de <span class="tech-text" style="color: #d63384;">{feat.upper()}</span>, 
+        con una tolerancia de <b>{tol_str}</b>{datum_text}"
     </p>
     <ul>
-        <li><b>Zona de Tolerancia:</b> El error permitido debe estar contenido dentro de <b>{info['zone']}</b> de ancho <b>{tol_str}</b>{datum_str}.</li>
-        <li><b>Significado:</b> Si fabricas esta pieza y el error de {feat} supera los {tol} mm, la pieza <b>NO PASA</b> (es rechazo).</li>
+        <li><b>Controla:</b> {info['desc'].capitalize()}.</li>
+        <li><b>Zona de Tolerancia:</b> El error debe estar contenido dentro de <b>{info['zone']}</b>.</li>
     </ul>
 </div>
 """, unsafe_allow_html=True)
