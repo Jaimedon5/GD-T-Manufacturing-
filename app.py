@@ -6,66 +6,71 @@ import numpy as np
 st.set_page_config(layout="wide", page_title="Laboratorio Virtual GD&T")
 
 # ==========================================
-# 0. ESTILOS CSS (TEMA "ENGINEERING DASHBOARD" MEJORADO)
+# 0. ESTILOS CSS (TEMA "DARK ENGINEERING" CORREGIDO)
 # ==========================================
-# Colores
-BG_COLOR = "#E6E6EA"  # Gris tenue para el fondo general
-CARD_COLOR = "#FFFFFF" # Blanco puro para tarjetas
-TEXT_COLOR = "#000000" # Negro absoluto para máximo contraste
-ACCENT_COLOR = "#0d6efd" # Azul ingeniería
+# Paleta de Colores Industriales
+MAIN_BG = "#D5D5D7"      # Gris Acero (Fondo Principal)
+SIDEBAR_BG = "#1E1E1E"   # Gris Carbón (Barra Lateral)
+CARD_BG = "#D5D5D7"      # Mismo que el fondo (transparente visualmente)
+TEXT_MAIN = "#000000"    # Negro para el contenido principal
+TEXT_SIDE = "#FFFFFF"    # Blanco para la barra lateral
+ACCENT = "#0d6efd"       # Azul Ingeniería
 
 st.markdown(f"""
 <style>
-    /* 1. FORZAR FONDO GRIS EN TODA LA APP */
+    /* 1. FONDO PRINCIPAL (Área de trabajo) */
     .stApp {{
-        background-color: {BG_COLOR};
+        background-color: {MAIN_BG};
+        color: {TEXT_MAIN};
     }}
     
-    /* 2. AJUSTAR CONTENEDOR PRINCIPAL */
-    .block-container {{
-        padding-top: 2rem; 
-        padding-bottom: 1rem; 
-        padding-left: 2rem; 
-        padding-right: 2rem;
+    /* 2. BARRA LATERAL (Corrección de contraste) */
+    [data-testid="stSidebar"] {{
+        background-color: {SIDEBAR_BG};
     }}
-
-    /* 3. TARJETAS DE DEFINICIÓN (ESTILO ELEGANTE) */
+    /* Forzar texto blanco SOLO en la barra lateral */
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
+        color: {TEXT_SIDE} !important;
+    }}
+    
+    /* 3. TARJETAS DE DEFINICIÓN (Integradas al fondo) */
     .gdt-card {{
-        background-color: {CARD_COLOR};
-        border-left: 8px solid {ACCENT_COLOR}; /* Borde más grueso */
+        background-color: {CARD_BG}; /* Mismo color que el fondo */
+        border: 1px solid #999;      /* Borde sutil para definir límites */
+        border-left: 8px solid {ACCENT};
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        color: {TEXT_COLOR};
+        border-radius: 8px;
+        color: {TEXT_MAIN};
         margin-bottom: 20px;
     }}
     
-    /* 4. FORZAR COLOR DE TEXTO NEGRO EN TODA LA APP */
-    h1, h2, h3, p, li, span, div {{
-        color: {TEXT_COLOR} !important;
+    /* 4. FUENTES DEL ÁREA PRINCIPAL (Negro forzado para legibilidad) */
+    .main h1, .main h2, .main h3, .main p, .main li, .main span {{
+        color: {TEXT_MAIN} !important;
     }}
     
-    /* 5. ESTILOS DE ICONOS (GIGANTE) */
+    /* 5. ICONOS GIGANTES */
     .big-icon {{
-        font-size: 120px; /* Aumentado de 60px a 120px */
+        font-size: 120px;
         text-align: center;
         font-weight: bold;
-        color: {TEXT_COLOR};
-        line-height: 1.2; /* Centrado vertical */
+        color: {TEXT_MAIN};
         display: flex;
         align-items: center;
         justify-content: center;
         height: 100%;
     }}
-    
-    /* OCULTAR ELEMENTOS DE STREAMLIT */
+
+    /* Ajustes de espaciado */
+    .block-container {{padding-top: 2rem; padding-bottom: 1rem; padding-left: 2rem; padding-right: 2rem;}}
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 1. BASE DE DATOS (TEXTOS TÉCNICOS)
+# 1. BASE DE DATOS
 # ==========================================
 gdt_data = {
     'Rectitud': {
@@ -165,13 +170,13 @@ gdt_data = {
 # 2. FUNCIONES DE VISUALIZACIÓN
 # ==========================================
 
-# Función auxiliar para estilos de gráficas (Fondo Gris + Texto Negro)
 def get_plot_layout(title, is_3d=True):
+    """Configura el fondo GRIS para las gráficas"""
     layout = dict(
         title=dict(text=title, font=dict(size=18, color='black')),
-        paper_bgcolor=BG_COLOR, # Fondo externo igual a la app
-        plot_bgcolor=BG_COLOR,  # Fondo interno igual a la app
-        font=dict(color='black'), # Texto negro
+        paper_bgcolor=MAIN_BG, # Fondo Gris Acero
+        plot_bgcolor=MAIN_BG,
+        font=dict(color='black'),
         margin=dict(l=20, r=20, t=50, b=20),
         height=600
     )
@@ -180,23 +185,15 @@ def get_plot_layout(title, is_3d=True):
         layout['scene'] = dict(
             aspectmode='manual', aspectratio=dict(x=1, y=1, z=0.6),
             camera=dict(eye=dict(x=1.4, y=1.4, z=0.5)),
-            xaxis=dict(visible=False, backgroundcolor=BG_COLOR),
-            yaxis=dict(visible=False, backgroundcolor=BG_COLOR),
-            zaxis=dict(visible=True, backgroundcolor=BG_COLOR, gridcolor="#cccccc", showbackground=True)
+            xaxis=dict(visible=False, backgroundcolor=MAIN_BG),
+            yaxis=dict(visible=False, backgroundcolor=MAIN_BG),
+            zaxis=dict(visible=True, backgroundcolor=MAIN_BG, gridcolor="#bbb", showbackground=True)
         )
-        # LEYENDA CORREGIDA: Fondo blanco semi-transparente y texto negro forzado
-        layout['legend'] = dict(
-            bgcolor="rgba(255,255,255,0.9)", 
-            bordercolor="#333", 
-            borderwidth=1,
-            font=dict(color="black", size=14), # Texto negro y grande
-            yanchor="top", y=0.95, xanchor="right", x=0.99
-        )
+        layout['legend'] = dict(bgcolor="rgba(255,255,255,0.5)", bordercolor="#333", borderwidth=1, font=dict(color="black"))
     else:
-        # Para 2D (Blueprints)
         layout['xaxis'] = dict(visible=False, showgrid=False)
         layout['yaxis'] = dict(visible=False, showgrid=False)
-        layout['plot_bgcolor'] = 'white' # El plano técnico se ve mejor en papel blanco
+        layout['plot_bgcolor'] = '#FFFFFF' # El papel del plano técnico se queda blanco para contraste
         
     return layout
 
@@ -205,11 +202,10 @@ def plot_3d_simulation(feature, tol):
     z = np.linspace(0, 10, 30); theta = np.linspace(0, 2 * np.pi, 30); tg, zg = np.meshgrid(theta, z)
     fig = go.Figure()
     
-    # Lógica gráfica (Simplificada para brevedad, lógica idéntica a la anterior pero con estilos nuevos)
     if feature == 'Rectitud':
         fig.add_trace(go.Scatter3d(x=np.sin(z/1.5)*0.2, y=np.cos(z/1.5)*0.15, z=z, mode='lines', line=dict(color='blue', width=10), name='Eje Real'))
-        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, showscale=False, colorscale=[[0,'orange'],[1,'orange']], name='Zona Tolerancia'))
-        fig.add_trace(go.Scatter3d(x=np.zeros_like(z), y=np.zeros_like(z), z=z, mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Nominal'))
+        fig.add_trace(go.Surface(x=(tol/2)*np.cos(tg), y=(tol/2)*np.sin(tg), z=zg, opacity=0.3, showscale=False, colorscale=[[0,'orange'],[1,'orange']], name='Zona Tol'))
+        fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[0,10], mode='lines', line=dict(color='black', width=5, dash='dash'), name='Eje Nominal'))
     
     elif feature == 'Planicidad':
         x = np.linspace(-5,5,30); y = np.linspace(-5,5,30); xg,yg = np.meshgrid(x,y)
@@ -427,7 +423,7 @@ feat = st.sidebar.selectbox("Característica", menu_dict[cat])
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5, 0.1)
 
 st.sidebar.markdown("### 👁️ Vista")
-view_mode = st.sidebar.radio("Seleccione una vista:", ["📐 Simulación 3D", "🏭 Plano de Montaje Real"])
+view_mode = st.sidebar.radio("Seleccione una vista:", ["📐 Simulación 3D", "🏭 Plano de Montaje Real"], index=0)
 
 st.sidebar.markdown("---")
 st.sidebar.info("Profesor: Ing. Jaime Silva")
