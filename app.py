@@ -2,11 +2,12 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 import uuid
+import time
 
 # --- 1. CONFIGURACIÓN INICIAL ---
 st.set_page_config(layout="wide", page_title="GD&T Master Lab")
 
-# --- 2. ESTILOS CSS (CORREGIDOS Y SIMPLIFICADOS) ---
+# --- 2. ESTILOS CSS (CORREGIDOS Y BLINDADOS) ---
 st.markdown("""
 <style>
     /* Fondo y Texto Base */
@@ -166,6 +167,7 @@ def create_canvas(title, is_3d=True):
             yaxis=dict(visible=False, backgroundcolor='white'),
             zaxis=dict(visible=True, backgroundcolor='white', gridcolor="#ddd")
         )
+        layout['legend'] = dict(bgcolor="rgba(255,255,255,0.8)", bordercolor="black", borderwidth=1, x=0.8, y=0.9)
     else:
         layout['xaxis'] = dict(visible=False, range=[-1, 12], showgrid=False)
         layout['yaxis'] = dict(visible=False, range=[-2, 8], showgrid=False, scaleanchor='x')
@@ -302,6 +304,8 @@ def plot_real(feature):
 def draw_blueprint(feature, tol):
     info = GD_DATA[feature]
     ftype = info['type']
+    sym = info['symbol']
+    datum = info['datum']
     
     fig = go.Figure()
     fig.update_layout(**create_canvas(f"Plano: {feature}", is_3d=False))
@@ -370,11 +374,11 @@ if mode == "🔬 Análisis Individual":
     cat = st.sidebar.selectbox("Categoría", list(menu.keys()))
     feat = st.sidebar.selectbox("Característica", menu[cat])
     tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
-    view = st.sidebar.radio("Vista:", ["📐 Simulación 3D", "🏭 Montaje Real", "📝 Plano Técnico"])
+    view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Plano Técnico"])
     
+    ukey = f"{feat}_{view}_{tol}_{time.time()}"
     info = GD_DATA[feat]
-    ukey = str(uuid.uuid4()) # Anti-lag key
-    
+
     st.markdown(f"""
     <div class="info-card">
         <div style="display: flex; align-items: center;">
@@ -382,20 +386,20 @@ if mode == "🔬 Análisis Individual":
             <div style="flex: 4; padding-left: 20px;">
                 <h3 style="margin:0; color: #004B87;">{feat}</h3>
                 <p><strong>Definición:</strong> {info['def']}</p>
-                <p>🛠️ <strong>Aplicación:</strong> {info['app']}</p>
+                <p><strong>Aplicación:</strong> {info.get('app', '')}</p>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    if view == "📐 Simulación 3D":
+    if view == "Simulación 3D":
         st.plotly_chart(plot_3d(feat, tol), use_container_width=True, key=ukey)
-    elif view == "🏭 Montaje Real":
+    elif view == "Montaje Real":
         st.plotly_chart(plot_real(feat), use_container_width=True, key=ukey)
-    elif view == "📝 Plano Técnico":
-        st.plotly_chart(draw_blueprint(feat, tol), use_container_width=True, key=ukey)
+    elif view == "Plano Técnico":
+        st.plotly_chart(draw_blueprint(feat, tol), use_container_width=True, config={'staticPlot': True}, key=ukey)
         st.markdown(f"<div class='blueprint-box'><b>Interpretación:</b> {info['desc']} dentro de una zona de <b>{info['zone']}</b>.</div>", unsafe_allow_html=True)
 
 elif mode == "📝 Constructor de Plano":
-    sel = st.sidebar.multiselect("Agregar al plano:", list(GD_DATA.keys()), default=['Rectitud', 'Posición'])
-    st.plotly_chart(draw_master(sel), use_container_width=True, key=str(uuid.uuid4()))
+    sel = st.sidebar.multiselect("Agregar cotas:", list(GD_DATA.keys()), default=['Rectitud'])
+    st.plotly_chart(draw_master(sel), use_container_width=True, key=f"master_{time.time()}")
