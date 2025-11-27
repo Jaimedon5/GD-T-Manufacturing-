@@ -198,7 +198,7 @@ st.sidebar.title("Menú GD&T Pedagógico")
 menu = list(GD_DATA.keys())
 cat = st.sidebar.selectbox("Característica", menu)
 tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
-view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Plano Técnico"])
+view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
 # Leyenda y guía visual SIEMPRE visible
 show_legend(cat)
@@ -217,11 +217,17 @@ elif view == "Montaje Real":
         st.plotly_chart(plot_real_rectitud(), use_container_width=True)
         st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
     # ...agrega el resto de características aquí...
-elif view == "Plano Técnico":
+
+elif view == "Zona de Tolerancia":
     if cat == 'Rectitud':
         st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
         st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
     # ...agrega el resto de características aquí...
+
+elif view == "Plano Técnico Real":
+    st.markdown("### Plano Técnico Real")
+    st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
+    # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
 
 ## NOTA: Para cada característica, implementa funciones y leyendas específicas, usando ejemplos y diferenciadores del PDF.
 ## Así cada simulación será independiente, robusta y pedagógica.
