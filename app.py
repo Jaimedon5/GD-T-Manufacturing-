@@ -191,18 +191,21 @@ def plot_real_rectitud():
 
 def plot_blueprint_rectitud(tol):
     fig = go.Figure()
-    # Dibuja eje y zona de tolerancia
+    # Dibuja área de tolerancia como un rectángulo gris claro
     x = np.linspace(0, 10, 2)
-    y1 = 0.5 * np.ones_like(x)
-    y2 = -0.5 * np.ones_like(x)
-    fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', line=dict(color='orange', width=8), name='Límite sup.'))
-    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', line=dict(color='orange', width=8), name='Límite inf.'))
-    fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='blue', width=4), name='Eje real'))
+    y1 = tol/2 * np.ones_like(x)
+    y2 = -tol/2 * np.ones_like(x)
+    fig.add_shape(type='rect', x0=0, x1=10, y0=-tol/2, y1=tol/2, fillcolor='#d1d5db', line=dict(color='#bdbdbd', width=0), layer='below')
+    # Líneas de límite de tolerancia
+    fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', line=dict(color='#ff9800', width=5), name='Límite sup.'))
+    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', line=dict(color='#ff9800', width=5), name='Límite inf.'))
+    # Eje real
+    fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='#1976d2', width=4), name='Eje real'))
     fig.update_layout(
         margin=dict(l=0, r=0, t=40, b=0), height=350,
         paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
-        xaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
-        yaxis=dict(visible=False, backgroundcolor='#e5e7eb')
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False)
     )
     return fig
 
@@ -243,7 +246,26 @@ if main_mode == "Análisis Individual":
     elif view == "Plano Técnico Real":
         st.markdown("### Plano Técnico Real")
         st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-        # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
+        # Ejemplo base: plano técnico simple
+        fig = go.Figure()
+        # Cuerpo principal
+        fig.add_shape(type='rect', x0=1, x1=9, y0=1, y1=3, line=dict(color='#222', width=2))
+        # Línea de cota
+        fig.add_shape(type='line', x0=1, x1=9, y0=0.7, y1=0.7, line=dict(color='#1976d2', width=2, dash='dot'))
+        # Flechas
+        fig.add_annotation(x=1, y=0.7, ax=1.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
+        fig.add_annotation(x=9, y=0.7, ax=8.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
+        # Texto de cota
+        fig.add_annotation(x=5, y=0.5, text="8.00", showarrow=False, font=dict(size=16, color='#1976d2'))
+        # Etiqueta
+        fig.add_annotation(x=5, y=3.2, text="Rectitud", showarrow=False, font=dict(size=16, color='#222'))
+        fig.update_layout(
+            margin=dict(l=0, r=0, t=40, b=0), height=350,
+            paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
+            xaxis=dict(visible=False, range=[0,10]),
+            yaxis=dict(visible=False, range=[0,4])
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 elif main_mode == "Constructor de Plano":
     st.markdown("## Constructor de Plano Técnico")
