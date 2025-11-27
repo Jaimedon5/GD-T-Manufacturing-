@@ -1,4 +1,4 @@
-elif mode == "📝 Constructor de Plano":
+## (Línea eliminada: remanente de código viejo que causaba error de sintaxis)
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
@@ -180,5 +180,5 @@ elif view == "Plano Técnico":
         st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
     # ...agrega el resto de características aquí...
 
-# NOTA: Para cada característica, implementa funciones y leyendas específicas, usando ejemplos y diferenciadores del PDF.
-# Así cada simulación será independiente, robusta y pedagógica.
+## NOTA: Para cada característica, implementa funciones y leyendas específicas, usando ejemplos y diferenciadores del PDF.
+## Así cada simulación será independiente, robusta y pedagógica.
