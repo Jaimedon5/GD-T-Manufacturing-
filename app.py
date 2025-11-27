@@ -230,4 +230,57 @@ elif view == "Plano Técnico Real":
     # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
 
 ## NOTA: Para cada característica, implementa funciones y leyendas específicas, usando ejemplos y diferenciadores del PDF.
+        # Nueva sección para el Constructor de Plano
+        main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de Plano"])
+
+        if main_mode == "Análisis Individual":
+            menu = list(GD_DATA.keys())
+            cat = st.sidebar.selectbox("Característica", menu)
+            tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
+            view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
+
+            # Leyenda y guía visual SIEMPRE visible
+            show_legend(cat)
+
+            # Tarjeta de información enriquecida
+            show_info_card(cat)
+
+            # Simulación y explicación pedagógica
+            if view == "Simulación 3D":
+                if cat == 'Rectitud':
+                    st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
+                    st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+                # ...agrega el resto de características aquí...
+            elif view == "Montaje Real":
+                if cat == 'Rectitud':
+                    st.plotly_chart(plot_real_rectitud(), use_container_width=True)
+                    st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+                # ...agrega el resto de características aquí...
+            elif view == "Zona de Tolerancia":
+                if cat == 'Rectitud':
+                    st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+                    st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+                # ...agrega el resto de características aquí...
+            elif view == "Plano Técnico Real":
+                st.markdown("### Plano Técnico Real")
+                st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
+                # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
+
+        elif main_mode == "Constructor de Plano":
+            st.markdown("## Constructor de Plano Técnico")
+            st.info("Agrega cotas y tolerancias para construir un plano técnico completo. Por ahora solo disponible para 'Rectitud'.")
+            # Estado de plano (solo para 'Rectitud' por ahora)
+            if 'plano_rectitud' not in st.session_state:
+                st.session_state['plano_rectitud'] = []
+            nueva_tol = st.slider("Tolerancia de rectitud a agregar (mm)", 0.1, 2.0, 0.5)
+            if st.button("Agregar cota de rectitud"):
+                st.session_state['plano_rectitud'].append(nueva_tol)
+            st.markdown("### Vista del plano construido")
+            # Mostrar todas las cotas agregadas
+            if st.session_state['plano_rectitud']:
+                for idx, tol in enumerate(st.session_state['plano_rectitud']):
+                    st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+                    st.markdown(f"<div class='pedagogic-box'>Cota {idx+1}: Zona de tolerancia de rectitud de {tol} mm</div>", unsafe_allow_html=True)
+            else:
+                st.warning("Agrega al menos una cota para ver el plano.")
 ## Así cada simulación será independiente, robusta y pedagógica.
