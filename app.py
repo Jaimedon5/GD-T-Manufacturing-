@@ -10,25 +10,41 @@ st.set_page_config(layout="wide", page_title="GD&T Master Lab - Nueva Versión")
 # ===================== ESTILOS Y LEYENDAS =====================
 st.markdown("""
 <style>
+    /* Fondo general gris neutro y textos oscuros */
+    .stApp {
+        background-color: #e5e7eb !important;
+        color: #222 !important;
+    }
+    /* Sidebar fondo gris más oscuro */
+    [data-testid="stSidebar"] {
+        background-color: #23272e !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #f3f4f6 !important;
+    }
+    /* Recuadro de leyenda */
     .legend-box {
-        background: #f5faff;
+        background: #f3f4f6;
         border-left: 6px solid #1976d2;
         padding: 16px;
         border-radius: 8px;
         margin-bottom: 18px;
         font-size: 1.05em;
+        color: #23272e;
     }
+    /* Recuadro de información */
     .info-card {
-        background: #fff;
+        background: #f3f4f6;
         border-left: 8px solid #004B87;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         margin-bottom: 20px;
-        color: #000;
+        color: #23272e;
     }
+    /* Recuadro pedagógico */
     .pedagogic-box {
-        background: #e3f2fd;
+        background: #e0e7ef;
         border: 1px solid #2196f3;
         border-left: 6px solid #2196f3;
         padding: 15px;
@@ -40,10 +56,18 @@ st.markdown("""
     .category-label {
         font-weight: bold;
         color: #004B87;
-        background: #e3f2fd;
+        background: #e0e7ef;
         border-radius: 6px;
         padding: 2px 8px;
         margin-right: 8px;
+    }
+    /* Mejorar contraste de títulos */
+    h1, h2, h3, h4, h5, h6 {
+        color: #23272e !important;
+    }
+    /* Mejorar contraste de inputs y sliders */
+    .stSlider > div[data-baseweb="slider"] {
+        background: #d1d5db !important;
     }
 </style>
 """, unsafe_allow_html=True)
