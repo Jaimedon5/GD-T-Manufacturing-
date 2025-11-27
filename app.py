@@ -147,19 +147,38 @@ def plot_3d_rectitud(tol):
     return fig
 
 def plot_real_rectitud():
-    # Animación pedagógica: desplazamiento de comparador sobre eje
-    fig = go.Figure()
+    # Simulación pedagógica: comparador dial recorriendo el eje
     x = np.linspace(0, 10, 100)
     y = 0.4 * np.sin(x*0.5)
+    fig = go.Figure()
+    # Eje real
     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='blue', width=4), name='Eje real'))
-    # Simula palpador
+    # Base de soporte
+    fig.add_shape(type='rect', x0=0, x1=10, y0=-1, y1=-0.7, fillcolor='#888', line_color='#444', layer='below')
+    # Comparador dial (palpador)
+    dial_x = [x[0]]
+    dial_y = [y[0]]
+    fig.add_trace(go.Scatter(x=dial_x, y=dial_y, mode='markers', marker=dict(size=22, color='red', symbol='circle'), name='Palpador'))
+    # Escala de medición
+    fig.add_shape(type='line', x0=10.5, x1=10.5, y0=-0.5, y1=0.5, line=dict(color='#222', width=3))
+    for tick in np.linspace(-0.5, 0.5, 11):
+        fig.add_shape(type='line', x0=10.5, x1=10.7, y0=tick, y1=tick, line=dict(color='#222', width=2))
+    # Lectura animada
     frames = []
     for i in range(0, 100, 2):
-        frames.append(go.Frame(data=[go.Scatter(x=[x[i]], y=[y[i]], mode='markers', marker=dict(size=18, color='red'))]))
-    fig.add_trace(go.Scatter(x=[x[0]], y=[y[0]], mode='markers', marker=dict(size=18, color='red'), name='Palpador'))
+        frames.append(go.Frame(data=[
+            go.Scatter(x=[x[i]], y=[y[i]], mode='markers', marker=dict(size=22, color='red', symbol='circle')),
+            go.Scatter(x=[10.5], y=[y[i]], mode='markers', marker=dict(size=16, color='green', symbol='line-ns-open'))
+        ]))
+    # Marcador de lectura inicial
+    fig.add_trace(go.Scatter(x=[10.5], y=[y[0]], mode='markers', marker=dict(size=16, color='green', symbol='line-ns-open'), name='Lectura'))
     fig.frames = frames
-    fig.update_layout(margin=dict(l=0, r=0, t=40, b=0), height=400,
-        updatemenus=[dict(type="buttons", showactive=False, x=0.1, y=0, buttons=[dict(label="▶️ Play", method="animate", args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)])])])
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=40, b=0), height=400,
+        xaxis=dict(range=[-0.5, 11.5], visible=False),
+        yaxis=dict(range=[-1.2, 1.2], visible=False),
+        updatemenus=[dict(type="buttons", showactive=False, x=0.1, y=0, buttons=[dict(label="▶️ Play", method="animate", args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)])])]
+    )
     return fig
 
 def plot_blueprint_rectitud(tol):
@@ -196,7 +215,7 @@ if view == "Simulación 3D":
 elif view == "Montaje Real":
     if cat == 'Rectitud':
         st.plotly_chart(plot_real_rectitud(), use_container_width=True)
-        st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mostrando cómo se mide la rectitud en la práctica. Observa cómo varía la lectura.</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
     # ...agrega el resto de características aquí...
 elif view == "Plano Técnico":
     if cat == 'Rectitud':
