@@ -142,8 +142,16 @@ def plot_3d_rectitud(tol):
     theta = np.linspace(0, 2*np.pi, 35)
     tg, zg = np.meshgrid(theta, z)
     fig.add_trace(go.Surface(x=tol*np.cos(tg), y=tol*np.sin(tg), z=zg, opacity=0.3, colorscale='Oranges', name='Zona de tolerancia'))
-    fig.update_layout(margin=dict(l=0, r=0, t=40, b=0), height=500, scene=dict(
-        xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=True)))
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=40, b=0), height=500,
+        scene=dict(
+            xaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
+            yaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
+            zaxis=dict(visible=True, backgroundcolor='#e5e7eb'),
+            bgcolor='#e5e7eb'
+        ),
+        paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb'
+    )
     return fig
 
 def plot_real_rectitud():
@@ -190,97 +198,69 @@ def plot_blueprint_rectitud(tol):
     fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', line=dict(color='orange', width=8), name='Límite sup.'))
     fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', line=dict(color='orange', width=8), name='Límite inf.'))
     fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='blue', width=4), name='Eje real'))
-    fig.update_layout(margin=dict(l=0, r=0, t=40, b=0), height=350)
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=40, b=0), height=350,
+        paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
+        xaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
+        yaxis=dict(visible=False, backgroundcolor='#e5e7eb')
+    )
     return fig
+
+elif view == "Zona de Tolerancia":
+elif view == "Plano Técnico Real":
 
 # ===================== INTERFAZ PRINCIPAL =====================
 st.sidebar.title("Menú GD&T Pedagógico")
-menu = list(GD_DATA.keys())
-cat = st.sidebar.selectbox("Característica", menu)
-tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
-view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
+main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de Plano"])
 
-# Leyenda y guía visual SIEMPRE visible
-show_legend(cat)
+if main_mode == "Análisis Individual":
+    menu = list(GD_DATA.keys())
+    cat = st.sidebar.selectbox("Característica", menu)
+    tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
+    view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
-# Tarjeta de información enriquecida
-show_info_card(cat)
+    # Leyenda y guía visual SIEMPRE visible
+    show_legend(cat)
 
-# Simulación y explicación pedagógica
-if view == "Simulación 3D":
-    if cat == 'Rectitud':
-        st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
-        st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-    # ...agrega el resto de características aquí...
-elif view == "Montaje Real":
-    if cat == 'Rectitud':
-        st.plotly_chart(plot_real_rectitud(), use_container_width=True)
-        st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
-    # ...agrega el resto de características aquí...
+    # Tarjeta de información enriquecida
+    show_info_card(cat)
 
-elif view == "Zona de Tolerancia":
-    if cat == 'Rectitud':
-        st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-        st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
-    # ...agrega el resto de características aquí...
+    # Simulación y explicación pedagógica
+    if view == "Simulación 3D":
+        if cat == 'Rectitud':
+            st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+        # ...agrega el resto de características aquí...
+    elif view == "Montaje Real":
+        if cat == 'Rectitud':
+            st.plotly_chart(plot_real_rectitud(), use_container_width=True)
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+        # ...agrega el resto de características aquí...
+    elif view == "Zona de Tolerancia":
+        if cat == 'Rectitud':
+            st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+        # ...agrega el resto de características aquí...
+    elif view == "Plano Técnico Real":
+        st.markdown("### Plano Técnico Real")
+        st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
+        # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
 
-elif view == "Plano Técnico Real":
-    st.markdown("### Plano Técnico Real")
-    st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-    # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
-
-## NOTA: Para cada característica, implementa funciones y leyendas específicas, usando ejemplos y diferenciadores del PDF.
-        # Nueva sección para el Constructor de Plano
-        main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de Plano"])
-
-        if main_mode == "Análisis Individual":
-            menu = list(GD_DATA.keys())
-            cat = st.sidebar.selectbox("Característica", menu)
-            tol = st.sidebar.slider("Tolerancia (mm)", 0.1, 2.0, 0.5)
-            view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
-
-            # Leyenda y guía visual SIEMPRE visible
-            show_legend(cat)
-
-            # Tarjeta de información enriquecida
-            show_info_card(cat)
-
-            # Simulación y explicación pedagógica
-            if view == "Simulación 3D":
-                if cat == 'Rectitud':
-                    st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
-                    st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-                # ...agrega el resto de características aquí...
-            elif view == "Montaje Real":
-                if cat == 'Rectitud':
-                    st.plotly_chart(plot_real_rectitud(), use_container_width=True)
-                    st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
-                # ...agrega el resto de características aquí...
-            elif view == "Zona de Tolerancia":
-                if cat == 'Rectitud':
-                    st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-                    st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
-                # ...agrega el resto de características aquí...
-            elif view == "Plano Técnico Real":
-                st.markdown("### Plano Técnico Real")
-                st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-                # Aquí se implementará la función de dibujo técnico real, usando plotly o SVG
-
-        elif main_mode == "Constructor de Plano":
-            st.markdown("## Constructor de Plano Técnico")
-            st.info("Agrega cotas y tolerancias para construir un plano técnico completo. Por ahora solo disponible para 'Rectitud'.")
-            # Estado de plano (solo para 'Rectitud' por ahora)
-            if 'plano_rectitud' not in st.session_state:
-                st.session_state['plano_rectitud'] = []
-            nueva_tol = st.slider("Tolerancia de rectitud a agregar (mm)", 0.1, 2.0, 0.5)
-            if st.button("Agregar cota de rectitud"):
-                st.session_state['plano_rectitud'].append(nueva_tol)
-            st.markdown("### Vista del plano construido")
-            # Mostrar todas las cotas agregadas
-            if st.session_state['plano_rectitud']:
-                for idx, tol in enumerate(st.session_state['plano_rectitud']):
-                    st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-                    st.markdown(f"<div class='pedagogic-box'>Cota {idx+1}: Zona de tolerancia de rectitud de {tol} mm</div>", unsafe_allow_html=True)
-            else:
-                st.warning("Agrega al menos una cota para ver el plano.")
+elif main_mode == "Constructor de Plano":
+    st.markdown("## Constructor de Plano Técnico")
+    st.info("Agrega cotas y tolerancias para construir un plano técnico completo. Por ahora solo disponible para 'Rectitud'.")
+    # Estado de plano (solo para 'Rectitud' por ahora)
+    if 'plano_rectitud' not in st.session_state:
+        st.session_state['plano_rectitud'] = []
+    nueva_tol = st.slider("Tolerancia de rectitud a agregar (mm)", 0.1, 2.0, 0.5)
+    if st.button("Agregar cota de rectitud"):
+        st.session_state['plano_rectitud'].append(nueva_tol)
+    st.markdown("### Vista del plano construido")
+    # Mostrar todas las cotas agregadas
+    if st.session_state['plano_rectitud']:
+        for idx, tol in enumerate(st.session_state['plano_rectitud']):
+            st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+            st.markdown(f"<div class='pedagogic-box'>Cota {idx+1}: Zona de tolerancia de rectitud de {tol} mm</div>", unsafe_allow_html=True)
+    else:
+        st.warning("Agrega al menos una cota para ver el plano.")
 ## Así cada simulación será independiente, robusta y pedagógica.
