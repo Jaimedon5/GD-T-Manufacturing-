@@ -206,8 +206,7 @@ def plot_blueprint_rectitud(tol):
     )
     return fig
 
-elif view == "Zona de Tolerancia":
-elif view == "Plano Técnico Real":
+
 
 # ===================== INTERFAZ PRINCIPAL =====================
 st.sidebar.title("Menú GD&T Pedagógico")
