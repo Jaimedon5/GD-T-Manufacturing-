@@ -249,46 +249,38 @@ if main_mode == "Análisis Individual":
     """, unsafe_allow_html=True)
     view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
-    # --- LAYOUT PRINCIPAL ---
-    col1, col2 = st.columns([1.1, 2.2], gap="large")
-    with col1:
-        st.markdown(f"<h2 style='margin-bottom:0; color:#23272e'>{cat} <span style='font-size:1.2em'>{GD_DATA[cat]['symbol']}</span></h2>", unsafe_allow_html=True)
-        st.markdown(f"<div style='margin-bottom:18px;'></div>")
+    # --- LAYOUT PROFESIONAL ---
+    # Arriba: símbolo a la izquierda, info-card a la derecha
+    top1, top2 = st.columns([1, 3], gap="large")
+    with top1:
+        st.markdown(f"<div style='display:flex; align-items:center; justify-content:center; height:120px;'><span style='font-size:5em; color:#23272e'>{GD_DATA[cat]['symbol']}</span></div>", unsafe_allow_html=True)
+    with top2:
+        st.markdown(f"<h2 style='margin-bottom:0; color:#23272e'>{cat}</h2>", unsafe_allow_html=True)
         show_info_card(cat)
-    with col2:
-        show_legend(cat)
-        st.markdown(f"<div style='margin-bottom:10px;'></div>")
-        # Simulación y explicación pedagógica
+
+    st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
+
+    # Abajo: simulación a la izquierda, leyenda a la derecha
+    bot1, bot2 = st.columns([2.2, 1.2], gap="large")
+    with bot1:
         if view == "Simulación 3D":
             if cat == 'Rectitud':
                 st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
-                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-            # ...agrega el resto de características aquí...
         elif view == "Montaje Real":
             if cat == 'Rectitud':
                 st.plotly_chart(plot_real_rectitud(), use_container_width=True)
-                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
-            # ...agrega el resto de características aquí...
         elif view == "Zona de Tolerancia":
             if cat == 'Rectitud':
                 st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-                st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
-            # ...agrega el resto de características aquí...
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
             st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-            # Ejemplo base: plano técnico simple
             fig = go.Figure()
-            # Cuerpo principal
             fig.add_shape(type='rect', x0=1, x1=9, y0=1, y1=3, line=dict(color='#222', width=2))
-            # Línea de cota
             fig.add_shape(type='line', x0=1, x1=9, y0=0.7, y1=0.7, line=dict(color='#1976d2', width=2, dash='dot'))
-            # Flechas
             fig.add_annotation(x=1, y=0.7, ax=1.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
             fig.add_annotation(x=9, y=0.7, ax=8.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
-            # Texto de cota
             fig.add_annotation(x=5, y=0.5, text="8.00", showarrow=False, font=dict(size=16, color='#1976d2'))
-            # Etiqueta
             fig.add_annotation(x=5, y=3.2, text="Rectitud", showarrow=False, font=dict(size=16, color='#222'))
             fig.update_layout(
                 margin=dict(l=0, r=0, t=40, b=0), height=350,
@@ -297,6 +289,20 @@ if main_mode == "Análisis Individual":
                 yaxis=dict(visible=False, range=[0,4])
             )
             st.plotly_chart(fig, use_container_width=True)
+    with bot2:
+        show_legend(cat)
+
+    # Explicación didáctica alineada abajo
+    st.markdown(f"<div style='margin-top:18px;'></div>", unsafe_allow_html=True)
+    if view == "Simulación 3D":
+        if cat == 'Rectitud':
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+    elif view == "Montaje Real":
+        if cat == 'Rectitud':
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+    elif view == "Zona de Tolerancia":
+        if cat == 'Rectitud':
+            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
 
 elif main_mode == "Constructor de Plano":
     st.markdown("## Constructor de Plano Técnico")
