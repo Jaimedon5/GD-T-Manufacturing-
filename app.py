@@ -65,10 +65,7 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6 {
         color: #23272e !important;
     }
-    /* Mejorar contraste de inputs y sliders */
-    .stSlider > div[data-baseweb="slider"] {
-        background: #d1d5db !important;
-    }
+    /* (Regla eliminada: el fondo del slider se define solo en el sidebar) */
 </style>
 """, unsafe_allow_html=True)
 
@@ -232,21 +229,20 @@ if main_mode == "Análisis Individual":
     .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
         display: none !important;
     }
-    /* Cambia el fondo del recuadro del slider a oscuro */
-    .stSlider > div[data-baseweb="slider"] {
-        background: #23272e !important; /* igual que sidebar */
+    /* SOLO en el sidebar: fondo oscuro para el slider */
+    [data-testid="stSidebar"] .stSlider > div[data-baseweb="slider"] {
+        background: #23272e !important;
         border-radius: 16px !important;
         box-shadow: none !important;
         border: 1px solid #444 !important;
     }
-    /* Cambia el fondo de la pista del slider a más oscuro */
-    .stSlider .css-13cymwt, .stSlider .st-c1, .stSlider [role="slider"] ~ div > div {
+    [data-testid="stSidebar"] .stSlider .css-13cymwt, [data-testid="stSidebar"] .stSlider .st-c1, [data-testid="stSidebar"] .stSlider [role="slider"] ~ div > div {
         background: #444 !important;
     }
-    .stSlider label, .stSlider div, .stSlider span {
-        color: #222 !important; /* texto negro */
+    [data-testid="stSidebar"] .stSlider label, [data-testid="stSidebar"] .stSlider div, [data-testid="stSidebar"] .stSlider span {
+        color: #222 !important;
     }
-    .stSlider .css-1gv0vcd, .stSlider .css-14xtw13, .stSlider .css-1r6slb0 {
+    [data-testid="stSidebar"] .stSlider .css-1gv0vcd, [data-testid="stSidebar"] .stSlider .css-14xtw13, [data-testid="stSidebar"] .stSlider .css-1r6slb0 {
         color: #222 !important;
     }
     </style>
