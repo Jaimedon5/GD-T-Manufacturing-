@@ -229,21 +229,21 @@ if main_mode == "Análisis Individual":
     .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
         display: none !important;
     }
-    /* SOLO en el sidebar: fondo oscuro para el slider */
+    /* SOLO en el sidebar: fondo oscuro para el slider y contorno oscuro */
     [data-testid="stSidebar"] .stSlider > div[data-baseweb="slider"] {
         background: #23272e !important;
         border-radius: 16px !important;
         box-shadow: none !important;
-        border: 1px solid #444 !important;
+        border: 1.5px solid #181a1b !important;
     }
     [data-testid="stSidebar"] .stSlider .css-13cymwt, [data-testid="stSidebar"] .stSlider .st-c1, [data-testid="stSidebar"] .stSlider [role="slider"] ~ div > div {
         background: #444 !important;
     }
     [data-testid="stSidebar"] .stSlider label, [data-testid="stSidebar"] .stSlider div, [data-testid="stSidebar"] .stSlider span {
-        color: #222 !important;
+        color: #fff !important;
     }
     [data-testid="stSidebar"] .stSlider .css-1gv0vcd, [data-testid="stSidebar"] .stSlider .css-14xtw13, [data-testid="stSidebar"] .stSlider .css-1r6slb0 {
-        color: #222 !important;
+        color: #fff !important;
     }
     </style>
     """, unsafe_allow_html=True)
