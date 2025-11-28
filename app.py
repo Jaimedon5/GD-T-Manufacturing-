@@ -220,17 +220,28 @@ if main_mode == "Análisis Individual":
     cat = st.sidebar.selectbox("Característica", menu)
     st.sidebar.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
-    st.sidebar.markdown(f"<div style='color:#f3f4f6; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
+    st.sidebar.markdown(f"<div style='color:#222; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
     st.sidebar.markdown("""
     <style>
     /* Oculta los valores del slider (min, max, actual) */
-    .stSlider .css-1aumxhk, /* min/max */
-    .stSlider .css-1r6slb0, /* actual value */
-    .stSlider .css-14xtw13, /* actual value (alt) */
-    .stSlider .css-1gv0vcd, /* actual value (alt2) */
-    .stSlider .st-c2, /* min/max (alt) */
+    .stSlider .css-1aumxhk,
+    .stSlider .css-1r6slb0,
+    .stSlider .css-14xtw13,
+    .stSlider .css-1gv0vcd,
+    .stSlider .st-c2,
     .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
         display: none !important;
+    }
+    /* Cambia el fondo del slider y el color del texto */
+    .stSlider > div[data-baseweb="slider"] {
+        background: #23272e !important; /* igual que sidebar */
+        border-radius: 8px;
+    }
+    .stSlider label, .stSlider div, .stSlider span {
+        color: #222 !important; /* texto negro */
+    }
+    .stSlider .css-1gv0vcd, .stSlider .css-14xtw13, .stSlider .css-1r6slb0 {
+        color: #222 !important;
     }
     </style>
     """, unsafe_allow_html=True)
