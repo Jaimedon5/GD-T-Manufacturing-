@@ -232,10 +232,16 @@ if main_mode == "Análisis Individual":
     .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
         display: none !important;
     }
-    /* Cambia el fondo del slider y el color del texto */
+    /* Cambia el fondo del recuadro del slider a oscuro */
     .stSlider > div[data-baseweb="slider"] {
         background: #23272e !important; /* igual que sidebar */
-        border-radius: 8px;
+        border-radius: 16px !important;
+        box-shadow: none !important;
+        border: 1px solid #444 !important;
+    }
+    /* Cambia el fondo de la pista del slider a más oscuro */
+    .stSlider .css-13cymwt, .stSlider .st-c1, .stSlider [role="slider"] ~ div > div {
+        background: #444 !important;
     }
     .stSlider label, .stSlider div, .stSlider span {
         color: #222 !important; /* texto negro */
