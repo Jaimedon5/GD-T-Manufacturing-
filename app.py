@@ -220,7 +220,19 @@ if main_mode == "Análisis Individual":
     cat = st.sidebar.selectbox("Característica", menu)
     st.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
-    st.markdown(f"<div style='color:#fff; background:#23272e; border-radius:4px; display:inline-block; padding:2px 8px; margin-top:-8px; margin-bottom:8px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='color:#23272e; background:#f3f4f6; border-radius:4px; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    /* Mejora el color del texto del slider de tolerancia */
+    .stSlider .css-1gv0vcd, .stSlider .css-1gv0vcd span, .stSlider .css-1gv0vcd label {
+        color: #23272e !important;
+        font-weight: bold;
+    }
+    .stSlider .css-14xtw13 {
+        color: #23272e !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
     # Leyenda y guía visual SIEMPRE visible
