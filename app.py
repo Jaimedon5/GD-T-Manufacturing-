@@ -218,10 +218,10 @@ main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de P
 if main_mode == "Análisis Individual":
     menu = list(GD_DATA.keys())
     cat = st.sidebar.selectbox("Característica", menu)
-    st.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
-    st.markdown(f"<div style='color:#f3f4f6; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
-    st.markdown("""
+    st.sidebar.markdown(f"<div style='color:#f3f4f6; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("""
     <style>
     /* Mejora el color del texto del slider de tolerancia */
     .stSlider .css-1gv0vcd, .stSlider .css-1gv0vcd span, .stSlider .css-1gv0vcd label {
@@ -295,7 +295,7 @@ elif main_mode == "Constructor de Plano":
     if st.session_state['plano_rectitud']:
         for idx, tol in enumerate(st.session_state['plano_rectitud']):
             st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-            st.markdown(f"<div class='pedagogic-box'>Cota {idx+1}: Zona de tolerancia de rectitud de {tol} mm</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='pedagogic-box'>Cota {idx+1}: Zona de tolerancia de rectitud de {tol:.2f} mm</div>", unsafe_allow_html=True)
     else:
         st.warning("Agrega al menos una cota para ver el plano.")
 ## Así cada simulación será independiente, robusta y pedagógica.
