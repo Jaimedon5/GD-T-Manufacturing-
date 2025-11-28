@@ -9,6 +9,36 @@ st.set_page_config(layout="wide", page_title="GD&T Master Lab - Nueva Versión")
 
 # ===================== ESTILOS Y LEYENDAS =====================
 st.markdown("""
+    /* Recuadro símbolo GD&T */
+    .symbol-box {
+        background: #fff;
+        border: 2.5px solid #23272e;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 120px;
+        width: 120px;
+        margin: 0 auto;
+        margin-top: 18px;
+        margin-bottom: 18px;
+    }
+    .symbol-gdt {
+        font-size: 4.5em;
+        color: #23272e;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .legend-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    .legend-box, .pedagogic-box {
+        margin-bottom: 0 !important;
+    }
 <style>
     /* Fondo general gris neutro y textos oscuros */
     .stApp {
@@ -249,18 +279,17 @@ if main_mode == "Análisis Individual":
     """, unsafe_allow_html=True)
     view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
-    # --- LAYOUT PROFESIONAL ---
-    # Arriba: símbolo a la izquierda, info-card a la derecha
+    # --- LAYOUT AJUSTADO A TU IMAGEN ---
+    # Arriba: símbolo grande en recuadro blanco con borde negro a la izquierda, info-card a la derecha (sin título grande arriba)
     top1, top2 = st.columns([1, 3], gap="large")
     with top1:
-        st.markdown(f"<div style='display:flex; align-items:center; justify-content:center; height:120px;'><span style='font-size:5em; color:#23272e'>{GD_DATA[cat]['symbol']}</span></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='symbol-box'><span class='symbol-gdt'>{GD_DATA[cat]['symbol']}</span></div>", unsafe_allow_html=True)
     with top2:
-        st.markdown(f"<h2 style='margin-bottom:0; color:#23272e'>{cat}</h2>", unsafe_allow_html=True)
         show_info_card(cat)
 
     st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
 
-    # Abajo: simulación a la izquierda, leyenda a la derecha
+    # Abajo: simulación a la izquierda, dos recuadros apilados a la derecha (leyenda y ¿qué ves?)
     bot1, bot2 = st.columns([2.2, 1.2], gap="large")
     with bot1:
         if view == "Simulación 3D":
@@ -290,19 +319,19 @@ if main_mode == "Análisis Individual":
             )
             st.plotly_chart(fig, use_container_width=True)
     with bot2:
+        st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat)
-
-    # Explicación didáctica alineada abajo
-    st.markdown(f"<div style='margin-top:18px;'></div>", unsafe_allow_html=True)
-    if view == "Simulación 3D":
-        if cat == 'Rectitud':
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-    elif view == "Montaje Real":
-        if cat == 'Rectitud':
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
-    elif view == "Zona de Tolerancia":
-        if cat == 'Rectitud':
-            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+        # ¿Qué ves? en recuadro igual que leyenda
+        if view == "Simulación 3D":
+            if cat == 'Rectitud':
+                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+        elif view == "Montaje Real":
+            if cat == 'Rectitud':
+                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+        elif view == "Zona de Tolerancia":
+            if cat == 'Rectitud':
+                st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 elif main_mode == "Constructor de Plano":
     st.markdown("## Constructor de Plano Técnico")
