@@ -217,7 +217,7 @@ if main_mode == "Análisis Individual":
     cat = st.sidebar.selectbox("Característica", menu)
     st.sidebar.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
-    st.sidebar.markdown(f"<div style='color:#222; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
+    st.sidebar.markdown(f"<div style='color:#fff; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
     st.sidebar.markdown("""
     <style>
     /* Oculta los valores del slider (min, max, actual) */
@@ -226,74 +226,77 @@ if main_mode == "Análisis Individual":
     .stSlider .css-14xtw13,
     .stSlider .css-1gv0vcd,
     .stSlider .st-c2,
-    .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
+    .stSlider label[data-testid=\"stWidgetLabel\"] + div > div > div > span {
         display: none !important;
     }
     /* SOLO en el sidebar: fondo oscuro para el slider y contorno oscuro */
-    [data-testid="stSidebar"] .stSlider > div[data-baseweb="slider"] {
+    [data-testid=\"stSidebar\"] .stSlider > div[data-baseweb=\"slider\"] {
         background: #23272e !important;
         border-radius: 16px !important;
         box-shadow: none !important;
         border: 1.5px solid #181a1b !important;
     }
-    [data-testid="stSidebar"] .stSlider .css-13cymwt, [data-testid="stSidebar"] .stSlider .st-c1, [data-testid="stSidebar"] .stSlider [role="slider"] ~ div > div {
+    [data-testid=\"stSidebar\"] .stSlider .css-13cymwt, [data-testid=\"stSidebar\"] .stSlider .st-c1, [data-testid=\"stSidebar\"] .stSlider [role=\"slider\"] ~ div > div {
         background: #444 !important;
     }
-    [data-testid="stSidebar"] .stSlider label, [data-testid="stSidebar"] .stSlider div, [data-testid="stSidebar"] .stSlider span {
+    [data-testid=\"stSidebar\"] .stSlider label, [data-testid=\"stSidebar\"] .stSlider div, [data-testid=\"stSidebar\"] .stSlider span {
         color: #fff !important;
     }
-    [data-testid="stSidebar"] .stSlider .css-1gv0vcd, [data-testid="stSidebar"] .stSlider .css-14xtw13, [data-testid="stSidebar"] .stSlider .css-1r6slb0 {
+    [data-testid=\"stSidebar\"] .stSlider .css-1gv0vcd, [data-testid=\"stSidebar\"] .stSlider .css-14xtw13, [data-testid=\"stSidebar\"] .stSlider .css-1r6slb0 {
         color: #fff !important;
     }
     </style>
     """, unsafe_allow_html=True)
     view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
-    # Leyenda y guía visual SIEMPRE visible
-    show_legend(cat)
-
-    # Tarjeta de información enriquecida
-    show_info_card(cat)
-
-    # Simulación y explicación pedagógica
-    if view == "Simulación 3D":
-        if cat == 'Rectitud':
-            st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-        # ...agrega el resto de características aquí...
-    elif view == "Montaje Real":
-        if cat == 'Rectitud':
-            st.plotly_chart(plot_real_rectitud(), use_container_width=True)
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
-        # ...agrega el resto de características aquí...
-    elif view == "Zona de Tolerancia":
-        if cat == 'Rectitud':
-            st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
-            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
-        # ...agrega el resto de características aquí...
-    elif view == "Plano Técnico Real":
-        st.markdown("### Plano Técnico Real")
-        st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-        # Ejemplo base: plano técnico simple
-        fig = go.Figure()
-        # Cuerpo principal
-        fig.add_shape(type='rect', x0=1, x1=9, y0=1, y1=3, line=dict(color='#222', width=2))
-        # Línea de cota
-        fig.add_shape(type='line', x0=1, x1=9, y0=0.7, y1=0.7, line=dict(color='#1976d2', width=2, dash='dot'))
-        # Flechas
-        fig.add_annotation(x=1, y=0.7, ax=1.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
-        fig.add_annotation(x=9, y=0.7, ax=8.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
-        # Texto de cota
-        fig.add_annotation(x=5, y=0.5, text="8.00", showarrow=False, font=dict(size=16, color='#1976d2'))
-        # Etiqueta
-        fig.add_annotation(x=5, y=3.2, text="Rectitud", showarrow=False, font=dict(size=16, color='#222'))
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=40, b=0), height=350,
-            paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
-            xaxis=dict(visible=False, range=[0,10]),
-            yaxis=dict(visible=False, range=[0,4])
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # --- LAYOUT PRINCIPAL ---
+    col1, col2 = st.columns([1.1, 2.2], gap="large")
+    with col1:
+        st.markdown(f"<h2 style='margin-bottom:0; color:#23272e'>{cat} <span style='font-size:1.2em'>{GD_DATA[cat]['symbol']}</span></h2>", unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-bottom:18px;'></div>")
+        show_info_card(cat)
+    with col2:
+        show_legend(cat)
+        st.markdown(f"<div style='margin-bottom:10px;'></div>")
+        # Simulación y explicación pedagógica
+        if view == "Simulación 3D":
+            if cat == 'Rectitud':
+                st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
+                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+            # ...agrega el resto de características aquí...
+        elif view == "Montaje Real":
+            if cat == 'Rectitud':
+                st.plotly_chart(plot_real_rectitud(), use_container_width=True)
+                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+            # ...agrega el resto de características aquí...
+        elif view == "Zona de Tolerancia":
+            if cat == 'Rectitud':
+                st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+                st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+            # ...agrega el resto de características aquí...
+        elif view == "Plano Técnico Real":
+            st.markdown("### Plano Técnico Real")
+            st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
+            # Ejemplo base: plano técnico simple
+            fig = go.Figure()
+            # Cuerpo principal
+            fig.add_shape(type='rect', x0=1, x1=9, y0=1, y1=3, line=dict(color='#222', width=2))
+            # Línea de cota
+            fig.add_shape(type='line', x0=1, x1=9, y0=0.7, y1=0.7, line=dict(color='#1976d2', width=2, dash='dot'))
+            # Flechas
+            fig.add_annotation(x=1, y=0.7, ax=1.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
+            fig.add_annotation(x=9, y=0.7, ax=8.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
+            # Texto de cota
+            fig.add_annotation(x=5, y=0.5, text="8.00", showarrow=False, font=dict(size=16, color='#1976d2'))
+            # Etiqueta
+            fig.add_annotation(x=5, y=3.2, text="Rectitud", showarrow=False, font=dict(size=16, color='#222'))
+            fig.update_layout(
+                margin=dict(l=0, r=0, t=40, b=0), height=350,
+                paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
+                xaxis=dict(visible=False, range=[0,10]),
+                yaxis=dict(visible=False, range=[0,4])
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
 elif main_mode == "Constructor de Plano":
     st.markdown("## Constructor de Plano Técnico")
