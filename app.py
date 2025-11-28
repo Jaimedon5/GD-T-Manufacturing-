@@ -223,13 +223,14 @@ if main_mode == "Análisis Individual":
     st.sidebar.markdown(f"<div style='color:#f3f4f6; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
     st.sidebar.markdown("""
     <style>
-    /* Mejora el color del texto del slider de tolerancia */
-    .stSlider .css-1gv0vcd, .stSlider .css-1gv0vcd span, .stSlider .css-1gv0vcd label {
-        color: #f3f4f6 !important;
-        font-weight: bold;
-    }
-    .stSlider .css-14xtw13 {
-        color: #f3f4f6 !important;
+    /* Oculta los valores del slider (min, max, actual) */
+    .stSlider .css-1aumxhk, /* min/max */
+    .stSlider .css-1r6slb0, /* actual value */
+    .stSlider .css-14xtw13, /* actual value (alt) */
+    .stSlider .css-1gv0vcd, /* actual value (alt2) */
+    .stSlider .st-c2, /* min/max (alt) */
+    .stSlider label[data-testid="stWidgetLabel"] + div > div > div > span {
+        display: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
