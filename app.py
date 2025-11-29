@@ -1,6 +1,8 @@
 ## (Línea eliminada: remanente de código viejo que causaba error de sintaxis)
 import streamlit as st
 import plotly.graph_objects as go
+import plotly.io as pio
+import streamlit.components.v1 as components
 import numpy as np
 import time
 
@@ -22,8 +24,8 @@ st.markdown("""<style>
 .category-label{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}
 h1,h2,h3,h4,h5,h6{color:#23272e!important;}
 </style>""", unsafe_allow_html=True)
-SYMBOL_BOX_SIZE = 120  # px - tamaño por defecto del recuadro del símbolo
-st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{SYMBOL_BOX_SIZE}px;width:{SYMBOL_BOX_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
+ST_SYMBOL_SIZE = 200
+st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:200px;overflow:auto;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
 # Incluye puntos clave y diferenciadores pedagógicos
@@ -69,13 +71,13 @@ def show_legend(feature):
         <b>Diferenciador clave:</b> {info['diff']}
     </div>
     """, unsafe_allow_html=True)
-    # Usa el tamaño actual del recuadro (definido por el slider) para ajustar el min-height de la info-card
+    # Asegura que la info-card tenga altura fija y el .sim-box la misma apariencia
     try:
-        current_box = SYMBOL_BOX_SIZE
+        current_box = ST_SYMBOL_SIZE
     except NameError:
-        current_box = 120
+        current_box = 200
     st.markdown(f"""<style>
-    .symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{current_box}px;width:{current_box}px;margin:0 auto;margin-top:18px;margin-bottom:18px;padding:8px;overflow:hidden;}}
+    .symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{current_box}px;width:{current_box}px;margin:0 auto;margin-top:18px;margin-bottom:18px;padding:12px;overflow:hidden;}}
     .symbol-box img,.symbol-box svg{{max-width:100%;max-height:100%;height:auto;width:auto;display:block;}}
     .legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}
     .legend-box,.pedagogic-box{{margin-bottom:0!important;}}
@@ -83,11 +85,11 @@ def show_legend(feature):
     [data-testid="stSidebar"]{{background-color:#23272e!important;}}
     [data-testid="stSidebar"] *{{color:#f3f4f6!important;}}
     .legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}
-    .info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;min-height:{int(current_box*1.6)}px;}}
+    .info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:200px;overflow:auto;}}
     .pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}}
     .category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}
     h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}
-    .sim-box{{border:1px dashed #94a3b8;border-radius:8px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,247,250,0.6));}}
+    .sim-box{{border:2px solid #94a3b8;border-radius:8px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,247,250,0.6));}}
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
@@ -204,8 +206,7 @@ main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de P
 if main_mode == "Análisis Individual":
     menu = list(GD_DATA.keys())
     cat = st.sidebar.selectbox("Característica", menu)
-    # Control para ajustar el tamaño del recuadro del símbolo (px)
-    SYMBOL_BOX_SIZE = st.sidebar.slider("Tamaño símbolo (px)", 80, 220, SYMBOL_BOX_SIZE)
+    # Símbolo con tamaño fijo (200x200)
     st.sidebar.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
     st.sidebar.markdown(f"<div style='color:#fff; background:transparent; display:inline-block; padding:2px 10px; margin-top:4px; margin-bottom:10px; font-size:15px; font-weight:bold;'>Valor: {tol:.2f} mm</div>", unsafe_allow_html=True)
@@ -246,7 +247,7 @@ if main_mode == "Análisis Individual":
     with top1:
         # Mostrar la imagen del símbolo según la característica seleccionada.
         img_path = get_symbol_image_path(cat)
-        box_px = SYMBOL_BOX_SIZE
+        box_px = ST_SYMBOL_SIZE
         if img_path:
             # si es SVG, incrustar el contenido para asegurar renderizado correcto
             if img_path.lower().endswith('.svg'):
@@ -275,16 +276,22 @@ if main_mode == "Análisis Individual":
     bot1, bot2 = st.columns([2.2, 1.2], gap="large")
     with bot1:
         if view == "Simulación 3D":
+            fig = plot_3d_rectitud(tol)
+            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
+            components.html(html, height=520, scrolling=False)
             st.markdown("</div>", unsafe_allow_html=True)
         elif view == "Montaje Real":
+            fig = plot_real_rectitud()
+            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            st.plotly_chart(plot_real_rectitud(), use_container_width=True)
+            components.html(html, height=440, scrolling=False)
             st.markdown("</div>", unsafe_allow_html=True)
         elif view == "Zona de Tolerancia":
+            fig = plot_blueprint_rectitud(tol)
+            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+            components.html(html, height=380, scrolling=False)
             st.markdown("</div>", unsafe_allow_html=True)
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
@@ -302,8 +309,9 @@ if main_mode == "Análisis Individual":
                 xaxis=dict(visible=False, range=[0,10]),
                 yaxis=dict(visible=False, range=[0,4])
             )
+            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            st.plotly_chart(fig, use_container_width=True)
+            components.html(html, height=360, scrolling=False)
             st.markdown("</div>", unsafe_allow_html=True)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
