@@ -247,8 +247,11 @@ if main_mode == "Análisis Individual":
                 st.image(img_path, width=box_px-20)
                 st.markdown("</div>", unsafe_allow_html=True)
         else:
-            # Fallback SVG con tamaño dinámico
-            stub_svg = f"<svg width='{box_px}' height='{box_px}' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' fill='#ffffff' stroke='#23272e' rx='6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='12' fill='#23272e'>Símbolo<br/>{cat}</text></svg>"
+            # Fallback SVG simple y en negro (sin texto). Línea centrada para mantener estilo.
+            stub_svg = f"<svg width='{box_px}' height='{box_px}' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'>" \
+                       f"<rect x='0' y='0' width='120' height='120' fill='#ffffff' rx='6'/>" \
+                       f"<line x1='12' y1='60' x2='108' y2='60' stroke='#000' stroke-width='8' stroke-linecap='round'/>" \
+                       f"</svg>"
             st.markdown(f"<div class='symbol-box' style='height:{box_px}px;width:{box_px}px'>{stub_svg}</div>", unsafe_allow_html=True)
     with top2:
         show_info_card(cat)

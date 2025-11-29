@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 120" width="120" height="120">
+  <rect x="0" y="0" width="140" height="120" fill="#ffffff" rx="6"/>
+  <!-- Simetría: línea central con formas espejo -->
+  <line x1="70" y1="20" x2="70" y2="100" stroke="#000" stroke-width="6"/>
+  <path d="M40 40 Q55 30 70 40 Q85 50 100 40" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+</svg>

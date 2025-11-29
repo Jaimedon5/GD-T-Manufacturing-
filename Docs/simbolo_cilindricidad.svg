@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 120" width="120" height="120">
+  <rect x="0" y="0" width="140" height="120" fill="#ffffff" rx="6"/>
+  <!-- Simple cilindro: dos elipses y rectángulo enlazándolas -->
+  <ellipse cx="70" cy="30" rx="34" ry="10" fill="none" stroke="#000" stroke-width="6"/>
+  <rect x="36" y="30" width="68" height="40" fill="none" stroke="#000" stroke-width="6"/>
+  <ellipse cx="70" cy="70" rx="34" ry="10" fill="none" stroke="#000" stroke-width="6"/>
+</svg>

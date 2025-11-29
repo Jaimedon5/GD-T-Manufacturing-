@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 120" width="120" height="120">
+  <rect x="0" y="0" width="140" height="120" fill="#ffffff" rx="6"/>
+  <!-- Angularidad: ángulo simple con una marca de arco -->
+  <path d="M30 90 L30 40 L90 40" fill="none" stroke="#000" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 56 A20 20 0 0 0 66 38" fill="none" stroke="#000" stroke-width="6"/>
+</svg>

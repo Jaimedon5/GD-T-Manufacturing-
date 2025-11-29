@@ -1,3 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <rect x="0" y="0" width="120" height="120" fill="#ffffff" rx="6"/>
+  <line x1="12" y1="60" x2="108" y2="60" stroke="#000" stroke-width="8" stroke-linecap="round"/>
+</svg>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
   <rect width="200" height="200" rx="12" fill="#ffffff" stroke="#23272e" stroke-width="4"/>
   <g transform="translate(100,100)">
