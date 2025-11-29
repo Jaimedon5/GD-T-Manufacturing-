@@ -8,96 +8,7 @@ import time
 st.set_page_config(layout="wide", page_title="GD&T Master Lab - Nueva Versión")
 
 # ===================== ESTILOS Y LEYENDAS =====================
-st.markdown("""
-    /* Recuadro símbolo GD&T */
-    .symbol-box {
-        background: #fff;
-        border: 2.5px solid #23272e;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 120px;
-        width: 120px;
-        margin: 0 auto;
-        margin-top: 18px;
-        margin-bottom: 18px;
-    }
-    .symbol-gdt {
-        font-size: 4.5em;
-        color: #23272e;
-        font-weight: bold;
-        line-height: 1;
-    }
-    .legend-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-    .legend-box, .pedagogic-box {
-        margin-bottom: 0 !important;
-    }
-<style>
-    /* Fondo general gris neutro y textos oscuros */
-    .stApp {
-        background-color: #e5e7eb !important;
-        color: #222 !important;
-    }
-    /* Sidebar fondo gris más oscuro */
-    [data-testid="stSidebar"] {
-        background-color: #23272e !important;
-    }
-    [data-testid="stSidebar"] * {
-        color: #f3f4f6 !important;
-    }
-    /* Recuadro de leyenda */
-    .legend-box {
-        background: #f3f4f6;
-        border-left: 6px solid #1976d2;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 18px;
-        font-size: 1.05em;
-        color: #23272e;
-    }
-    /* Recuadro de información */
-    .info-card {
-        background: #f3f4f6;
-        border-left: 8px solid #004B87;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-        margin-bottom: 20px;
-        color: #23272e;
-    }
-    /* Recuadro pedagógico */
-    .pedagogic-box {
-        background: #e0e7ef;
-        border: 1px solid #2196f3;
-        border-left: 6px solid #2196f3;
-        padding: 15px;
-        border-radius: 4px;
-        color: #0d47a1;
-        font-family: 'Courier New', monospace;
-        margin-top: 15px;
-    }
-    .category-label {
-        font-weight: bold;
-        color: #004B87;
-        background: #e0e7ef;
-        border-radius: 6px;
-        padding: 2px 8px;
-        margin-right: 8px;
-    }
-    /* Mejorar contraste de títulos */
-    h1, h2, h3, h4, h5, h6 {
-        color: #23272e !important;
-    }
-    /* (Regla eliminada: el fondo del slider se define solo en el sidebar) */
-</style>
-""", unsafe_allow_html=True)
+st.markdown("""<style>.symbol-box{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:120px;width:120px;margin:0 auto;margin-top:18px;margin-bottom:18px;}.legend-stack{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}.legend-box,.pedagogic-box{margin-bottom:0!important;}.stApp{background-color:#e5e7eb!important;color:#222!important;}[data-testid=\"stSidebar\"]{background-color:#23272e!important;}[data-testid=\"stSidebar\"] *{color:#f3f4f6!important;}.legend-box{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}.info-card{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}.pedagogic-box{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}.category-label{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}h1,h2,h3,h4,h5,h6{color:#23272e!important;}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
 # Incluye puntos clave y diferenciadores pedagógicos
@@ -158,6 +69,21 @@ def show_info_card(feature):
         <p style="color:#1976d2;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
     </div>
     """, unsafe_allow_html=True)
+
+
+def get_symbol_image_path(feature):
+    """Devuelve la ruta relativa a la imagen del símbolo para la característica.
+    Busca archivos en `Docs/simbolo_<slug>.png`. Si no existe, devuelve None.
+    """
+    slug = feature.replace(' ', '_').lower()
+    candidate = f"Docs/simbolo_{slug}.png"
+    try:
+        import os
+        if os.path.exists(candidate):
+            return candidate
+    except Exception:
+        pass
+    return None
 
 # ===================== SIMULACIONES =====================
 def plot_3d_rectitud(tol):
@@ -239,7 +165,7 @@ def plot_blueprint_rectitud(tol):
 
 
 # ===================== INTERFAZ PRINCIPAL =====================
-st.sidebar.title("Menú GD&T Pedagógico")
+st.sidebar.title("Menú GD&T")
 main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de Plano"])
 
 if main_mode == "Análisis Individual":
@@ -279,28 +205,33 @@ if main_mode == "Análisis Individual":
     """, unsafe_allow_html=True)
     view = st.sidebar.radio("Vista:", ["Simulación 3D", "Montaje Real", "Zona de Tolerancia", "Plano Técnico Real"])
 
-    # --- LAYOUT AJUSTADO A TU IMAGEN ---
-    # Arriba: símbolo grande en recuadro blanco con borde negro a la izquierda, info-card a la derecha (sin título grande arriba)
+    # --- LAYOUT CORREGIDO: SÍMBOLO COMO IMAGEN EN RECUADRO BLANCO CON BORDE NEGRO ---
+    # Arriba: símbolo a la izquierda (solo imagen), info-card a la derecha
     top1, top2 = st.columns([1, 3], gap="large")
     with top1:
-        st.markdown(f"<div class='symbol-box'><span class='symbol-gdt'>{GD_DATA[cat]['symbol']}</span></div>", unsafe_allow_html=True)
+        # Mostrar la imagen del símbolo según la característica seleccionada.
+        img_path = get_symbol_image_path(cat)
+        if img_path:
+            # Usar HTML para mantener el recuadro estilizado
+            st.markdown(f"<div class='symbol-box'><img src='{img_path}' alt='Símbolo {cat}' style='width:80px;height:80px;object-fit:contain;display:block;margin:auto;'></div>", unsafe_allow_html=True)
+        else:
+            # Recurso alternativo: mostrar un SVG simple con texto si no existe la imagen
+            stub_svg = f"<svg width='80' height='80' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' fill='#ffffff' stroke='#23272e' rx='6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='12' fill='#23272e'>Símbolo<br/>{cat}</text></svg>"
+            st.markdown(f"<div class='symbol-box'>{stub_svg}</div>", unsafe_allow_html=True)
     with top2:
         show_info_card(cat)
 
     st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
 
-    # Abajo: simulación a la izquierda, dos recuadros apilados a la derecha (leyenda y ¿qué ves?)
+    # Abajo: simulación a la izquierda, leyenda y ¿Qué ves? apilados a la derecha
     bot1, bot2 = st.columns([2.2, 1.2], gap="large")
     with bot1:
         if view == "Simulación 3D":
-            if cat == 'Rectitud':
-                st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
+            st.plotly_chart(plot_3d_rectitud(tol), use_container_width=True)
         elif view == "Montaje Real":
-            if cat == 'Rectitud':
-                st.plotly_chart(plot_real_rectitud(), use_container_width=True)
+            st.plotly_chart(plot_real_rectitud(), use_container_width=True)
         elif view == "Zona de Tolerancia":
-            if cat == 'Rectitud':
-                st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
+            st.plotly_chart(plot_blueprint_rectitud(tol), use_container_width=True)
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
             st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
@@ -321,16 +252,12 @@ if main_mode == "Análisis Individual":
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat)
-        # ¿Qué ves? en recuadro igual que leyenda
         if view == "Simulación 3D":
-            if cat == 'Rectitud':
-                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
         elif view == "Montaje Real":
-            if cat == 'Rectitud':
-                st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
         elif view == "Zona de Tolerancia":
-            if cat == 'Rectitud':
-                st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif main_mode == "Constructor de Plano":
