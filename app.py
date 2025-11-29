@@ -8,7 +8,20 @@ import time
 st.set_page_config(layout="wide", page_title="GD&T Master Lab - Nueva Versión")
 
 # ===================== ESTILOS Y LEYENDAS =====================
-st.markdown("""<style>.symbol-box{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:120px;width:120px;margin:0 auto;margin-top:18px;margin-bottom:18px;}.legend-stack{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}.legend-box,.pedagogic-box{margin-bottom:0!important;}.stApp{background-color:#e5e7eb!important;color:#222!important;}[data-testid=\"stSidebar\"]{background-color:#23272e!important;}[data-testid=\"stSidebar\"] *{color:#f3f4f6!important;}.legend-box{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}.info-card{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}.pedagogic-box{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}.category-label{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}h1,h2,h3,h4,h5,h6{color:#23272e!important;}</style>""", unsafe_allow_html=True)
+st.markdown("""<style>
+.symbol-box{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:120px;width:120px;margin:0 auto;margin-top:18px;margin-bottom:18px;padding:8px;overflow:hidden;}
+.symbol-box img,.symbol-box svg{max-width:100%;max-height:100%;height:auto;width:auto;display:block;}
+.legend-stack{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}
+.legend-box,.pedagogic-box{margin-bottom:0!important;}
+.stApp{background-color:#e5e7eb!important;color:#222!important;}
+[data-testid="stSidebar"]{background-color:#23272e!important;}
+[data-testid="stSidebar"] *{color:#f3f4f6!important;}
+.legend-box{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}
+.info-card{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}
+.pedagogic-box{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}
+.category-label{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}
+h1,h2,h3,h4,h5,h6{color:#23272e!important;}
+</style>""", unsafe_allow_html=True)
 SYMBOL_BOX_SIZE = 120  # px - tamaño por defecto del recuadro del símbolo
 st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{SYMBOL_BOX_SIZE}px;width:{SYMBOL_BOX_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
@@ -62,7 +75,8 @@ def show_legend(feature):
     except NameError:
         current_box = 120
     st.markdown(f"""<style>
-    .symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{current_box}px;width:{current_box}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}
+    .symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{current_box}px;width:{current_box}px;margin:0 auto;margin-top:18px;margin-bottom:18px;padding:8px;overflow:hidden;}}
+    .symbol-box img,.symbol-box svg{{max-width:100%;max-height:100%;height:auto;width:auto;display:block;}}
     .legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}
     .legend-box,.pedagogic-box{{margin-bottom:0!important;}}
     .stApp{{background-color:#e5e7eb!important;color:#222!important;}}
@@ -247,9 +261,8 @@ if main_mode == "Análisis Individual":
                 st.image(img_path, width=box_px-20)
                 st.markdown("</div>", unsafe_allow_html=True)
         else:
-            # Fallback SVG simple y en negro (sin texto). Línea centrada para mantener estilo.
-            stub_svg = f"<svg width='{box_px}' height='{box_px}' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'>" \
-                       f"<rect x='0' y='0' width='120' height='120' fill='#ffffff' rx='6'/>" \
+            # Fallback SVG simple y en negro (sin fondo). Línea centrada para mantener estilo.
+            stub_svg = f"<svg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'>" \
                        f"<line x1='12' y1='60' x2='108' y2='60' stroke='#000' stroke-width='8' stroke-linecap='round'/>" \
                        f"</svg>"
             st.markdown(f"<div class='symbol-box' style='height:{box_px}px;width:{box_px}px'>{stub_svg}</div>", unsafe_allow_html=True)
