@@ -69,6 +69,12 @@ def show_legend(feature, view="Simulación 3D"):
     if view == "Montaje Real":
         legend_text = "Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian.<br>Punto rojo: posición del palpador. Escala blanca (derecha): lectura amplificada de desviación."
         diff_text = "En montaje real ves el <em>instrumento de medición</em> (comparador) recorriendo la pieza, replicando exactamente lo que ocurre en un laboratorio de metrología."
+    elif view == "Zona de Tolerancia":
+        legend_text = "Líneas naranjas: límites superior e inferior de la zona de tolerancia.<br>Línea azul: eje real ideal. Área gris: zona permitida para el eje."
+        diff_text = "La zona de tolerancia es un <em>espacio geométrico</em> definido por límites paralelos. Si el eje permanece dentro, cumple rectitud."
+    elif view == "Plano Técnico Real":
+        legend_text = "Líneas continuas negras: contorno de la pieza.<br>Líneas punteadas azules: líneas de referencia y acotación.<br>Texto azul: dimensiones y tolerancias GD&T."
+        diff_text = "Un plano técnico <em>real</em> incluye cotas, líneas de referencia, símbolos GD&T y anotaciones, como en documentación industrial estándar."
     else:
         legend_text = info['legend']
         diff_text = info['diff']
