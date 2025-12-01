@@ -25,7 +25,7 @@ st.markdown("""<style>
 h1,h2,h3,h4,h5,h6{color:#23272e!important;}
 </style>""", unsafe_allow_html=True)
 ST_SYMBOL_SIZE = 200
-st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:hidden;display:flex;gap:16px;}}.info-col{{flex:1;display:flex;flex-direction:column;font-size:0.9em;}}.info-col h4{{margin:0 0 8px 0;font-size:1.05em;color:#004B87;}}.info-col p{{margin:4px 0;line-height:1.4;}}.info-col ul{{margin:4px 0;padding-left:18px;line-height:1.4;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
+st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:auto;column-count:3;column-gap:20px;font-size:0.88em;}}.info-card h4{{margin:0 0 8px 0;font-size:1.1em;color:#004B87;break-after:avoid;}}.info-card p{{margin:4px 0;line-height:1.4;}}.info-card ul{{margin:4px 0;padding-left:18px;line-height:1.4;}}.info-card li{{break-inside:avoid;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
 # Incluye puntos clave y diferenciadores pedagógicos
@@ -36,7 +36,7 @@ def get_gd_data():
             'def': 'Condición donde un elemento lineal es una línea recta.',
             'zona_tol': 'Líneas paralelas, dónde debe estar el elemento de superficie.',
             'app': 'Vástagos, ejes largos, rieles.',
-            'medicion': 'Se mide con: comparador o proyector de perfiles.',
+            'medicion': 'comparador o proyector de perfiles.',
             'key_points': [
                 'Solo controla la línea central o generatriz, no la forma completa.',
                 'No requiere datum.'
@@ -94,25 +94,19 @@ def show_legend(feature):
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
-    # Construir HTML de las tres columnas
+    # HTML continuo en 3 columnas CSS (column-count)
     html = f"""
     <div class="info-card">
-        <div class="info-col">
-            <h4>{feature}</h4>
-            <p><b>Definición:</b> {info['def']}</p>
-            <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
-        </div>
-        <div class="info-col">
-            <p><b>Aplicación:</b> {info['app']}</p>
-            <p>{info.get('medicion', '')}</p>
-        </div>
-        <div class="info-col">
-            <p><b>Puntos clave para identificar:</b></p>
-            <ul>
-                {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
-            </ul>
-            <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
-        </div>
+        <h4>{feature}</h4>
+        <p><b>Definición:</b> {info['def']}</p>
+        <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
+        <p><b>Aplicación:</b> {info['app']}</p>
+        <p><b>Medición:</b> {info.get('medicion', '')}</p>
+        <p><b>Puntos clave para identificar:</b></p>
+        <ul>
+            {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
+        </ul>
+        <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
@@ -254,6 +248,15 @@ if main_mode == "Análisis Individual":
 
     # --- LAYOUT CORREGIDO: SÍMBOLO COMO IMAGEN EN RECUADRO BLANCO CON BORDE NEGRO ---
     # Arriba: símbolo a la izquierda (solo imagen), info-card a la derecha
+    # CSS adicional para alinear verticalmente arriba
+    st.markdown("""<style>
+    [data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: stretch !important;
+    }
+    </style>""", unsafe_allow_html=True)
     top1, top2 = st.columns([1, 3], gap="large")
     with top1:
         # Mostrar la imagen del símbolo según la característica seleccionada.
