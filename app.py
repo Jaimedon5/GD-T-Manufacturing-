@@ -310,20 +310,40 @@ if main_mode == "Análisis Individual":
     # Abajo: simulación a la izquierda, leyenda y ¿Qué ves? apilados a la derecha
     bot1, bot2 = st.columns([2.5, 1.5], gap="medium")
     with bot1:
-        # Contenedor con borde visible para el simulador
-        st.markdown("<div style='border:2.5px solid #23272e;border-radius:8px;padding:16px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.08);'>", unsafe_allow_html=True)
+        # Agregar CSS para envolver el iframe con borde
+        st.markdown("""
+        <style>
+        .plot-container {
+            border: 2.5px solid #23272e;
+            border-radius: 8px;
+            padding: 16px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .plot-container iframe {
+            border: none !important;
+            display: block;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
         if view == "Simulación 3D":
             fig = plot_3d_rectitud(tol)
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            components.html(html_plot, height=520, scrolling=False)
+            # Envolver con div y clase para CSS
+            wrapped_html = f'<div class="plot-container">{html_plot}</div>'
+            components.html(wrapped_html, height=560, scrolling=False)
         elif view == "Montaje Real":
             fig = plot_real_rectitud()
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            components.html(html_plot, height=440, scrolling=False)
+            wrapped_html = f'<div class="plot-container">{html_plot}</div>'
+            components.html(wrapped_html, height=480, scrolling=False)
         elif view == "Zona de Tolerancia":
             fig = plot_blueprint_rectitud(tol)
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            components.html(html_plot, height=380, scrolling=False)
+            wrapped_html = f'<div class="plot-container">{html_plot}</div>'
+            components.html(wrapped_html, height=420, scrolling=False)
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
             st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
@@ -341,8 +361,8 @@ if main_mode == "Análisis Individual":
                 yaxis=dict(visible=False, range=[0,4])
             )
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            components.html(html_plot, height=360, scrolling=False)
-        st.markdown("</div>", unsafe_allow_html=True)
+            wrapped_html = f'<div class="plot-container">{html_plot}</div>'
+            components.html(wrapped_html, height=400, scrolling=False)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat)
