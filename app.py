@@ -455,6 +455,18 @@ def plot_technical_drawing_rectitud(tol):
         paper_bgcolor='#f5f5f5', plot_bgcolor='#ffffff',
         font=dict(color='#000')
     )
+    # Añadir líneas punteadas magenta para la zona de tolerancia y etiqueta
+    magenta = "#d946ef"
+    y_base = 2.0
+    fig.add_shape(type='line', x0=1.0, x1=11.0, y0=y_base, y1=y_base,
+                  line=dict(color=magenta, width=2, dash='dash'))
+    fig.add_shape(type='line', x0=1.0, x1=11.0, y0=y_base-0.3, y1=y_base-0.3,
+                  line=dict(color=magenta, width=2, dash='dash'))
+    fig.add_annotation(x=11.1, y=y_base-0.15, text=f"{tol:.2f} zona de tolerancia",
+                       showarrow=True, arrowhead=2, ax=30, ay=-10,
+                       font=dict(color=magenta, size=12),
+                       align='left', bgcolor='rgba(217,70,239,0.08)',
+                       bordercolor=magenta)
     return fig
 
 
