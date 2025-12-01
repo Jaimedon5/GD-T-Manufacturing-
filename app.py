@@ -166,35 +166,100 @@ def plot_real_rectitud():
     x = np.linspace(0, 10, 100)
     y = 0.4 * np.sin(x*0.5)
     fig = go.Figure()
-    # Eje real
-    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='blue', width=4), name='Eje real'))
-    # Base de soporte
-    fig.add_shape(type='rect', x0=0, x1=10, y0=-1, y1=-0.7, fillcolor='#888', line_color='#444', layer='below')
-    # Comparador dial (palpador)
-    dial_x = [x[0]]
-    dial_y = [y[0]]
-    fig.add_trace(go.Scatter(x=dial_x, y=dial_y, mode='markers', marker=dict(size=22, color='red', symbol='circle'), name='Palpador'))
-    # Escala de medición
-    fig.add_shape(type='line', x0=10.5, x1=10.5, y0=-0.5, y1=0.5, line=dict(color='#222', width=3))
-    for tick in np.linspace(-0.5, 0.5, 11):
-        fig.add_shape(type='line', x0=10.5, x1=10.7, y0=tick, y1=tick, line=dict(color='#222', width=2))
-    # Lectura animada
+    
+    # Eje real con color contrastante
+    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6), name='Eje real'))
+    
+    # Base de soporte más visible
+    fig.add_shape(type='rect', x0=0, x1=10, y0=-0.8, y1=-0.6, fillcolor='#94a3b8', line=dict(color='#fff', width=2), layer='below')
+    
+    # Estructura del comparador (brazo vertical)
+    fig.add_shape(type='rect', x0=4.8, x1=5.2, y0=y[50], y1=1.5, fillcolor='#fbbf24', line=dict(color='#fff', width=2))
+    
+    # Carcasa del reloj comparador
+    fig.add_shape(type='circle', x0=4.5, x1=5.5, y0=1.3, y1=2.3, fillcolor='#fbbf24', line=dict(color='#fff', width=3))
+    
+    # Carátula del reloj (blanca)
+    fig.add_shape(type='circle', x0=4.6, x1=5.4, y0=1.4, y1=2.2, fillcolor='#fff', line=dict(color='#222', width=2))
+    
+    # Palpador (bola roja en contacto con el eje)
+    fig.add_trace(go.Scatter(x=[x[50]], y=[y[50]], mode='markers', 
+                             marker=dict(size=20, color='#ef4444', symbol='circle', 
+                                       line=dict(color='#fff', width=2)), 
+                             name='Palpador'))
+    
+    # Línea del palpador conectando con el comparador
+    fig.add_shape(type='line', x0=5, x1=x[50], y0=y[50], y1=y[50], 
+                 line=dict(color='#fbbf24', width=4))
+    
+    # Escala de medición (a la derecha)
+    fig.add_shape(type='rect', x0=10.8, x1=11.2, y0=-0.5, y1=0.5, 
+                 fillcolor='#fff', line=dict(color='#222', width=2))
+    
+    # Líneas de escala con números
+    scale_values = np.linspace(-0.5, 0.5, 11)
+    for i, tick in enumerate(scale_values):
+        fig.add_shape(type='line', x0=10.8, x1=11.0, y0=tick, y1=tick, 
+                     line=dict(color='#222', width=2))
+        # Añadir números en la escala
+        if i % 2 == 0:  # Solo números pares para no saturar
+            fig.add_annotation(x=11.4, y=tick, text=f"{tick:.1f}", 
+                             showarrow=False, font=dict(size=10, color='#fff'))
+    
+    # Indicador de lectura en la escala
+    fig.add_trace(go.Scatter(x=[11.0], y=[y[50]], mode='markers', 
+                            marker=dict(size=12, color='#10b981', symbol='triangle-right',
+                                      line=dict(color='#fff', width=2)), 
+                            name='Lectura'))
+    
+    # Frames para animación
     frames = []
     for i in range(0, 100, 2):
-        frames.append(go.Frame(data=[
-            go.Scatter(x=[x[i]], y=[y[i]], mode='markers', marker=dict(size=22, color='red', symbol='circle')),
-            go.Scatter(x=[10.5], y=[y[i]], mode='markers', marker=dict(size=16, color='green', symbol='line-ns-open'))
-        ]))
-    # Marcador de lectura inicial
-    fig.add_trace(go.Scatter(x=[10.5], y=[y[0]], mode='markers', marker=dict(size=16, color='green', symbol='line-ns-open'), name='Lectura'))
+        frame_data = [
+            # Eje
+            go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6)),
+            # Palpador en movimiento
+            go.Scatter(x=[x[i]], y=[y[i]], mode='markers', 
+                      marker=dict(size=20, color='#ef4444', symbol='circle',
+                                line=dict(color='#fff', width=2))),
+            # Indicador de lectura en escala
+            go.Scatter(x=[11.0], y=[y[i]], mode='markers', 
+                      marker=dict(size=12, color='#10b981', symbol='triangle-right',
+                                line=dict(color='#fff', width=2)))
+        ]
+        frames.append(go.Frame(data=frame_data, name=str(i)))
+    
     fig.frames = frames
+    
     fig.update_layout(
-        margin=dict(l=0, r=0, t=10, b=0), height=400,
-        xaxis=dict(range=[-0.5, 11.5], visible=False),
-        yaxis=dict(range=[-1.2, 1.2], visible=False),
+        margin=dict(l=0, r=20, t=10, b=0), height=400,
+        xaxis=dict(range=[-0.5, 12], visible=False),
+        yaxis=dict(range=[-1.0, 2.5], visible=False),
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
         font=dict(color='#fff'),
-        updatemenus=[dict(type="buttons", showactive=False, x=0.1, y=0, buttons=[dict(label="▶️ Play", method="animate", args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)])])]
+        showlegend=True,
+        legend=dict(x=0.02, y=0.98, bgcolor='rgba(74, 85, 104, 0.8)', 
+                   bordercolor='#fff', borderwidth=1),
+        updatemenus=[dict(
+            type="buttons", 
+            showactive=False, 
+            x=0.12, 
+            y=0.02,
+            xanchor='left',
+            yanchor='bottom',
+            bgcolor='#fbbf24',
+            bordercolor='#fff',
+            borderwidth=2,
+            buttons=[dict(
+                label="▶️ Play", 
+                method="animate", 
+                args=[None, dict(
+                    frame=dict(duration=80, redraw=True), 
+                    fromcurrent=True,
+                    mode='immediate'
+                )]
+            )]
+        )]
     )
     return fig
 
