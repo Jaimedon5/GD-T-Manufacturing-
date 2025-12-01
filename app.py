@@ -455,18 +455,31 @@ def plot_technical_drawing_rectitud(tol):
         paper_bgcolor='#f5f5f5', plot_bgcolor='#ffffff',
         font=dict(color='#000')
     )
-    # Añadir líneas punteadas magenta para la zona de tolerancia y etiqueta
-    magenta = "#d946ef"
-    y_base = 2.0
-    fig.add_shape(type='line', x0=1.0, x1=11.0, y0=y_base, y1=y_base,
-                  line=dict(color=magenta, width=2, dash='dash'))
-    fig.add_shape(type='line', x0=1.0, x1=11.0, y0=y_base-0.3, y1=y_base-0.3,
-                  line=dict(color=magenta, width=2, dash='dash'))
-    fig.add_annotation(x=11.1, y=y_base-0.15, text=f"{tol:.2f} zona de tolerancia",
-                       showarrow=True, arrowhead=2, ax=30, ay=-10,
-                       font=dict(color=magenta, size=12),
-                       align='left', bgcolor='rgba(217,70,239,0.08)',
-                       bordercolor=magenta)
+    # Añadir líneas punteadas magenta para la zona de tolerancia y etiqueta (ajustadas al ejemplo)
+    magenta = "#d946ef"  # fucsia
+    cyan = "#0ea5e9"     # azul annotation
+    # El borde inferior de la pieza es y=3.5; ponemos las líneas justo debajo
+    y_top = 3.35
+    y_bot = y_top - 0.25
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_top, y1=y_top,
+                  line=dict(color=magenta, width=2, dash='dot'))
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_bot, y1=y_bot,
+                  line=dict(color=magenta, width=2, dash='dot'))
+
+    # Bracket azul indicando la separación entre líneas (como en la imagen)
+    # Pequeñas líneas horizontales de referencia a la derecha y flechitas verticales
+    x_ref = 10.6
+    fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_top, y1=y_top,
+                  line=dict(color=cyan, width=2))
+    fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_bot, y1=y_bot,
+                  line=dict(color=cyan, width=2))
+    # Flechas/segmentos verticales conectando el bracket
+    fig.add_shape(type='line', x0=x_ref, x1=x_ref, y0=y_bot+0.03, y1=y_top-0.03,
+                  line=dict(color=cyan, width=2))
+    # Etiqueta azul
+    fig.add_annotation(x=x_ref+0.7, y=(y_top+y_bot)/2, text=f"{tol:.2f} zona de tolerancia",
+                       showarrow=False,
+                       font=dict(color=cyan, size=12))
     return fig
 
 
