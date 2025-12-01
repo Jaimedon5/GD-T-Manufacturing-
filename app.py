@@ -449,7 +449,7 @@ def plot_technical_drawing_rectitud(tol):
                        font=dict(size=9, color='#000', family='Arial'), xanchor='center')
     
     fig.update_layout(
-        margin=dict(l=0, r=0, t=10, b=0), height=450,
+        margin=dict(l=20, r=20, t=20, b=20), height=520,
         xaxis=dict(range=[0, 12], visible=False),
         yaxis=dict(range=[0, 8], visible=False),
         paper_bgcolor='#f5f5f5', plot_bgcolor='#ffffff',
@@ -459,16 +459,20 @@ def plot_technical_drawing_rectitud(tol):
     magenta = "#d946ef"  # fucsia
     cyan = "#0ea5e9"     # azul annotation
     # El borde inferior de la pieza es y=3.5; ponemos las líneas justo debajo
-    y_top = 3.35
+    y_top = 3.30
     y_bot = y_top - 0.25
+    y_mid = (y_top + y_bot) / 2
     fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_top, y1=y_top,
                   line=dict(color=magenta, width=2, dash='dot'))
     fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_bot, y1=y_bot,
                   line=dict(color=magenta, width=2, dash='dot'))
+    # Línea negra horizontal al centro de la zona de tolerancia
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_mid, y1=y_mid,
+                  line=dict(color='#000', width=2))
 
     # Bracket azul indicando la separación entre líneas (como en la imagen)
     # Pequeñas líneas horizontales de referencia a la derecha y flechitas verticales
-    x_ref = 10.6
+    x_ref = 10.3
     fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_top, y1=y_top,
                   line=dict(color=cyan, width=2))
     fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_bot, y1=y_bot,
@@ -477,7 +481,7 @@ def plot_technical_drawing_rectitud(tol):
     fig.add_shape(type='line', x0=x_ref, x1=x_ref, y0=y_bot+0.03, y1=y_top-0.03,
                   line=dict(color=cyan, width=2))
     # Etiqueta azul
-    fig.add_annotation(x=x_ref+0.7, y=(y_top+y_bot)/2, text=f"{tol:.2f} zona de tolerancia",
+    fig.add_annotation(x=11.0, y=y_mid, text=f"{tol:.2f} zona de tolerancia",
                        showarrow=False,
                        font=dict(color=cyan, size=12))
     return fig
@@ -617,7 +621,7 @@ if main_mode == "Análisis Individual":
             fig = plot_technical_drawing_rectitud(tol)
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=450, scrolling=False)
+            components.html(wrapped_html, height=520, scrolling=False)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat, view)
