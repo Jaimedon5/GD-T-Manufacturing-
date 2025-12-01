@@ -25,7 +25,7 @@ st.markdown("""<style>
 h1,h2,h3,h4,h5,h6{color:#23272e!important;}
 </style>""", unsafe_allow_html=True)
 ST_SYMBOL_SIZE = 200
-st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:auto;column-count:3;column-gap:20px;font-size:0.88em;}}.info-card h4{{margin:0 0 8px 0;font-size:1.1em;color:#004B87;break-after:avoid;}}.info-card p{{margin:4px 0;line-height:1.4;}}.info-card ul{{margin:4px 0;padding-left:18px;line-height:1.4;}}.info-card li{{break-inside:avoid;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
+st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:12px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:auto;display:flex;align-items:flex-start;}}.info-card table{{line-height:1.3;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
 # Incluye puntos clave y diferenciadores pedagógicos
@@ -94,19 +94,32 @@ def show_legend(feature):
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
-    # HTML continuo en 3 columnas CSS (column-count)
+    # Construir puntos clave como texto simple
+    puntos_html = '<br>'.join([f'• {pt}' for pt in info['key_points']])
+    # HTML en formato tabla: fila 1 título, fila 2 encabezados, fila 3 datos
     html = f"""
     <div class="info-card">
-        <h4>{feature}</h4>
-        <p><b>Definición:</b> {info['def']}</p>
-        <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
-        <p><b>Aplicación:</b> {info['app']}</p>
-        <p><b>Medición:</b> {info.get('medicion', '')}</p>
-        <p><b>Puntos clave para identificar:</b></p>
-        <ul>
-            {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
-        </ul>
-        <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
+        <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
+            <tr>
+                <th colspan="6" style="text-align:left;padding:8px;font-size:1.1em;color:#004B87;border-bottom:2px solid #004B87;">{feature}</th>
+            </tr>
+            <tr style="background:#e0e7ef;">
+                <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Definición</th>
+                <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Zona de tolerancia</th>
+                <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Aplicación</th>
+                <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Medición</th>
+                <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Puntos clave para identificar</th>
+                <th style="padding:6px;text-align:left;font-size:0.9em;">¿Cómo NO confundirlo?</th>
+            </tr>
+            <tr>
+                <td style="padding:8px;vertical-align:top;border-right:1px solid #ddd;">{info['def']}</td>
+                <td style="padding:8px;vertical-align:top;border-right:1px solid #ddd;">{info.get('zona_tol', 'N/A')}</td>
+                <td style="padding:8px;vertical-align:top;border-right:1px solid #ddd;">{info['app']}</td>
+                <td style="padding:8px;vertical-align:top;border-right:1px solid #ddd;">{info.get('medicion', 'N/A')}</td>
+                <td style="padding:8px;vertical-align:top;border-right:1px solid #ddd;">{puntos_html}</td>
+                <td style="padding:8px;vertical-align:top;color:#1976d2;">{info['diff']}</td>
+            </tr>
+        </table>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
@@ -248,7 +261,7 @@ if main_mode == "Análisis Individual":
 
     # --- LAYOUT CORREGIDO: SÍMBOLO COMO IMAGEN EN RECUADRO BLANCO CON BORDE NEGRO ---
     # Arriba: símbolo a la izquierda (solo imagen), info-card a la derecha
-    # CSS adicional para alinear verticalmente arriba
+    # CSS adicional para alinear verticalmente arriba y ajustar spacing
     st.markdown("""<style>
     [data-testid="column"] {
         display: flex !important;
@@ -256,8 +269,16 @@ if main_mode == "Análisis Individual":
         justify-content: flex-start !important;
         align-items: stretch !important;
     }
+    .symbol-box {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .info-card {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
     </style>""", unsafe_allow_html=True)
-    top1, top2 = st.columns([1, 3], gap="large")
+    top1, top2 = st.columns([1, 4], gap="medium")
     with top1:
         # Mostrar la imagen del símbolo según la característica seleccionada.
         img_path = get_symbol_image_path(cat)
