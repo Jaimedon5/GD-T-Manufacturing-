@@ -167,6 +167,18 @@ def plot_real_rectitud():
     y = 0.4 * np.sin(x*0.5)
     fig = go.Figure()
     
+    # Cuadrícula de fondo tenue para visualizar tolerancia
+    for grid_y in np.arange(-0.8, 2.4, 0.2):
+        fig.add_shape(type='line', x0=-0.5, x1=12, y0=grid_y, y1=grid_y,
+                     line=dict(color='rgba(148, 163, 184, 0.15)', width=1), layer='below')
+    for grid_x in np.arange(0, 12, 1):
+        fig.add_shape(type='line', x0=grid_x, x1=grid_x, y0=-0.8, y1=2.3,
+                     line=dict(color='rgba(148, 163, 184, 0.15)', width=1), layer='below')
+    
+    # Zona de tolerancia visual (banda sutil)
+    fig.add_shape(type='rect', x0=0, x1=10, y0=y.min()-0.05, y1=y.max()+0.05,
+                 fillcolor='rgba(251, 191, 36, 0.1)', line=dict(width=0), layer='below')
+    
     # Eje real con color contrastante
     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6), name='Eje real'))
     
@@ -182,14 +194,18 @@ def plot_real_rectitud():
     # Carátula del reloj (blanca)
     fig.add_shape(type='circle', x0=4.6, x1=5.4, y0=1.4, y1=2.2, fillcolor='#fff', line=dict(color='#222', width=2))
     
+    # Manecilla del reloj (indicador interno)
+    fig.add_shape(type='line', x0=5, x1=5.25, y0=1.8, y1=1.95,
+                 line=dict(color='#ef4444', width=3))
+    
     # Palpador (bola roja en contacto con el eje)
-    fig.add_trace(go.Scatter(x=[x[50]], y=[y[50]], mode='markers', 
+    fig.add_trace(go.Scatter(x=[x[0]], y=[y[0]], mode='markers', 
                              marker=dict(size=20, color='#ef4444', symbol='circle', 
                                        line=dict(color='#fff', width=2)), 
                              name='Palpador'))
     
-    # Línea del palpador conectando con el comparador
-    fig.add_shape(type='line', x0=5, x1=x[50], y0=y[50], y1=y[50], 
+    # Línea del palpador conectando con el comparador (posición inicial)
+    fig.add_shape(type='line', x0=5, x1=x[0], y0=y[0]+0.4, y1=y[0], 
                  line=dict(color='#fbbf24', width=4))
     
     # Escala de medición (a la derecha)
@@ -206,8 +222,8 @@ def plot_real_rectitud():
             fig.add_annotation(x=11.4, y=tick, text=f"{tick:.1f}", 
                              showarrow=False, font=dict(size=10, color='#fff'))
     
-    # Indicador de lectura en la escala
-    fig.add_trace(go.Scatter(x=[11.0], y=[y[50]], mode='markers', 
+    # Indicador de lectura en la escala (posición inicial)
+    fig.add_trace(go.Scatter(x=[11.0], y=[y[0]], mode='markers', 
                             marker=dict(size=12, color='#10b981', symbol='triangle-right',
                                       line=dict(color='#fff', width=2)), 
                             name='Lectura'))
@@ -233,8 +249,8 @@ def plot_real_rectitud():
     
     fig.update_layout(
         margin=dict(l=0, r=20, t=10, b=0), height=400,
-        xaxis=dict(range=[-0.5, 12], visible=False),
-        yaxis=dict(range=[-1.0, 2.5], visible=False),
+        xaxis=dict(range=[-0.5, 12], visible=False, showgrid=False),
+        yaxis=dict(range=[-1.0, 2.5], visible=False, showgrid=False),
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
         font=dict(color='#fff'),
         showlegend=True,
@@ -247,18 +263,47 @@ def plot_real_rectitud():
             y=0.02,
             xanchor='left',
             yanchor='bottom',
+            buttons=[
+                dict(
+                    label="⏮️",
+                    method="animate",
+                    args=[
+                        [str(0)],
+                        dict(
+                            mode="immediate",
+                            frame=dict(duration=0, redraw=True),
+                            transition=dict(duration=0)
+                        )
+                    ]
+                ),
+                dict(
+                    label="▶️",
+                    method="animate",
+                    args=[
+                        None,
+                        dict(
+                            frame=dict(duration=80, redraw=True),
+                            fromcurrent=True,
+                            mode="immediate"
+                        )
+                    ]
+                ),
+                dict(
+                    label="⏸️",
+                    method="animate",
+                    args=[
+                        [None],
+                        dict(
+                            mode="immediate",
+                            frame=dict(duration=0, redraw=False)
+                        )
+                    ]
+                )
+            ],
             bgcolor='#fbbf24',
             bordercolor='#fff',
             borderwidth=2,
-            buttons=[dict(
-                label="▶️ Play", 
-                method="animate", 
-                args=[None, dict(
-                    frame=dict(duration=80, redraw=True), 
-                    fromcurrent=True,
-                    mode='immediate'
-                )]
-            )]
+            font=dict(size=14)
         )]
     )
     return fig
