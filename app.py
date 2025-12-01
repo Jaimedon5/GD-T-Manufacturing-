@@ -230,9 +230,9 @@ def plot_real_rectitud():
             bgcolor='#fbbf24', bordercolor='#fff', borderwidth=2, font=dict(size=13)
         )]
     )
-    # Anotación principal fija (arriba-izquierda) para no interferir con la animación
+    # Anotación principal fija (arriba-centro-derecha) para no interferir con la animación
     fig.add_annotation(
-        x=0.30, y=0.96, xref='paper', yref='paper', xanchor='left', yanchor='top',
+        x=0.42, y=0.96, xref='paper', yref='paper', xanchor='left', yanchor='top',
         text='<b>¿Qué ves?</b> El palpador recorre el eje y la aguja<br><span style="color:#22d3ee">(aguja cian)</span> traduce ese movimiento en una lectura<br>amplificada (desviación de rectitud).',
         showarrow=False, align='left', bgcolor='rgba(255,255,255,0.97)',
         bordercolor='#1e293b', borderwidth=2, borderpad=8,
@@ -252,12 +252,12 @@ def plot_real_rectitud():
         bgcolor='rgba(255,255,255,0.97)', bordercolor='#1e293b', borderwidth=2, borderpad=8,
         font=dict(size=11, color='#1e293b')
     )
-    # Números de la escala (coordenadas del gráfico)
+    # Números de la escala (coordenadas del gráfico, fuera a la derecha)
     for tick in scale_values:
-        fig.add_annotation(x=11.23, y=float(tick), xref='x', yref='y',
+        fig.add_annotation(x=11.35, y=float(tick), xref='x', yref='y',
                            text=f"{tick:.1f}", showarrow=False,
-                           font=dict(size=10, color='#111'),
-                           xanchor='right', yanchor='middle')
+                           font=dict(size=10, color='#fff'),
+                           xanchor='left', yanchor='middle')
     return fig
 
 def plot_blueprint_rectitud(tol):
