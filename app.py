@@ -147,16 +147,17 @@ def plot_3d_rectitud(tol):
     # Zona de tolerancia
     theta = np.linspace(0, 2*np.pi, 35)
     tg, zg = np.meshgrid(theta, z)
-    fig.add_trace(go.Surface(x=tol*np.cos(tg), y=tol*np.sin(tg), z=zg, opacity=0.3, colorscale='Oranges', name='Zona de tolerancia'))
+    fig.add_trace(go.Surface(x=tol*np.cos(tg), y=tol*np.sin(tg), z=zg, opacity=0.3, colorscale='Oranges', name='Zona de tolerancia', showscale=True, colorbar=dict(tickfont=dict(color='#fff'))))
     fig.update_layout(
-        margin=dict(l=0, r=0, t=40, b=0), height=500,
+        margin=dict(l=0, r=0, t=10, b=0), height=500,
         scene=dict(
             xaxis=dict(visible=False, backgroundcolor='#4a5568'),
             yaxis=dict(visible=False, backgroundcolor='#4a5568'),
-            zaxis=dict(visible=True, backgroundcolor='#4a5568', gridcolor='#6b7280'),
+            zaxis=dict(visible=True, backgroundcolor='#4a5568', gridcolor='#94a3b8', color='#fff'),
             bgcolor='#4a5568'
         ),
-        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568'
+        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
+        font=dict(color='#fff')
     )
     return fig
 
@@ -188,10 +189,11 @@ def plot_real_rectitud():
     fig.add_trace(go.Scatter(x=[10.5], y=[y[0]], mode='markers', marker=dict(size=16, color='green', symbol='line-ns-open'), name='Lectura'))
     fig.frames = frames
     fig.update_layout(
-        margin=dict(l=0, r=0, t=40, b=0), height=400,
+        margin=dict(l=0, r=0, t=10, b=0), height=400,
         xaxis=dict(range=[-0.5, 11.5], visible=False),
         yaxis=dict(range=[-1.2, 1.2], visible=False),
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
+        font=dict(color='#fff'),
         updatemenus=[dict(type="buttons", showactive=False, x=0.1, y=0, buttons=[dict(label="▶️ Play", method="animate", args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)])])]
     )
     return fig
@@ -209,8 +211,9 @@ def plot_blueprint_rectitud(tol):
     # Eje real
     fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='#1976d2', width=4), name='Eje real'))
     fig.update_layout(
-        margin=dict(l=0, r=0, t=40, b=0), height=350,
+        margin=dict(l=0, r=0, t=10, b=0), height=350,
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
+        font=dict(color='#fff'),
         xaxis=dict(visible=False),
         yaxis=dict(visible=False)
     )
@@ -334,17 +337,17 @@ if main_mode == "Análisis Individual":
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             # Envolver con div y clase para CSS
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=560, scrolling=False)
+            components.html(wrapped_html, height=540, scrolling=False)
         elif view == "Montaje Real":
             fig = plot_real_rectitud()
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=480, scrolling=False)
+            components.html(wrapped_html, height=460, scrolling=False)
         elif view == "Zona de Tolerancia":
             fig = plot_blueprint_rectitud(tol)
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=420, scrolling=False)
+            components.html(wrapped_html, height=400, scrolling=False)
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
             st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
