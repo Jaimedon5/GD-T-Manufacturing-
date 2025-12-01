@@ -94,32 +94,28 @@ def show_legend(feature):
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
-    # Columna 1
-    col1_html = f"""
-    <div class="info-col">
-        <h4>{feature}</h4>
-        <p><b>Definición:</b> {info['def']}</p>
-        <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
+    # Construir HTML de las tres columnas
+    html = f"""
+    <div class="info-card">
+        <div class="info-col">
+            <h4>{feature}</h4>
+            <p><b>Definición:</b> {info['def']}</p>
+            <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
+        </div>
+        <div class="info-col">
+            <p><b>Aplicación:</b> {info['app']}</p>
+            <p>{info.get('medicion', '')}</p>
+        </div>
+        <div class="info-col">
+            <p><b>Puntos clave para identificar:</b></p>
+            <ul>
+                {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
+            </ul>
+            <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
+        </div>
     </div>
     """
-    # Columna 2
-    col2_html = f"""
-    <div class="info-col">
-        <p><b>Aplicación:</b> {info['app']}</p>
-        <p>{info.get('medicion', '')}</p>
-    </div>
-    """
-    # Columna 3
-    col3_html = f"""
-    <div class="info-col">
-        <p><b>Puntos clave para identificar:</b></p>
-        <ul>
-            {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
-        </ul>
-        <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
-    </div>
-    """
-    st.markdown(f'<div class="info-card">{col1_html}{col2_html}{col3_html}</div>', unsafe_allow_html=True)
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def get_symbol_image_path(feature):
