@@ -90,7 +90,7 @@ def show_legend(feature):
     .pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}}
     .category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}
     h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}
-    .sim-box{{border:2px solid #94a3b8;border-radius:8px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,247,250,0.6));}}
+    .sim-box{{border:2.5px solid #23272e;border-radius:8px;padding:10px;background:#fff;margin:0;}}
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
@@ -278,7 +278,7 @@ if main_mode == "Análisis Individual":
         margin-bottom: 0 !important;
     }
     </style>""", unsafe_allow_html=True)
-    top1, top2 = st.columns([1, 4], gap="medium")
+    top1, top2 = st.columns([1, 5], gap="small")
     with top1:
         # Mostrar la imagen del símbolo según la característica seleccionada.
         img_path = get_symbol_image_path(cat)
@@ -305,29 +305,26 @@ if main_mode == "Análisis Individual":
     with top2:
         show_info_card(cat)
 
-    st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
 
     # Abajo: simulación a la izquierda, leyenda y ¿Qué ves? apilados a la derecha
-    bot1, bot2 = st.columns([2.2, 1.2], gap="large")
+    bot1, bot2 = st.columns([2.5, 1.5], gap="medium")
     with bot1:
         if view == "Simulación 3D":
             fig = plot_3d_rectitud(tol)
-            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            components.html(html, height=520, scrolling=False)
-            st.markdown("</div>", unsafe_allow_html=True)
+            html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
+            sim_html = f"<div class='sim-box'>{html_plot}</div>"
+            components.html(sim_html, height=540, scrolling=False)
         elif view == "Montaje Real":
             fig = plot_real_rectitud()
-            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            components.html(html, height=440, scrolling=False)
-            st.markdown("</div>", unsafe_allow_html=True)
+            html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
+            sim_html = f"<div class='sim-box'>{html_plot}</div>"
+            components.html(sim_html, height=460, scrolling=False)
         elif view == "Zona de Tolerancia":
             fig = plot_blueprint_rectitud(tol)
-            html = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            st.markdown("<div class='sim-box'>", unsafe_allow_html=True)
-            components.html(html, height=380, scrolling=False)
-            st.markdown("</div>", unsafe_allow_html=True)
+            html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
+            sim_html = f"<div class='sim-box'>{html_plot}</div>"
+            components.html(sim_html, height=400, scrolling=False)
         elif view == "Plano Técnico Real":
             st.markdown("### Plano Técnico Real")
             st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
