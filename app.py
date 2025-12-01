@@ -151,12 +151,12 @@ def plot_3d_rectitud(tol):
     fig.update_layout(
         margin=dict(l=0, r=0, t=40, b=0), height=500,
         scene=dict(
-            xaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
-            yaxis=dict(visible=False, backgroundcolor='#e5e7eb'),
-            zaxis=dict(visible=True, backgroundcolor='#e5e7eb'),
-            bgcolor='#e5e7eb'
+            xaxis=dict(visible=False, backgroundcolor='#4a5568'),
+            yaxis=dict(visible=False, backgroundcolor='#4a5568'),
+            zaxis=dict(visible=True, backgroundcolor='#4a5568', gridcolor='#6b7280'),
+            bgcolor='#4a5568'
         ),
-        paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb'
+        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568'
     )
     return fig
 
@@ -191,6 +191,7 @@ def plot_real_rectitud():
         margin=dict(l=0, r=0, t=40, b=0), height=400,
         xaxis=dict(range=[-0.5, 11.5], visible=False),
         yaxis=dict(range=[-1.2, 1.2], visible=False),
+        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
         updatemenus=[dict(type="buttons", showactive=False, x=0.1, y=0, buttons=[dict(label="▶️ Play", method="animate", args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)])])]
     )
     return fig
@@ -209,7 +210,7 @@ def plot_blueprint_rectitud(tol):
     fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='#1976d2', width=4), name='Eje real'))
     fig.update_layout(
         margin=dict(l=0, r=0, t=40, b=0), height=350,
-        paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
+        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
         xaxis=dict(visible=False),
         yaxis=dict(visible=False)
     )
