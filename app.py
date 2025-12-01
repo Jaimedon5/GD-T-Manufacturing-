@@ -19,13 +19,13 @@ st.markdown("""<style>
 [data-testid="stSidebar"]{background-color:#23272e!important;}
 [data-testid="stSidebar"] *{color:#f3f4f6!important;}
 .legend-box{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}
-.info-card{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;}
+.info-card{background:#f3f4f6;border-left:8px solid #004B87;padding:16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:200px;overflow:hidden;display:flex;gap:16px;}
 .pedagogic-box{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:'Courier New',monospace;margin-top:15px;}
 .category-label{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}
 h1,h2,h3,h4,h5,h6{color:#23272e!important;}
 </style>""", unsafe_allow_html=True)
 ST_SYMBOL_SIZE = 200
-st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:200px;overflow:auto;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
+st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:16px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:hidden;display:flex;gap:16px;}}.info-col{{flex:1;display:flex;flex-direction:column;font-size:0.9em;}}.info-col h4{{margin:0 0 8px 0;font-size:1.05em;color:#004B87;}}.info-col p{{margin:4px 0;line-height:1.4;}}.info-col ul{{margin:4px 0;padding-left:18px;line-height:1.4;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
 # Incluye puntos clave y diferenciadores pedagógicos
@@ -34,11 +34,12 @@ def get_gd_data():
         'Rectitud': {
             'symbol': '⏤',
             'def': 'Condición donde un elemento lineal es una línea recta.',
+            'zona_tol': 'Líneas paralelas, dónde debe estar el elemento de superficie.',
             'app': 'Vástagos, ejes largos, rieles.',
+            'medicion': 'Se mide con: comparador o proyector de perfiles.',
             'key_points': [
                 'Solo controla la línea central o generatriz, no la forma completa.',
-                'No requiere datum.',
-                'Se mide con comparador o proyector de perfiles.'
+                'No requiere datum.'
             ],
             'diff': 'No confundir con planicidad: la rectitud es 1D, la planicidad es 2D.',
             'pedagogic': 'Rectitud evalúa si un eje o borde es perfectamente recto, útil para piezas largas.',
@@ -93,18 +94,32 @@ def show_legend(feature):
     </style>""", unsafe_allow_html=True)
 def show_info_card(feature):
     info = GD_DATA[feature]
-    st.markdown(f"""
-    <div class="info-card">
-        <h3 style="margin:0; color: #004B87;">{feature} {info['symbol']}</h3>
+    # Columna 1
+    col1_html = f"""
+    <div class="info-col">
+        <h4>{feature}</h4>
         <p><b>Definición:</b> {info['def']}</p>
+        <p><b>Zona de tolerancia:</b> {info.get('zona_tol', 'N/A')}</p>
+    </div>
+    """
+    # Columna 2
+    col2_html = f"""
+    <div class="info-col">
         <p><b>Aplicación:</b> {info['app']}</p>
+        <p>{info.get('medicion', '')}</p>
+    </div>
+    """
+    # Columna 3
+    col3_html = f"""
+    <div class="info-col">
+        <p><b>Puntos clave para identificar:</b></p>
         <ul>
-            <b>Puntos clave para identificar:</b>
             {''.join([f'<li>{pt}</li>' for pt in info['key_points']])}
         </ul>
-        <p style="color:#1976d2;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
+        <p style="color:#1976d2;margin-top:8px;"><b>¿Cómo NO confundirlo?</b> {info['diff']}</p>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(f'<div class="info-card">{col1_html}{col2_html}{col3_html}</div>', unsafe_allow_html=True)
 
 
 def get_symbol_image_path(feature):
