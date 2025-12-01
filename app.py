@@ -252,23 +252,51 @@ def plot_real_rectitud():
 
 def plot_blueprint_rectitud(tol):
     fig = go.Figure()
-    # Dibuja área de tolerancia como un rectángulo gris claro
     x = np.linspace(0, 10, 2)
     y1 = tol/2 * np.ones_like(x)
     y2 = -tol/2 * np.ones_like(x)
-    fig.add_shape(type='rect', x0=0, x1=10, y0=-tol/2, y1=tol/2, fillcolor='#d1d5db', line=dict(color='#bdbdbd', width=0), layer='below')
+    
+    # Shapes base: cuadrícula tenue + escala lateral derecha
+    shapes = []
+    # Cuadrícula horizontal
+    for gy in np.arange(-1.0, 1.2, 0.2):
+        shapes.append(dict(type='line', x0=-0.5, x1=10.5, y0=gy, y1=gy,
+                          line=dict(color='rgba(148,163,184,0.15)', width=1), layer='below'))
+    # Cuadrícula vertical
+    for gx in np.arange(0, 11, 1):
+        shapes.append(dict(type='line', x0=gx, x1=gx, y0=-1.0, y1=1.0,
+                          line=dict(color='rgba(148,163,184,0.15)', width=1), layer='below'))
+    # Área de tolerancia (zona gris)
+    shapes.append(dict(type='rect', x0=0, x1=10, y0=-tol/2, y1=tol/2,
+                      fillcolor='rgba(209,213,219,0.3)', line=dict(color='#94a3b8', width=1), layer='below'))
+    # Escala vertical derecha
+    shapes.append(dict(type='rect', x0=10.8, x1=11.2, y0=-0.5, y1=0.5,
+                      fillcolor='#fff', line=dict(color='#222', width=2)))
+    scale_values = np.linspace(-0.5, 0.5, 11)
+    for tick in scale_values:
+        shapes.append(dict(type='line', x0=10.8, x1=11.0, y0=tick, y1=tick,
+                          line=dict(color='#222', width=2)))
+    
     # Líneas de límite de tolerancia
-    fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', line=dict(color='#ff9800', width=5), name='Límite sup.'))
-    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', line=dict(color='#ff9800', width=5), name='Límite inf.'))
-    # Eje real
-    fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='#1976d2', width=4), name='Eje real'))
+    fig.add_trace(go.Scatter(x=x, y=y1, mode='lines', line=dict(color='#ff9800', width=5), name='Límite sup.', showlegend=False))
+    fig.add_trace(go.Scatter(x=x, y=y2, mode='lines', line=dict(color='#ff9800', width=5), name='Límite inf.', showlegend=False))
+    # Eje real ideal
+    fig.add_trace(go.Scatter(x=x, y=np.zeros_like(x), mode='lines', line=dict(color='#1976d2', width=4), name='Eje real', showlegend=False))
+    
     fig.update_layout(
-        margin=dict(l=0, r=0, t=10, b=0), height=350,
+        shapes=shapes,
+        margin=dict(l=0, r=10, t=10, b=0), height=350,
+        xaxis=dict(range=[-0.5, 11.5], visible=False),
+        yaxis=dict(range=[-1.0, 1.0], visible=False),
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
-        font=dict(color='#fff'),
-        xaxis=dict(visible=False),
-        yaxis=dict(visible=False)
+        font=dict(color='#fff'), showlegend=False
     )
+    # Números de escala
+    for tick in scale_values:
+        fig.add_annotation(x=11.35, y=float(tick), xref='x', yref='y',
+                          text=f"{tick:.1f}", showarrow=False,
+                          font=dict(size=10, color='#fff'),
+                          xanchor='left', yanchor='middle')
     return fig
 
 
@@ -434,7 +462,14 @@ if main_mode == "Análisis Individual":
                 </div>
             """, unsafe_allow_html=True)
         elif view == "Zona de Tolerancia":
-            st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class='pedagogic-box'>
+                    <b>¿Qué ves?</b> Zona gris clara: área permitida de tolerancia ({tol} mm de ancho).<br>
+                    Líneas naranjas: límites superior e inferior. Línea azul: eje ideal.<br>
+                    Escala derecha: referencia de desviación permitida.<br><br>
+                    <b>Interpretación:</b> El eje debe permanecer dentro de la zona para cumplir rectitud.
+                </div>
+            """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif main_mode == "Constructor de Plano":
