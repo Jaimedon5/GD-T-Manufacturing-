@@ -299,6 +299,81 @@ def plot_blueprint_rectitud(tol):
                           xanchor='left', yanchor='middle')
     return fig
 
+def plot_technical_drawing_rectitud(tol):
+    """Genera un plano técnico realista con cotas, líneas de referencia, símbolo GD&T y anotaciones."""
+    fig = go.Figure()
+    
+    # Fondo estilo papel técnico (blanco/gris muy claro)
+    # Pieza: perfil rectangular simplificado (vista frontal de un eje)
+    fig.add_shape(type='rect', x0=1, x1=9, y0=2, y1=4, fillcolor='#f9fafb', 
+                  line=dict(color='#111', width=2))
+    
+    # Líneas de eje central (punteadas)
+    fig.add_shape(type='line', x0=0.5, x1=9.5, y0=3, y1=3, 
+                  line=dict(color='#3b82f6', width=1.5, dash='dash'))
+    
+    # Líneas de cota horizontal (acotación longitud)
+    fig.add_shape(type='line', x0=1, x1=9, y0=1.2, y1=1.2, 
+                  line=dict(color='#1e40af', width=1.5))
+    # Flechas de cota (pequeños triángulos)
+    fig.add_annotation(x=1, y=1.2, ax=1.3, ay=1.2, showarrow=True, 
+                       arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor='#1e40af')
+    fig.add_annotation(x=9, y=1.2, ax=8.7, ay=1.2, showarrow=True, 
+                       arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor='#1e40af')
+    # Texto de cota (longitud)
+    fig.add_annotation(x=5, y=1.0, text="80.00", showarrow=False, 
+                       font=dict(size=14, color='#1e40af', family='Arial'))
+    
+    # Líneas de cota vertical (diámetro/altura)
+    fig.add_shape(type='line', x0=9.8, x1=9.8, y0=2, y1=4, 
+                  line=dict(color='#1e40af', width=1.5))
+    fig.add_annotation(x=9.8, y=2, ax=9.8, ay=2.3, showarrow=True, 
+                       arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor='#1e40af')
+    fig.add_annotation(x=9.8, y=4, ax=9.8, ay=3.7, showarrow=True, 
+                       arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor='#1e40af')
+    fig.add_annotation(x=10.2, y=3, text="Ø20", showarrow=False, 
+                       font=dict(size=14, color='#1e40af', family='Arial'))
+    
+    # Marco de control de característica GD&T (rectitud)
+    # Cuadro con símbolo y tolerancia
+    fig.add_shape(type='rect', x0=4, x1=6.5, y0=4.5, y1=5.0, 
+                  fillcolor='#fff', line=dict(color='#111', width=2))
+    # Divisor interno
+    fig.add_shape(type='line', x0=4.7, x1=4.7, y0=4.5, y1=5.0, 
+                  line=dict(color='#111', width=2))
+    # Símbolo de rectitud (línea horizontal)
+    fig.add_shape(type='line', x0=4.15, x1=4.55, y0=4.75, y1=4.75, 
+                  line=dict(color='#111', width=3))
+    # Valor de tolerancia
+    fig.add_annotation(x=5.35, y=4.75, text=f"Ø{tol}", showarrow=False, 
+                       font=dict(size=13, color='#111', family='Arial'), 
+                       xanchor='center', yanchor='middle')
+    
+    # Flecha apuntando del marco GD&T a la pieza
+    fig.add_annotation(x=5.25, y=4.5, ax=5.25, ay=4.0, showarrow=True, 
+                       arrowhead=2, arrowsize=1.5, arrowwidth=2, arrowcolor='#111')
+    
+    # Título del plano (esquina superior)
+    fig.add_annotation(x=1, y=5.5, text="<b>PIEZA: EJE RECTIFICADO</b>", showarrow=False, 
+                       font=dict(size=15, color='#111', family='Arial'), 
+                       xanchor='left', yanchor='top')
+    
+    # Notas técnicas (esquina inferior derecha)
+    fig.add_annotation(x=8.5, y=0.5, 
+                       text="Material: Acero AISI 1045<br>Acabado: Rectificado<br>Escala: 1:2", 
+                       showarrow=False, font=dict(size=10, color='#374151', family='Arial'), 
+                       xanchor='right', yanchor='bottom', align='right',
+                       bgcolor='rgba(249,250,251,0.9)', bordercolor='#d1d5db', borderwidth=1, borderpad=6)
+    
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=20, b=0), height=400,
+        xaxis=dict(range=[0, 11], visible=False),
+        yaxis=dict(range=[0, 6], visible=False),
+        paper_bgcolor='#e5e7eb', plot_bgcolor='#ffffff',
+        font=dict(color='#111')
+    )
+    return fig
+
 
 
 # ===================== INTERFAZ PRINCIPAL =====================
@@ -431,24 +506,10 @@ if main_mode == "Análisis Individual":
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
             components.html(wrapped_html, height=400, scrolling=False)
         elif view == "Plano Técnico Real":
-            st.markdown("### Plano Técnico Real")
-            st.info("Esta función mostrará un plano técnico realista con cotas, líneas de referencia y anotaciones, como en los ejemplos del PDF. (En desarrollo)")
-            fig = go.Figure()
-            fig.add_shape(type='rect', x0=1, x1=9, y0=1, y1=3, line=dict(color='#222', width=2))
-            fig.add_shape(type='line', x0=1, x1=9, y0=0.7, y1=0.7, line=dict(color='#1976d2', width=2, dash='dot'))
-            fig.add_annotation(x=1, y=0.7, ax=1.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
-            fig.add_annotation(x=9, y=0.7, ax=8.5, ay=0.7, showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2)
-            fig.add_annotation(x=5, y=0.5, text="8.00", showarrow=False, font=dict(size=16, color='#1976d2'))
-            fig.add_annotation(x=5, y=3.2, text="Rectitud", showarrow=False, font=dict(size=16, color='#222'))
-            fig.update_layout(
-                margin=dict(l=0, r=0, t=40, b=0), height=350,
-                paper_bgcolor='#e5e7eb', plot_bgcolor='#e5e7eb',
-                xaxis=dict(visible=False, range=[0,10]),
-                yaxis=dict(visible=False, range=[0,4])
-            )
+            fig = plot_technical_drawing_rectitud(tol)
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=400, scrolling=False)
+            components.html(wrapped_html, height=450, scrolling=False)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat, view)
@@ -468,6 +529,15 @@ if main_mode == "Análisis Individual":
                     Líneas naranjas: límites superior e inferior. Línea azul: eje ideal.<br>
                     Escala derecha: referencia de desviación permitida.<br><br>
                     <b>Interpretación:</b> El eje debe permanecer dentro de la zona para cumplir rectitud.
+                </div>
+            """, unsafe_allow_html=True)
+        elif view == "Plano Técnico Real":
+            st.markdown(f"""
+                <div class='pedagogic-box'>
+                    <b>¿Qué ves?</b> Plano técnico estilo industrial: pieza (rectángulo), cotas con flechas,<br>
+                    línea de eje central punteada (azul), marco GD&T con símbolo de rectitud y tolerancia Ø{tol}.<br><br>
+                    <b>Interpretación:</b> Este es el formato real usado en manufactura: dimensiones, marco de control<br>
+                    de característica (cuadro con símbolo + valor) y notas técnicas (material, acabado, escala).
                 </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
