@@ -183,7 +183,7 @@ def plot_real_rectitud():
             mx = cx + (dial_radius - 0.08) * np.cos(a)
             my = dial_center_y + (dial_radius - 0.08) * np.sin(a)
             shapes.append(dict(type='circle', x0=mx-0.02, x1=mx+0.02, y0=my-0.02, y1=my+0.02, fillcolor='#222', line=dict(width=0)))
-        shapes.append(dict(type='line', x0=cx, x1=needle_x, y0=dial_center_y, y1=needle_y, line=dict(color='#dc2626', width=3)))
+        shapes.append(dict(type='line', x0=cx, x1=needle_x, y0=dial_center_y, y1=needle_y, line=dict(color='#22d3ee', width=3)))
         shapes.append(dict(type='circle', x0=cx-0.04, x1=cx+0.04, y0=dial_center_y-0.04, y1=dial_center_y+0.04, fillcolor='#374151', line=dict(width=0)))
         shapes.append(dict(type='rect', x0=cx-0.08, x1=cx+0.08, y0=dial_center_y+dial_radius+0.05, y1=dial_center_y+dial_radius+0.15, fillcolor='#52525b', line=dict(color='#3f3f46', width=1)))
         return shapes
@@ -232,8 +232,8 @@ def plot_real_rectitud():
     )
     # Anotación principal fija (arriba-izquierda) para no interferir con la animación
     fig.add_annotation(
-        x=0.12, y=0.96, xref='paper', yref='paper', xanchor='left', yanchor='top',
-        text='<b>¿Qué ves?</b> El palpador recorre el eje y la aguja<br>traduce ese movimiento en una lectura<br>amplificada (desviación de rectitud).',
+        x=0.30, y=0.96, xref='paper', yref='paper', xanchor='left', yanchor='top',
+        text='<b>¿Qué ves?</b> El palpador recorre el eje y la aguja<br><span style="color:#22d3ee">(aguja cian)</span> traduce ese movimiento en una lectura<br>amplificada (desviación de rectitud).',
         showarrow=False, align='left', bgcolor='rgba(255,255,255,0.97)',
         bordercolor='#1e293b', borderwidth=2, borderpad=8,
         font=dict(size=11, color='#1e293b')
@@ -243,7 +243,7 @@ def plot_real_rectitud():
         "<b>Identifica:</b><br>"
         "<span style=\"color:#ef4444\">■</span> Palpador (rojo)<br>"
         "<span style=\"color:#60a5fa\">■</span> Eje real (azul)<br>"
-        "<span style=\"color:#dc2626\">■</span> Aguja del dial (roja)<br>"
+        "<span style=\"color:#22d3ee\">■</span> Aguja del dial (cian)<br>"
         "<span style=\"color:#111\">▮</span> Escala (derecha)"
     )
     fig.add_annotation(
@@ -254,10 +254,10 @@ def plot_real_rectitud():
     )
     # Números de la escala (coordenadas del gráfico)
     for tick in scale_values:
-        fig.add_annotation(x=11.05, y=float(tick), xref='x', yref='y',
+        fig.add_annotation(x=11.23, y=float(tick), xref='x', yref='y',
                            text=f"{tick:.1f}", showarrow=False,
                            font=dict(size=10, color='#111'),
-                           xanchor='left', yanchor='middle')
+                           xanchor='right', yanchor='middle')
     return fig
 
 def plot_blueprint_rectitud(tol):
