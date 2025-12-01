@@ -101,7 +101,7 @@ def show_info_card(feature):
     <div class="info-card">
         <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
             <tr>
-                <th colspan="6" style="text-align:left;padding:8px;font-size:1.1em;color:#004B87;border-bottom:2px solid #004B87;">{feature}</th>
+                <th colspan="6" style="text-align:left;padding:10px;font-size:1.4em;font-weight:bold;color:#004B87;border-bottom:2px solid #004B87;">{feature}</th>
             </tr>
             <tr style="background:#e0e7ef;">
                 <th style="padding:6px;text-align:left;font-size:0.9em;border-right:1px solid #ccc;">Definición</th>
@@ -276,6 +276,7 @@ if main_mode == "Análisis Individual":
     .symbol-box {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
+        align-self: flex-start !important;
     }
     .info-card {
         margin-top: 0 !important;
@@ -309,7 +310,7 @@ if main_mode == "Análisis Individual":
     with top2:
         show_info_card(cat)
 
-    st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:8px;'></div>", unsafe_allow_html=True)
 
     # Abajo: simulación a la izquierda, leyenda y ¿Qué ves? apilados a la derecha
     bot1, bot2 = st.columns([2.5, 1.5], gap="medium")
@@ -323,7 +324,8 @@ if main_mode == "Análisis Individual":
             padding: 16px;
             background: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
         }
         .plot-container iframe {
             border: none !important;
