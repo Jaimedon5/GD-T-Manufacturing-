@@ -437,7 +437,14 @@ if main_mode == "Análisis Individual":
         if view == "Simulación 3D":
             st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
         elif view == "Montaje Real":
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El palpador rojo recorre el eje real, mientras la escala a la derecha muestra la lectura del comparador dial. Así se observa la variación de rectitud en la práctica, igual que en un laboratorio real.</div>", unsafe_allow_html=True)
+            st.markdown("""
+                <div class='pedagogic-box'>
+                    <b>Leyenda visual:</b> Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian.<br>
+                    Punto rojo: posición del palpador. Escala blanca (derecha): lectura amplificada de desviación.<br><br>
+                    <b>Diferenciador clave:</b> En montaje real ves el <em>instrumento de medición</em> (comparador) recorriendo la pieza,<br>
+                    replicando exactamente lo que ocurre en un laboratorio de metrología.
+                </div>
+            """, unsafe_allow_html=True)
         elif view == "Zona de Tolerancia":
             st.markdown(f"<div class='pedagogic-box'><b>Interpretación:</b> La rectitud se controla dentro de una zona delimitada por dos líneas paralelas separadas {tol} mm. El eje real debe permanecer entre ellas.</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
