@@ -64,12 +64,18 @@ def get_gd_data():
 GD_DATA = get_gd_data()
 
 # ===================== FUNCIONES DE LEYENDA Y EXPLICACIÓN PEDAGÓGICA =====================
-def show_legend(feature):
+def show_legend(feature, view="Simulación 3D"):
     info = GD_DATA[feature]
+    if view == "Montaje Real":
+        legend_text = "Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian.<br>Punto rojo: posición del palpador. Escala blanca (derecha): lectura amplificada de desviación."
+        diff_text = "En montaje real ves el <em>instrumento de medición</em> (comparador) recorriendo la pieza, replicando exactamente lo que ocurre en un laboratorio de metrología."
+    else:
+        legend_text = info['legend']
+        diff_text = info['diff']
     st.markdown(f"""
     <div class="legend-box">
-        <b>Leyenda visual:</b> {info['legend']}<br>
-        <b>Diferenciador clave:</b> {info['diff']}
+        <b>Leyenda visual:</b> {legend_text}<br>
+        <b>Diferenciador clave:</b> {diff_text}
     </div>
     """, unsafe_allow_html=True)
     # Asegura que la info-card tenga altura fija y el .sim-box la misma apariencia
@@ -219,7 +225,7 @@ def plot_real_rectitud():
         paper_bgcolor='#4a5568', plot_bgcolor='#4a5568', font=dict(color='#fff'), showlegend=False,
         updatemenus=[dict(
             type='buttons', showactive=False,
-            direction='left',  # horizontal
+            direction='left',
             x=0.02, y=0.94, xanchor='left', yanchor='top',
             pad=dict(r=6, t=0, b=0, l=0),
             buttons=[
@@ -229,28 +235,6 @@ def plot_real_rectitud():
             ],
             bgcolor='#fbbf24', bordercolor='#fff', borderwidth=2, font=dict(size=13)
         )]
-    )
-    # Anotación principal fija (arriba-centro-derecha) para no interferir con la animación
-    fig.add_annotation(
-        x=0.42, y=0.96, xref='paper', yref='paper', xanchor='left', yanchor='top',
-        text='<b>¿Qué ves?</b> El palpador recorre el eje y la aguja<br><span style="color:#22d3ee">(aguja cian)</span> traduce ese movimiento en una lectura<br>amplificada (desviación de rectitud).',
-        showarrow=False, align='left', bgcolor='rgba(255,255,255,0.97)',
-        bordercolor='#1e293b', borderwidth=2, borderpad=8,
-        font=dict(size=11, color='#1e293b')
-    )
-    # Leyenda de identificación (arriba-derecha)
-    legend_html = (
-        "<b>Identifica:</b><br>"
-        "<span style=\"color:#ef4444\">■</span> Palpador (rojo)<br>"
-        "<span style=\"color:#60a5fa\">■</span> Eje real (azul)<br>"
-        "<span style=\"color:#22d3ee\">■</span> Aguja del dial (cian)<br>"
-        "<span style=\"color:#111\">▮</span> Escala (derecha)"
-    )
-    fig.add_annotation(
-        x=0.98, y=0.96, xref='paper', yref='paper', xanchor='right', yanchor='top',
-        text=legend_html, showarrow=False, align='left',
-        bgcolor='rgba(255,255,255,0.97)', bordercolor='#1e293b', borderwidth=2, borderpad=8,
-        font=dict(size=11, color='#1e293b')
     )
     # Números de la escala (coordenadas del gráfico, fuera a la derecha)
     for tick in scale_values:
@@ -433,16 +417,14 @@ if main_mode == "Análisis Individual":
             components.html(wrapped_html, height=400, scrolling=False)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
-        show_legend(cat)
+        show_legend(cat, view)
         if view == "Simulación 3D":
             st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
         elif view == "Montaje Real":
             st.markdown("""
                 <div class='pedagogic-box'>
-                    <b>Leyenda visual:</b> Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian.<br>
-                    Punto rojo: posición del palpador. Escala blanca (derecha): lectura amplificada de desviación.<br><br>
-                    <b>Diferenciador clave:</b> En montaje real ves el <em>instrumento de medición</em> (comparador) recorriendo la pieza,<br>
-                    replicando exactamente lo que ocurre en un laboratorio de metrología.
+                    <b>¿Qué ves?</b> El palpador recorre el eje y la aguja <span style="color:#22d3ee">(cian)</span> traduce ese movimiento<br>
+                    en una lectura amplificada (desviación de rectitud visible en la escala).
                 </div>
             """, unsafe_allow_html=True)
         elif view == "Zona de Tolerancia":
