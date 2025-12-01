@@ -392,6 +392,26 @@ def plot_technical_drawing_rectitud(tol):
     # Flecha líder desde el marco hacia la superficie controlada
     fig.add_annotation(x=5, y=2.3, ax=5, ay=3.5, showarrow=True,
                        arrowhead=1, arrowsize=1.3, arrowwidth=2.5, arrowcolor='#000')
+
+    # ========== CALLOUTS NUMERADOS (1-8) REFERENCIANDO ELEMENTOS DEL FCF ==========
+    callout_style = dict(font=dict(size=12, color='#2563eb', family='Arial', weight='bold'),
+                         arrowcolor='#2563eb', arrowwidth=2, arrowhead=2)
+    # 1: Flecha guía
+    fig.add_annotation(x=5.0, y=2.9, text="1", showarrow=True, ax=4.3, ay=3.2, **callout_style)
+    # 2: Símbolo geométrico (rectitud)
+    fig.add_annotation(x=frame_x0+0.35, y=frame_y0+0.6, text="2", showarrow=True, ax=frame_x0+0.35, ay=frame_y0+0.9, **callout_style)
+    # 3: Símbolo de diámetro
+    fig.add_annotation(x=frame_x0+1.05, y=frame_y0+0.6, text="3", showarrow=True, ax=frame_x0+1.05, ay=frame_y0+0.9, **callout_style)
+    # 4: Tolerancia (valor)
+    fig.add_annotation(x=frame_x0+1.4, y=frame_y0+0.25, text="4", showarrow=True, ax=frame_x0+1.4, ay=frame_y0+0.6, **callout_style)
+    # 5: Modificador (ej: M) — placeholder
+    fig.add_annotation(x=frame_x0+1.9, y=frame_y0+0.25, text="5", showarrow=True, ax=frame_x0+1.9, ay=frame_y0+0.6, **callout_style)
+    # 6: Datum primario (A)
+    fig.add_annotation(x=frame_x0+2.25, y=frame_y0+0.6, text="6", showarrow=True, ax=frame_x0+2.25, ay=frame_y0+0.9, **callout_style)
+    # 7: Datum secundario (B) — placeholder
+    fig.add_annotation(x=frame_x0+2.7, y=frame_y0+0.25, text="7", showarrow=True, ax=frame_x0+2.7, ay=frame_y0+0.6, **callout_style)
+    # 8: Datum terciario (C) — placeholder
+    fig.add_annotation(x=frame_x0+3.1, y=frame_y0+0.25, text="8", showarrow=True, ax=frame_x0+3.1, ay=frame_y0+0.6, **callout_style)
     
     # ========== SÍMBOLO DE DATUM (triángulo de referencia) ==========
     # Datum A identificado en el borde izquierdo
@@ -597,10 +617,12 @@ if main_mode == "Análisis Individual":
         elif view == "Plano Técnico Real":
             st.markdown(f"""
                 <div class='pedagogic-box'>
-                    <b>¿Qué ves?</b> Plano técnico estilo industrial: pieza (rectángulo), cotas con flechas,<br>
-                    línea de eje central punteada (azul), marco GD&T con símbolo de rectitud y tolerancia Ø{tol}.<br><br>
-                    <b>Interpretación:</b> Este es el formato real usado en manufactura: dimensiones, marco de control<br>
-                    de característica (cuadro con símbolo + valor) y notas técnicas (material, acabado, escala).
+                    <b>¿Qué ves?</b> Dibujo técnico estándar con:<br>
+                    1) Flecha guía al área controlada. 2) Símbolo geométrico (rectitud).<br>
+                    3) Símbolo Ø (zona cilindrica). 4) Valor de tolerancia (Ø{tol}).<br>
+                    5) Modificador (si aplica). 6) Datum primario (A). 7) Datum secundario (B). 8) Datum terciario (C).<br><br>
+                    <b>Interpretación:</b> El marco de control (FCF) comunica qué controlar, cuánto, y contra qué referencias (datums).<br>
+                    Las cotas (80.00, Ø20±0.2) describen tamaño; el FCF especifica la forma/tolerancia geométrica.
                 </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
