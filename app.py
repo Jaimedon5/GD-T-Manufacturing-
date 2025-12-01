@@ -150,224 +150,140 @@ def plot_3d_rectitud(tol):
     fig.add_trace(go.Surface(x=tol*np.cos(tg), y=tol*np.sin(tg), z=zg, opacity=0.3, colorscale='Oranges', name='Zona de tolerancia', showscale=True, colorbar=dict(tickfont=dict(color='#fff'))))
     fig.update_layout(
         margin=dict(l=0, r=0, t=10, b=0), height=500,
-        scene=dict(
-            xaxis=dict(visible=False, backgroundcolor='#4a5568'),
-            yaxis=dict(visible=False, backgroundcolor='#4a5568'),
-            zaxis=dict(visible=True, backgroundcolor='#4a5568', gridcolor='#94a3b8', color='#fff'),
-            bgcolor='#4a5568'
-        ),
-        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
-        font=dict(color='#fff')
-    )
-    return fig
+        def plot_real_rectitud():
+            """Simulación: Comparador dial recorriendo un eje con desviaciones de rectitud.
 
-def plot_real_rectitud():
-    """
-    Simulación pedagógica: Reloj comparador midiendo rectitud de un eje.
+            Explicación: El palpador sigue las irregularidades del eje. Ese movimiento vertical se
+            transforma mecánicamente en rotación de la aguja amplificando la desviación para lectura.
+            """
+            # Datos del eje medido
+            x = np.linspace(0, 10, 100)
+            y = 0.4 * np.sin(x * 0.5)
+
+            # Parámetros del comparador
+            palpador_h = 0.8
+            dial_radius = 0.35
+
+            def comparator_shapes(cx: float, cy: float):
+                """Genera las shapes del comparador (palpador + cuerpo + dial + aguja) en la posición dada."""
+                body_top = cy + palpador_h + 0.15
+                dial_center_y = body_top + 0.45
+                # Ángulo de la aguja en función de la desviación local (mapear -0.4..0.4 a -90..90 grados)
+                angle_deg = (cy / 0.4) * 90
+                angle_rad = np.radians(90 + angle_deg)  # 90° apunta hacia arriba
+                needle_len = dial_radius - 0.1
+                needle_x = cx + needle_len * np.cos(angle_rad)
+                needle_y = dial_center_y + needle_len * np.sin(angle_rad)
+                shapes = [
+                    # Palpador (varilla)
+                    dict(type='rect', x0=cx-0.06, x1=cx+0.06, y0=cy, y1=cy+palpador_h,
+                         fillcolor='#64748b', line=dict(color='#475569', width=1)),
+                    # Cuerpo
+                    dict(type='rect', x0=cx-0.15, x1=cx+0.15, y0=cy+palpador_h, y1=body_top,
+                         fillcolor='#71717a', line=dict(color='#52525b', width=1)),
+                    # Marco exterior del dial
+                    dict(type='circle', x0=cx-dial_radius-0.05, x1=cx+dial_radius+0.05,
+                         y0=dial_center_y-dial_radius-0.05, y1=dial_center_y+dial_radius+0.05,
+                         fillcolor='#eab308', line=dict(color='#a16207', width=2)),
+                    # Carátula interna
+                    dict(type='circle', x0=cx-dial_radius, x1=cx+dial_radius,
+                         y0=dial_center_y-dial_radius, y1=dial_center_y+dial_radius,
+                         fillcolor='#fef9c3', line=dict(color='#222', width=1)),
+                ]
+                # Marcas cada 30°
+                for ang in range(0, 360, 30):
+                    a = np.radians(ang)
+                    mx = cx + (dial_radius - 0.08) * np.cos(a)
+                    my = dial_center_y + (dial_radius - 0.08) * np.sin(a)
+                    shapes.append(dict(type='circle', x0=mx-0.02, x1=mx+0.02,
+                                       y0=my-0.02, y1=my+0.02, fillcolor='#222', line=dict(width=0)))
+                # Aguja
+                shapes.append(dict(type='line', x0=cx, x1=needle_x, y0=dial_center_y, y1=needle_y,
+                                   line=dict(color='#dc2626', width=3)))
+                # Centro aguja
+                shapes.append(dict(type='circle', x0=cx-0.04, x1=cx+0.04,
+                                   y0=dial_center_y-0.04, y1=dial_center_y+0.04,
+                                   fillcolor='#374151', line=dict(width=0)))
+                # Soporte superior
+                shapes.append(dict(type='rect', x0=cx-0.08, x1=cx+0.08,
+                                   y0=dial_center_y+dial_radius+0.05, y1=dial_center_y+dial_radius+0.15,
+                                   fillcolor='#52525b', line=dict(color='#3f3f46', width=1)))
+                return shapes
+
+            # Shapes base (cuadrícula + base + escala)
+            base_shapes = []
+            for gy in np.arange(-0.8, 2.4, 0.2):
+                base_shapes.append(dict(type='line', x0=-0.5, x1=12, y0=gy, y1=gy,
+                                        line=dict(color='rgba(148,163,184,0.15)', width=1), layer='below'))
+            for gx in np.arange(0, 12, 1):
+                base_shapes.append(dict(type='line', x0=gx, x1=gx, y0=-0.8, y1=2.3,
+                                        line=dict(color='rgba(148,163,184,0.15)', width=1), layer='below'))
+            # Base soporte
+            base_shapes.append(dict(type='rect', x0=0, x1=10, y0=-0.8, y1=-0.65,
+                                    fillcolor='#94a3b8', line=dict(color='#cbd5e1', width=1), layer='below'))
+            # Escala vertical derecha
+            base_shapes.append(dict(type='rect', x0=10.8, x1=11.2, y0=-0.5, y1=0.5,
+                                    fillcolor='#fff', line=dict(color='#222', width=2)))
+            scale_values = np.linspace(-0.5, 0.5, 11)
+            for i, tick in enumerate(scale_values):
+                base_shapes.append(dict(type='line', x0=10.8, x1=11.0, y0=tick, y1=tick,
+                                        line=dict(color='#222', width=2)))
     
-    ¿Qué se ve?
-    - El palpador (punta del comparador) recorre el eje de izquierda a derecha
-    - La aguja del comparador gira según la desviación vertical del eje
-    - La escala muestra numéricamente la lectura en cada punto
-    
-    ¿Por qué se mueve la aguja?
-    Cuando el eje NO es perfectamente recto, tiene altibajos. El palpador sube/baja
-    siguiendo estos altibajos, y este movimiento vertical se transmite mecánicamente
-    a la aguja del comparador mediante un sistema de piñones internos. La aguja
-    amplifica visualmente estas micro-desviaciones para que el operador las pueda leer.
-    """
-    x = np.linspace(0, 10, 100)
-    y = 0.4 * np.sin(x*0.5)  # Eje con desviaciones
-    fig = go.Figure()
-    for grid_y in np.arange(-0.8, 2.4, 0.2):
-        fig.add_shape(type='line', x0=-0.5, x1=12, y0=grid_y, y1=grid_y,
-                     line=dict(color='rgba(148, 163, 184, 0.15)', width=1), layer='below')
-    for grid_x in np.arange(0, 12, 1):
-        fig.add_shape(type='line', x0=grid_x, x1=grid_x, y0=-0.8, y1=2.3,
-                     line=dict(color='rgba(148, 163, 184, 0.15)', width=1), layer='below')
+            # Figura inicial
+            fig = go.Figure()
+            # Eje medido
+            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6), showlegend=False))
+            # Palpador inicial y lectura inicial
+            fig.add_trace(go.Scatter(x=[x[0]], y=[y[0]], mode='markers',
+                                     marker=dict(size=14, color='#ef4444', symbol='circle',
+                                                 line=dict(color='#991b1b', width=1)), showlegend=False))
+            fig.add_trace(go.Scatter(x=[11.0], y=[y[0]], mode='markers',
+                                     marker=dict(size=12, color='#10b981', symbol='triangle-right',
+                                                 line=dict(color='#059669', width=1)), showlegend=False))
+            # Shapes iniciales
+            fig.update_layout(shapes=base_shapes + comparator_shapes(x[0], y[0]))
 
-    # Eje real
-    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6), showlegend=False))
+            # Frames de animación (cada 2 puntos para fluidez)
+            frames = []
+            for idx in range(0, len(x), 2):
+                shapes_frame = base_shapes + comparator_shapes(x[idx], y[idx])
+                frame_data = [
+                    go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6)),
+                    go.Scatter(x=[x[idx]], y=[y[idx]], mode='markers',
+                               marker=dict(size=14, color='#ef4444', symbol='circle',
+                                           line=dict(color='#991b1b', width=1))),
+                    go.Scatter(x=[11.0], y=[y[idx]], mode='markers',
+                               marker=dict(size=12, color='#10b981', symbol='triangle-right',
+                                           line=dict(color='#059669', width=1)))
+                ]
+                frames.append(go.Frame(data=frame_data, layout=dict(shapes=shapes_frame), name=str(idx)))
+            fig.frames = frames
 
-    # Base de soporte
-    fig.add_shape(type='rect', x0=0, x1=10, y0=-0.8, y1=-0.65, fillcolor='#94a3b8', line=dict(color='#cbd5e1', width=1), layer='below')
-
-    # ===== RELOJ COMPARADOR (refinado, delgado) =====
-    comp_x = x[0]
-    comp_y_base = y[0]
-
-    # Palpador delgado (varilla cilíndrica gris)
-    palpador_height = 0.8
-    fig.add_shape(type='rect', x0=comp_x-0.06, x1=comp_x+0.06, 
-                 y0=comp_y_base, y1=comp_y_base+palpador_height,
-                 fillcolor='#64748b', line=dict(color='#475569', width=1))
-
-    # Punta del palpador (esfera de contacto roja)
-    fig.add_trace(go.Scatter(x=[comp_x], y=[comp_y_base], mode='markers',
-                            marker=dict(size=14, color='#ef4444', symbol='circle',
-                                      line=dict(color='#991b1b', width=1)),
-                            showlegend=False))
-
-    # Cuerpo del comparador (cilindro metálico delgado)
-    body_top = comp_y_base + palpador_height + 0.15
-    fig.add_shape(type='rect', x0=comp_x-0.15, x1=comp_x+0.15,
-                 y0=comp_y_base+palpador_height, y1=body_top,
-                 fillcolor='#71717a', line=dict(color='#52525b', width=1))
-
-    # Reloj circular (carátula superior)
-    dial_center_y = body_top + 0.45
-    dial_radius = 0.35
-
-    # Marco exterior dorado
-    fig.add_shape(type='circle', 
-                 x0=comp_x-dial_radius-0.05, x1=comp_x+dial_radius+0.05,
-                 y0=dial_center_y-dial_radius-0.05, y1=dial_center_y+dial_radius+0.05,
-                 fillcolor='#eab308', line=dict(color='#a16207', width=2))
-
-    # Carátula blanca interna
-    fig.add_shape(type='circle',
-                 x0=comp_x-dial_radius, x1=comp_x+dial_radius,
-                 y0=dial_center_y-dial_radius, y1=dial_center_y+dial_radius,
-                 fillcolor='#fef9c3', line=dict(color='#222', width=1))
-
-    # Marcas de escala dentro del reloj
-    for angle_deg in range(0, 360, 30):
-        angle_rad = np.radians(angle_deg)
-        x_mark = comp_x + (dial_radius - 0.08) * np.cos(angle_rad)
-        y_mark = dial_center_y + (dial_radius - 0.08) * np.sin(angle_rad)
-        fig.add_shape(type='circle', x0=x_mark-0.02, x1=x_mark+0.02,
-                     y0=y_mark-0.02, y1=y_mark+0.02,
-                     fillcolor='#222', line=dict(width=0))
-
-    # Aguja del comparador (rota según desviación)
-    initial_angle = (y[0] / 0.4) * 90
-    angle_rad_init = np.radians(90 + initial_angle)
-    needle_length = dial_radius - 0.1
-    needle_x = comp_x + needle_length * np.cos(angle_rad_init)
-    needle_y = dial_center_y + needle_length * np.sin(angle_rad_init)
-
-    fig.add_shape(type='line', x0=comp_x, x1=needle_x, y0=dial_center_y, y1=needle_y,
-                 line=dict(color='#dc2626', width=3))
-
-    # Centro de la aguja
-    fig.add_shape(type='circle', x0=comp_x-0.04, x1=comp_x+0.04,
-                 y0=dial_center_y-0.04, y1=dial_center_y+0.04,
-                 fillcolor='#374151', line=dict(width=0))
-
-    # Soporte superior
-    fig.add_shape(type='rect', x0=comp_x-0.08, x1=comp_x+0.08,
-                 y0=dial_center_y+dial_radius+0.05, y1=dial_center_y+dial_radius+0.15,
-                 fillcolor='#52525b', line=dict(color='#3f3f46', width=1))
-    
-    # Escala de medición (a la derecha)
-    fig.add_shape(type='rect', x0=10.8, x1=11.2, y0=-0.5, y1=0.5, 
-                 fillcolor='#fff', line=dict(color='#222', width=2))
-    scale_values = np.linspace(-0.5, 0.5, 11)
-    for i, tick in enumerate(scale_values):
-        fig.add_shape(type='line', x0=10.8, x1=11.0, y0=tick, y1=tick, 
-                     line=dict(color='#222', width=2))
-        if i % 2 == 0:
-            fig.add_annotation(x=11.4, y=tick, text=f"{tick:.1f}", 
-                             showarrow=False, font=dict(size=10, color='#fff'))
-    
-    # Indicador de lectura
-    fig.add_trace(go.Scatter(x=[11.0], y=[y[0]], mode='markers',
-                            marker=dict(size=12, color='#10b981', symbol='triangle-right',
-                                      line=dict(color='#059669', width=1)),
-                            showlegend=False))
-    # Frames para animación
-    frames = []
-    for i in range(0, 100, 2):
-            comp_x_i = x[i]
-            comp_y_i = y[i]
-            dial_center_y_i = comp_y_i + palpador_height + 0.15 + 0.45
-        
-            # Aguja rotada
-            angle_i = (y[i] / 0.4) * 90
-            angle_rad_i = np.radians(90 + angle_i)
-            needle_x_i = comp_x_i + needle_length * np.cos(angle_rad_i)
-            needle_y_i = dial_center_y_i + needle_length * np.sin(angle_rad_i)
-        
-        frame_data = [
-            go.Scatter(x=x, y=y, mode='lines', line=dict(color='#60a5fa', width=6)),
-            go.Scatter(x=[comp_x_i], y=[comp_y_i], mode='markers',
-                      marker=dict(size=14, color='#ef4444', symbol='circle',
-                                line=dict(color='#991b1b', width=1))),
-            go.Scatter(x=[11.0], y=[y[i]], mode='markers',
-                      marker=dict(size=12, color='#10b981', symbol='triangle-right',
-                                line=dict(color='#059669', width=1)))
-        ]
-        
-        # Actualizar shapes del comparador para cada frame
-        frame_shapes = list(fig.layout.shapes)
-        frame_shapes[2] = dict(type='rect', x0=comp_x_i-0.06, x1=comp_x_i+0.06,
-                              y0=comp_y_i, y1=comp_y_i+palpador_height,
-                              fillcolor='#64748b', line=dict(color='#475569', width=1))
-        frame_shapes[3] = dict(type='rect', x0=comp_x_i-0.15, x1=comp_x_i+0.15,
-                              y0=comp_y_i+palpador_height, y1=comp_y_i+palpador_height+0.15,
-                              fillcolor='#71717a', line=dict(color='#52525b', width=1))
-        frame_shapes[4] = dict(type='circle',
-                              x0=comp_x_i-dial_radius-0.05, x1=comp_x_i+dial_radius+0.05,
-                              y0=dial_center_y_i-dial_radius-0.05, y1=dial_center_y_i+dial_radius+0.05,
-                              fillcolor='#eab308', line=dict(color='#a16207', width=2))
-        frame_shapes[5] = dict(type='circle',
-                              x0=comp_x_i-dial_radius, x1=comp_x_i+dial_radius,
-                              y0=dial_center_y_i-dial_radius, y1=dial_center_y_i+dial_radius,
-                              fillcolor='#fef9c3', line=dict(color='#222', width=1))
-        
-        # Actualizar marcas de escala
-        for j, angle_deg in enumerate(range(0, 360, 30)):
-            angle_rad = np.radians(angle_deg)
-            x_mark = comp_x_i + (dial_radius - 0.08) * np.cos(angle_rad)
-            y_mark = dial_center_y_i + (dial_radius - 0.08) * np.sin(angle_rad)
-            frame_shapes[6+j] = dict(type='circle', x0=x_mark-0.02, x1=x_mark+0.02,
-                                    y0=y_mark-0.02, y1=y_mark+0.02,
-                                    fillcolor='#222', line=dict(width=0))
-        
-        # Aguja actualizada
-        frame_shapes[18] = dict(type='line', x0=comp_x_i, x1=needle_x_i,
-                               y0=dial_center_y_i, y1=needle_y_i,
-                               line=dict(color='#dc2626', width=3))
-        frame_shapes[19] = dict(type='circle', x0=comp_x_i-0.04, x1=comp_x_i+0.04,
-                               y0=dial_center_y_i-0.04, y1=dial_center_y_i+0.04,
-                               fillcolor='#374151', line=dict(width=0))
-        frame_shapes[20] = dict(type='rect', x0=comp_x_i-0.08, x1=comp_x_i+0.08,
-                               y0=dial_center_y_i+dial_radius+0.05, y1=dial_center_y_i+dial_radius+0.15,
-                               fillcolor='#52525b', line=dict(color='#3f3f46', width=1))
-        
-        frames.append(go.Frame(data=frame_data, layout=dict(shapes=frame_shapes), name=str(i)))
-    fig.frames = frames
-    fig.update_layout(
-        margin=dict(l=0, r=20, t=40, b=0), height=400,
-        xaxis=dict(range=[-0.5, 12], visible=False),
-        yaxis=dict(range=[-1.0, 2.5], visible=False),
-        paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
-        font=dict(color='#fff'),
-        showlegend=False,
-        updatemenus=[dict(
-            type="buttons",
-            showactive=False,
-            x=0.02,
-            y=0.98,
-            xanchor='left',
-            yanchor='top',
-            buttons=[
-                dict(label="⏮️", method="animate",
-                     args=[[str(0)], dict(mode="immediate", frame=dict(duration=0, redraw=True), transition=dict(duration=0))]),
-                dict(label="▶️", method="animate",
-                     args=[None, dict(frame=dict(duration=80, redraw=True), fromcurrent=True, mode="immediate")]),
-                dict(label="⏸️", method="animate",
-                     args=[[None], dict(mode="immediate", frame=dict(duration=0, redraw=False))])
-            ],
-            bgcolor='#fbbf24',
-            bordercolor='#fff',
-            borderwidth=2,
-            font=dict(size=14)
-        )]
-    
-        # Anotación pedagógica
-        fig.add_annotation(
-            x=0.02, y=0.88, xref='paper', yref='paper',
+            # Layout y controles
+            fig.update_layout(
+                margin=dict(l=0, r=10, t=40, b=0), height=400,
+                xaxis=dict(range=[-0.5, 12], visible=False),
+                yaxis=dict(range=[-1.0, 2.5], visible=False),
+                paper_bgcolor='#4a5568', plot_bgcolor='#4a5568',
+                font=dict(color='#fff'),
+                showlegend=False,
+                updatemenus=[dict(
+                    type='buttons', showactive=False, x=0.02, y=0.98, xanchor='left', yanchor='top',
+                    buttons=[
+                        dict(label='⏮️', method='animate', args=[[str(0)], dict(mode='immediate', frame=dict(duration=0, redraw=True), transition=dict(duration=0))]),
+                        dict(label='▶️', method='animate', args=[None, dict(frame=dict(duration=80, redraw=True), fromcurrent=True, mode='immediate')]),
+                        dict(label='⏸️', method='animate', args=[[None], dict(mode='immediate', frame=dict(duration=0, redraw=False))])
+                    ],
+                    bgcolor='#fbbf24', bordercolor='#fff', borderwidth=2, font=dict(size=14)
+                )]
+            )
+            # Anotación pedagógica
+            fig.add_annotation(x=0.02, y=0.88, xref='paper', yref='paper',
+                               text='<b>¿Qué mide?</b> La aguja gira al detectar<br>altibajos del eje. Amplifica micro-<br>variaciones para lectura visual.',
+                               showarrow=False, align='left', bgcolor='rgba(255,255,255,0.9)',
+                               bordercolor='#222', borderwidth=2, borderpad=8,
+                               font=dict(size=11, color='#222'))
+            return fig
             text="<b>¿Qué mide?</b> La aguja gira al detectar<br>altibajos del eje. Amplifica micro-<br>variaciones para lectura visual.",
             showarrow=False,
             align='left',
