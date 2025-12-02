@@ -325,8 +325,8 @@ def plot_technical_drawing_rectitud(tol):
     # ① Flecha guía (Leader line hacia la pieza)
     ax.annotate('', xy=(5, y_sup), xytext=(-3, y_sup + 8),
                 arrowprops=dict(arrowstyle='->', color=C_ESTATICO, lw=1.5))
-    ax.add_patch(patches.Circle((-3, y_sup + 8), 1.5, fc='white', ec=C_REFERENCIA, lw=2))
-    ax.text(-3, y_sup + 8, '①', fontsize=16, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
+    ax.add_patch(patches.Circle((-3, y_sup + 8), 2.2, fc='white', ec=C_REFERENCIA, lw=2.5))
+    ax.text(-3, y_sup + 8, '1', fontsize=20, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
     
     # Pieza rectangular
     ax.add_patch(patches.Rectangle((0, y_inf), ANCHO_PIEZA, ALTO_PIEZA, 
@@ -348,8 +348,8 @@ def plot_technical_drawing_rectitud(tol):
             fontsize=20, va='center', ha='center', color=C_ESTATICO)
     
     # Referencia ② arriba del símbolo
-    ax.add_patch(patches.Circle((x_marco + w_simbolo/2, y_marco + h_marco + 3), 1.2, fc='white', ec=C_REFERENCIA, lw=2))
-    ax.text(x_marco + w_simbolo/2, y_marco + h_marco + 3, '②', fontsize=13, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
+    ax.add_patch(patches.Circle((x_marco + w_simbolo/2, y_marco + h_marco + 4), 2.2, fc='white', ec=C_REFERENCIA, lw=2.5))
+    ax.text(x_marco + w_simbolo/2, y_marco + h_marco + 4, '2', fontsize=20, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
     
     # ③ Símbolo Ø (diámetro)
     # COTA DIMENSIONAL (IZQUIERDA)
@@ -363,8 +363,8 @@ def plot_technical_drawing_rectitud(tol):
             fontsize=24, color=C_DINAMICO_NUM, ha='left', fontweight='bold')
     
     # Referencia ③ al lado del Ø
-    ax.add_patch(patches.Circle((x_cota - 3, y_sup + 2), 1.2, fc='white', ec=C_REFERENCIA, lw=2))
-    ax.text(x_cota - 3, y_sup + 2, '③', fontsize=13, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
+    ax.add_patch(patches.Circle((x_cota - 4, y_sup + 2), 2.2, fc='white', ec=C_REFERENCIA, lw=2.5))
+    ax.text(x_cota - 4, y_sup + 2, '3', fontsize=20, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
     
     # ④ Valor de tolerancia en el FCF
     ax.add_patch(patches.Rectangle((x_marco + w_simbolo, y_marco), w_valor, h_marco, 
@@ -374,8 +374,8 @@ def plot_technical_drawing_rectitud(tol):
             fontsize=24, va='center', ha='center', color=C_DINAMICO_NUM, fontweight='bold')
     
     # Referencia ④ arriba del valor
-    ax.add_patch(patches.Circle((x_marco + w_simbolo + w_valor/2, y_marco + h_marco + 3), 1.2, fc='white', ec=C_REFERENCIA, lw=2))
-    ax.text(x_marco + w_simbolo + w_valor/2, y_marco + h_marco + 3, '④', fontsize=13, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
+    ax.add_patch(patches.Circle((x_marco + w_simbolo + w_valor/2, y_marco + h_marco + 4), 2.2, fc='white', ec=C_REFERENCIA, lw=2.5))
+    ax.text(x_marco + w_simbolo + w_valor/2, y_marco + h_marco + 4, '4', fontsize=20, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
     
     # LÍNEA QUEBRADA (LEADER LINE)
     start_x, start_y = x_marco, y_marco + h_marco/2
@@ -393,8 +393,8 @@ def plot_technical_drawing_rectitud(tol):
             color=C_ZONA, ls=':', lw=2.5)
     
     # ⑤ Referencia en zona de tolerancia (líneas magenta)
-    ax.add_patch(patches.Circle((ANCHO_PIEZA/2, y_inf + offset + 2), 1.2, fc='white', ec=C_REFERENCIA, lw=2))
-    ax.text(ANCHO_PIEZA/2, y_inf + offset + 2, '⑤', fontsize=13, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
+    ax.add_patch(patches.Circle((ANCHO_PIEZA/2, y_inf + offset + 3), 2.2, fc='white', ec=C_REFERENCIA, lw=2.5))
+    ax.text(ANCHO_PIEZA/2, y_inf + offset + 3, '5', fontsize=20, color=C_REFERENCIA, ha='center', va='center', fontweight='bold')
     
     # EXPLICACIÓN LATERAL (AZUL)
     x_azul = ANCHO_PIEZA + 15
