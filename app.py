@@ -257,26 +257,92 @@ GD_DATA = get_gd_data()
 
 # ===================== FUNCIONES DE LEYENDA Y EXPLICACIÓN PEDAGÓGICA =====================
 def show_legend(feature, view="Simulación 3D"):
+    """Genera leyendas dinámicas según característica y vista."""
     info = GD_DATA[feature]
-    if view == "Montaje Real":
-        legend_text = "Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian.<br>Punto rojo: posición del palpador. Escala blanca (derecha): lectura amplificada de desviación."
-        diff_text = "En montaje real ves el <em>instrumento de medición</em> (comparador) recorriendo la pieza, replicando exactamente lo que ocurre en un laboratorio de metrología."
-    elif view == "Zona de Tolerancia":
-        legend_text = "Líneas naranjas: límites superior e inferior de la zona de tolerancia.<br>Línea azul: eje real ideal. Área gris: zona permitida para el eje."
-        diff_text = "La zona de tolerancia es un <em>espacio geométrico</em> definido por límites paralelos. Si el eje permanece dentro, cumple rectitud."
-    elif view == "Plano Técnico Real":
-        legend_text = "Líneas continuas negras: contorno de la pieza.<br>Líneas punteadas azules: líneas de referencia y acotación.<br>Texto azul: dimensiones y tolerancias GD&T."
-        diff_text = "Un plano técnico <em>real</em> incluye cotas, líneas de referencia, símbolos GD&T y anotaciones, como en documentación industrial estándar."
-    else:
-        legend_text = info['legend']
-        diff_text = info['diff']
+    
+    # Leyendas por vista
+    legends = {
+        'Simulación 3D': {
+            'default': "Elementos en azul: geometría real. Elementos naranjas/rojos: límites de zona de tolerancia. Si la geometría real permanece dentro de los límites, cumple la tolerancia.",
+            'Rectitud': "Línea/eje azul: elemento real. Cilindro naranja semitransparente: zona de tolerancia cilíndrica.",
+            'Planicidad': "Superficie coloreada: superficie real con ondulaciones. Planos naranjas paralelos: límites superior e inferior de tolerancia.",
+            'Redondez': "Línea azul: perfil circular real. Círculos naranjas: límites concéntricos de zona de tolerancia anular.",
+            'Cilindricidad': "Superficie azul: cilindro real. Superficies naranjas: cilindros límite (exterior e interior) de zona de tolerancia.",
+            'Perfil de Línea': "Curva azul: perfil real. Curvas naranjas: límites bilateral de zona de tolerancia.",
+            'Perfil de Superficie': "Superficie verde/azul: superficie real 3D. Superficies naranjas: límites de zona de tolerancia bilateral.",
+            'Angularidad': "Superficie roja: superficie angular real. Superficies naranjas: zona de tolerancia angular. Superficie gris: datum de referencia.",
+            'Perpendicularidad': "Superficie azul: superficie perpendicular real. Superficies naranjas: zona de tolerancia perpendicular. Superficie gris: datum horizontal.",
+            'Paralelismo': "Superficie verde: superficie superior real. Superficies naranjas: zona de tolerancia paralela. Superficie gris: datum inferior.",
+            'Posición': "Cilindro azul: agujero real. Cilindros naranjas: zona de tolerancia cilíndrica. Línea negra discontinua: eje teórico.",
+            'Concentricidad': "Círculo azul: elemento interno real. Círculo gris: elemento de referencia (datum). Círculo naranja: zona de tolerancia.",
+            'Oscilación Circular': "Línea azul: perfil radial real. Líneas naranjas: límites de oscilación en sección transversal.",
+            'Oscilación Total': "Superficie verde: superficie cilíndrica completa. Superficies naranjas: límites de oscilación total."
+        },
+        'Montaje Real': {
+            'default': "Mesa gris: base de medición. Pieza azul celeste: componente a medir. Comparador dorado: instrumento de medición con aguja cian. Punto rojo: contacto del palpador.",
+            'Rectitud': "Línea azul: eje real. Círculo amarillo: comparador dial con aguja cian. Punto rojo: posición del palpador. Escala blanca: lectura amplificada.",
+            'Planicidad': "Superficie azul: superficie a medir. Comparador recorre múltiples puntos para mapear planitud.",
+            'Redondez': "Cilindro azul: pieza rotando. Punta roja del palpador: punto de contacto fijo. Aguja cian: indica variación radial.",
+            'Cilindricidad': "Cilindro azul: pieza. Palpador recorre radial y axialmente para verificar forma cilíndrica completa.",
+            'Perfil de Línea': "Perfil curvo: elemento a verificar. Palpador sigue la curva midiendo desviaciones perpendiculares.",
+            'Perfil de Superficie': "Sistema CMM (Máquina de Medición por Coordenadas) escanea superficie 3D comparando con modelo CAD.",
+            'Angularidad': "Bloque angular patrón: establece ángulo de referencia. Comparador mide desviación de superficie respecto a ángulo.",
+            'Perpendicularidad': "Escuadra de precisión: establece 90° respecto a datum. Comparador verifica perpendicularidad.",
+            'Paralelismo': "Comparador mide distancia en múltiples puntos entre superficie controlada y datum para verificar paralelismo.",
+            'Posición': "Sistema CMM mide coordenadas X, Y del centro del agujero comparando con posición teórica del plano.",
+            'Concentricidad': "Pieza rota sobre centros. Comparador mide desviación del centro del diámetro interno respecto al externo (datum).",
+            'Oscilación Circular': "Pieza rota completa. Comparador fijo en una posición mide variación radial (una revolución).",
+            'Oscilación Total': "Pieza rota mientras comparador recorre axialmente, midiendo variación total de superficie."
+        },
+        'Zona de Tolerancia': {
+            'default': "Líneas/superficies naranjas: límites de la zona de tolerancia. Línea/superficie azul: elemento teórico ideal. Área sombreada: zona permitida donde debe estar la geometría real.",
+            'Rectitud': "Líneas naranjas: límites superior e inferior. Línea azul: eje ideal. Área gris: zona permitida.",
+            'Planicidad': "Vista lateral del perfil. Líneas naranjas horizontales: límites de planitud. Área naranja clara: zona de tolerancia.",
+            'Redondez': "Círculos naranjas concéntricos: límites interior y exterior. Zona anular naranja clara: área permitida.",
+            'Cilindricidad': "Vista frontal. Líneas naranjas verticales: límites cilíndricos. Áreas laterales sombreadas: zonas de tolerancia.",
+            'Perfil de Línea': "Perfil teórico (azul discontinuo) con bandas de tolerancia bilateral ±tol/2 (naranjas).",
+            'Perfil de Superficie': "Superficie teórica con envolvente de tolerancia 3D. Zona bilateral donde debe estar superficie real.",
+            'Angularidad': "Zona angular entre planos paralelos inclinados. Superficie debe estar dentro de esta zona respecto a datum.",
+            'Perpendicularidad': "Zona entre dos planos paralelos perpendiculares a datum. Superficie debe permanecer en esta zona.",
+            'Paralelismo': "Zona entre planos paralelos a datum. Distancia constante define el paralelismo.",
+            'Posición': "Zona cilíndrica centrada en posición teórica. Eje del agujero debe estar dentro de este cilindro.",
+            'Concentricidad': "Círculo de tolerancia centrado en datum. Centro del elemento debe estar dentro.",
+            'Oscilación Circular': "Zona radial en sección transversal. Lectura del indicador durante rotación no debe exceder tolerancia.",
+            'Oscilación Total': "Zona cilíndrica completa. Toda la superficie debe estar dentro durante rotación y traslación del indicador."
+        },
+        'Plano Técnico Real': {
+            'default': "Líneas negras continuas: contorno de pieza. Cuadro de control (FCF): símbolo GD&T + valor de tolerancia. Flecha: indica superficie controlada. Datums (letras en cuadros): referencias.",
+            'Rectitud': "Líneas continuas negras: contorno. Líneas discontinuas: eje central. FCF con símbolo '—' y valor de tolerancia. Referencias numeradas conectan elementos.",
+            'Planicidad': "Vista superior de superficie. Símbolo ⏥ en FCF indica planicidad. Sin datum (característica de forma pura).",
+            'Redondez': "Sección transversal circular. Símbolo ○ indica redondez. Controla forma independiente de tamaño.",
+            'Cilindricidad': "Vista frontal cilíndrica. Símbolo ⌭ en FCF. Más restrictivo que redondez o rectitud individuales.",
+            'Perfil de Línea': "Perfil curvo con símbolo ⌓. Puede incluir datums si es perfil refinado (con referencia).",
+            'Perfil de Superficie': "Superficie compleja 3D con símbolo ⌒. Controla forma, orientación y ubicación si hay datums.",
+            'Angularidad': "Superficie inclinada con símbolo ∠, tolerancia y datum A. Especifica ángulo teórico en otra anotación.",
+            'Perpendicularidad': "Superficie vertical con símbolo ⊥ y datum A. Garantiza 90° exactos respecto a referencia.",
+            'Paralelismo': "Superficie con símbolo ∥ y datum A. Ambas superficies deben ser paralelas dentro de tolerancia.",
+            'Posición': "Patrón de agujeros con símbolo ⊕, tolerancia y datums (A, B, C). Dimensiones básicas (sin tolerancia) definen posiciones teóricas.",
+            'Concentricidad': "Diámetros concéntricos con símbolo ◎ y datum A. Diámetro exterior típicamente es el datum.",
+            'Oscilación Circular': "Cilindro con símbolo ↗ y datum A (eje de rotación). Controla oscilación en cada sección.",
+            'Oscilación Total': "Cilindro con símbolo ↗↗ y datum A. Controla oscilación acumulada en toda la superficie."
+        }
+    }
+    
+    # Obtener leyenda específica o usar default
+    view_legends = legends.get(view, {})
+    legend_text = view_legends.get(feature, view_legends.get('default', info.get('legend', 'Visualización de característica GD&T.')))
+    
+    # Diferenciador siempre desde GD_DATA
+    diff_text = info.get('diff', 'Característica distintiva en el sistema GD&T.')
+    
     st.markdown(f"""
     <div class="legend-box">
         <b>Leyenda visual:</b> {legend_text}<br>
         <b>Diferenciador clave:</b> {diff_text}
     </div>
     """, unsafe_allow_html=True)
-    # Asegura que la info-card tenga altura fija y el .sim-box la misma apariencia
+    
+    # Estilos CSS (mantener igual)
     try:
         current_box = ST_SYMBOL_SIZE
     except NameError:
@@ -417,36 +483,442 @@ def plot_3d_cilindricidad(tol):
 
 def plot_3d_perfil(feature, tol):
     """Perfiles de línea o superficie."""
-    return create_placeholder_plot(feature, "Simulación 3D")
+    fig = go.Figure()
+    if 'Línea' in feature:
+        # Perfil de línea: curva con zona de tolerancia
+        t = np.linspace(0, 2*np.pi, 100)
+        y_teorico = 3 * np.sin(t)
+        y_real = y_teorico + 0.3 * tol * np.sin(5*t)
+        
+        fig.add_trace(go.Scatter(x=t, y=y_real, mode='lines', line=dict(color='#3b82f6', width=3), name='Perfil Real'))
+        fig.add_trace(go.Scatter(x=t, y=y_teorico + tol/2, mode='lines', line=dict(color='orange', width=2, dash='dash'), name='Límite +'))
+        fig.add_trace(go.Scatter(x=t, y=y_teorico - tol/2, mode='lines', line=dict(color='orange', width=2, dash='dash'), name='Límite -'))
+        fig.add_trace(go.Scatter(x=t, y=y_teorico, mode='lines', line=dict(color='black', width=1), name='Teórico'))
+        
+        fig.update_layout(xaxis=dict(title='Posición', visible=True), yaxis=dict(title='Altura', visible=True),
+                         showlegend=True, height=500, margin=dict(l=40, r=20, t=30, b=40))
+    else:
+        # Perfil de superficie: superficie 3D con zona de tolerancia
+        x = np.linspace(-3, 3, 30)
+        y = np.linspace(-3, 3, 30)
+        X, Y = np.meshgrid(x, y)
+        Z_teorico = np.sqrt(9 - X**2 - Y**2)
+        Z_teorico[np.isnan(Z_teorico)] = 0
+        Z_real = Z_teorico + 0.2 * tol * np.sin(3*X) * np.cos(3*Y)
+        
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z_real, colorscale='Viridis', opacity=0.8, name='Superficie Real', showscale=False))
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z_teorico + tol/2, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite +'))
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z_teorico - tol/2, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite -'))
+        
+        fig.update_layout(scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                                    camera=dict(eye=dict(x=1.3, y=1.3, z=1.1))),
+                         showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500)
+    return fig
 
 def plot_3d_orientacion(feature, tol):
     """Orientaciones: angularidad, perpendicularidad, paralelismo."""
-    return create_placeholder_plot(feature, "Simulación 3D")
+    fig = go.Figure()
+    
+    # Plano de referencia (datum)
+    x_ref = np.linspace(-5, 5, 2)
+    y_ref = np.linspace(-5, 5, 2)
+    X_ref, Y_ref = np.meshgrid(x_ref, y_ref)
+    Z_ref = np.zeros_like(X_ref)
+    
+    fig.add_trace(go.Surface(x=X_ref, y=Y_ref, z=Z_ref, colorscale=[[0, 'rgba(100,100,100,0.3)'], [1, 'rgba(100,100,100,0.3)']], showscale=False, name='Datum (Referencia)'))
+    
+    if 'Perpendicularidad' in feature:
+        # Superficie perpendicular con desviación
+        x = np.linspace(-3, 3, 20)
+        z = np.linspace(0, 8, 20)
+        X, Z = np.meshgrid(x, z)
+        Y = np.zeros_like(X) + 0.15 * tol * np.sin(2*Z)
+        
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z, colorscale='Blues', opacity=0.7, name='Superficie Real', showscale=False))
+        # Zona de tolerancia
+        fig.add_trace(go.Surface(x=X, y=np.ones_like(X)*tol/2, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite +'))
+        fig.add_trace(go.Surface(x=X, y=-np.ones_like(X)*tol/2, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite -'))
+        
+    elif 'Paralelismo' in feature:
+        # Dos superficies paralelas
+        x = np.linspace(-4, 4, 20)
+        y = np.linspace(-4, 4, 20)
+        X, Y = np.meshgrid(x, y)
+        Z_real = 5 + 0.2 * tol * np.sin(X) * np.cos(Y)
+        
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z_real, colorscale='Greens', opacity=0.7, name='Superficie Real', showscale=False))
+        fig.add_trace(go.Surface(x=X, y=Y, z=np.ones_like(X)*(5+tol/2), colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite +'))
+        fig.add_trace(go.Surface(x=X, y=Y, z=np.ones_like(X)*(5-tol/2), colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite -'))
+        
+    else:  # Angularidad
+        # Superficie angular con desviación
+        x = np.linspace(-3, 3, 20)
+        z = np.linspace(0, 6, 20)
+        X, Z = np.meshgrid(x, z)
+        angle = np.pi/4  # 45 grados
+        Y = Z * np.tan(angle) + 0.15 * tol * np.sin(2*Z)
+        
+        fig.add_trace(go.Surface(x=X, y=Y, z=Z, colorscale='Reds', opacity=0.7, name='Superficie Real', showscale=False))
+        Y_upper = Z * np.tan(angle) + tol/2
+        Y_lower = Z * np.tan(angle) - tol/2
+        fig.add_trace(go.Surface(x=X, y=Y_upper, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite +'))
+        fig.add_trace(go.Surface(x=X, y=Y_lower, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite -'))
+    
+    fig.update_layout(scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                                camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))),
+                     showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500)
+    return fig
 
 def plot_3d_ubicacion(feature, tol):
     """Ubicación: posición, concentricidad."""
-    return create_placeholder_plot(feature, "Simulación 3D")
+    fig = go.Figure()
+    
+    if 'Posición' in feature:
+        # Agujeros con zona de tolerancia cilíndrica
+        theta = np.linspace(0, 2*np.pi, 30)
+        z = np.linspace(0, 3, 15)
+        Theta, Z = np.meshgrid(theta, z)
+        
+        # Posición teórica
+        x_teorico, y_teorico = 5, 5
+        # Posición real con desviación
+        x_real, y_real = 5 + 0.3*tol, 5 + 0.2*tol
+        
+        # Agujero real
+        r_agujero = 1
+        X_real = x_real + r_agujero * np.cos(Theta)
+        Y_real = y_real + r_agujero * np.sin(Theta)
+        fig.add_trace(go.Surface(x=X_real, y=Y_real, z=Z, colorscale='Blues', opacity=0.7, name='Agujero Real', showscale=False))
+        
+        # Zona de tolerancia cilíndrica
+        r_tol = tol/2
+        X_tol_ext = x_teorico + (r_agujero + r_tol) * np.cos(Theta)
+        Y_tol_ext = y_teorico + (r_agujero + r_tol) * np.sin(Theta)
+        X_tol_int = x_teorico + (r_agujero - r_tol) * np.cos(Theta)
+        Y_tol_int = y_teorico + (r_agujero - r_tol) * np.sin(Theta)
+        
+        fig.add_trace(go.Surface(x=X_tol_ext, y=Y_tol_ext, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite Exterior'))
+        fig.add_trace(go.Surface(x=X_tol_int, y=Y_tol_int, z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite Interior'))
+        
+        # Eje teórico
+        fig.add_trace(go.Scatter3d(x=[x_teorico, x_teorico], y=[y_teorico, y_teorico], z=[0, 3], mode='lines', line=dict(color='black', width=3, dash='dash'), name='Eje Teórico'))
+        
+    else:  # Concentricidad
+        # Dos círculos concéntricos con desviación
+        theta = np.linspace(0, 2*np.pi, 100)
+        
+        # Círculo exterior (referencia)
+        r_ext = 5
+        x_ext = r_ext * np.cos(theta)
+        y_ext = r_ext * np.sin(theta)
+        fig.add_trace(go.Scatter3d(x=x_ext, y=y_ext, z=np.zeros_like(theta), mode='lines', line=dict(color='gray', width=5), name='Círculo Referencia'))
+        
+        # Círculo interior con desviación
+        r_int = 3
+        x_offset, y_offset = 0.4*tol, 0.3*tol
+        x_int = x_offset + r_int * np.cos(theta)
+        y_int = y_offset + r_int * np.sin(theta)
+        fig.add_trace(go.Scatter3d(x=x_int, y=y_int, z=np.zeros_like(theta), mode='lines', line=dict(color='#3b82f6', width=5), name='Círculo Real'))
+        
+        # Zona de tolerancia
+        r_tol = tol/2
+        theta_tol = np.linspace(0, 2*np.pi, 50)
+        x_tol = r_tol * np.cos(theta_tol)
+        y_tol = r_tol * np.sin(theta_tol)
+        fig.add_trace(go.Scatter3d(x=x_tol, y=y_tol, z=np.zeros_like(theta_tol), mode='lines', fill='toself', line=dict(color='orange', width=3), name='Zona Tolerancia'))
+        
+    fig.update_layout(scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                                camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))),
+                     showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500)
+    return fig
 
 def plot_3d_oscilacion(feature, tol):
     """Oscilación circular y total."""
-    return create_placeholder_plot(feature, "Simulación 3D")
+    fig = go.Figure()
+    theta = np.linspace(0, 2*np.pi, 50)
+    
+    if 'Circular' in feature:
+        # Oscilación circular: variación radial en una sección
+        r_nominal = 5
+        r_real = r_nominal + 0.4 * tol * np.sin(3*theta)
+        x_real = r_real * np.cos(theta)
+        y_real = r_real * np.sin(theta)
+        
+        fig.add_trace(go.Scatter3d(x=x_real, y=y_real, z=np.zeros_like(theta), mode='lines', line=dict(color='#3b82f6', width=5), name='Perfil Real'))
+        
+        # Límites de tolerancia
+        x_upper = (r_nominal + tol/2) * np.cos(theta)
+        y_upper = (r_nominal + tol/2) * np.sin(theta)
+        x_lower = (r_nominal - tol/2) * np.cos(theta)
+        y_lower = (r_nominal - tol/2) * np.sin(theta)
+        
+        fig.add_trace(go.Scatter3d(x=x_upper, y=y_upper, z=np.zeros_like(theta), mode='lines', line=dict(color='orange', width=3), name='Límite +'))
+        fig.add_trace(go.Scatter3d(x=x_lower, y=y_lower, z=np.zeros_like(theta), mode='lines', line=dict(color='orange', width=3), name='Límite -'))
+        
+        # Indicador de medición
+        fig.add_trace(go.Scatter3d(x=[r_nominal, r_real[0]], y=[0, 0], z=[0, 0], mode='lines+markers', line=dict(color='red', width=3), marker=dict(size=5), name='Medición'))
+        
+    else:  # Oscilación Total
+        # Oscilación total: superficie completa del cilindro
+        z = np.linspace(0, 10, 30)
+        Theta, Z = np.meshgrid(theta, z)
+        
+        r_nominal = 5
+        r_real = r_nominal + 0.3 * tol * np.sin(4*Theta) * np.cos(Z*0.8)
+        X_real = r_real * np.cos(Theta)
+        Y_real = r_real * np.sin(Theta)
+        
+        fig.add_trace(go.Surface(x=X_real, y=Y_real, z=Z, colorscale='Viridis', opacity=0.7, name='Superficie Real', showscale=False))
+        
+        # Cilindros de tolerancia
+        r_upper = r_nominal + tol/2
+        r_lower = r_nominal - tol/2
+        fig.add_trace(go.Surface(x=r_upper*np.cos(Theta), y=r_upper*np.sin(Theta), z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite Exterior'))
+        fig.add_trace(go.Surface(x=r_lower*np.cos(Theta), y=r_lower*np.sin(Theta), z=Z, colorscale=[[0, 'rgba(255,100,0,0.2)'], [1, 'rgba(255,100,0,0.2)']], showscale=False, name='Límite Interior'))
+    
+    fig.update_layout(scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                                camera=dict(eye=dict(x=1.5, y=1.5, z=1.0))),
+                     showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500)
+    return fig
 
 def plot_generic_montaje(feature):
-    """Montaje real genérico."""
-    return create_placeholder_plot(feature, "Montaje Real")
+    """Montaje real genérico con comparador de diálogo."""
+    fig = go.Figure()
+    
+    # Mesa/Base
+    fig.add_trace(go.Scatter(x=[-2, 5, 5, -2, -2], y=[0, 0, 0.3, 0.3, 0], mode='lines', fill='toself', fillcolor='#555', line=dict(color='black', width=2), name='Mesa'))
+    
+    # Pieza a medir
+    if 'Redondez' in feature or 'Cilindricidad' in feature or 'Oscilación' in feature or 'Concentricidad' in feature:
+        # Cilindro
+        fig.add_trace(go.Scatter(x=[0.5, 2.5, 2.5, 0.5, 0.5], y=[0.3, 0.3, 3, 3, 0.3], mode='lines', fill='toself', fillcolor='#87CEEB', line=dict(color='black', width=2), name='Pieza'))
+        # Centro de rotación
+        fig.add_trace(go.Scatter(x=[1.5], y=[1.65], mode='markers', marker=dict(size=8, color='red', symbol='x'), name='Centro'))
+    else:
+        # Pieza rectangular
+        fig.add_trace(go.Scatter(x=[0, 4, 4, 0, 0], y=[0.3, 0.3, 2.5, 2.5, 0.3], mode='lines', fill='toself', fillcolor='#87CEEB', line=dict(color='black', width=2), name='Pieza'))
+    
+    # Comparador de diálogo (dial indicator)
+    # Soporte vertical
+    fig.add_trace(go.Scatter(x=[4.2, 4.2], y=[0, 4], mode='lines', line=dict(color='#333', width=4), name='Soporte'))
+    # Brazo horizontal
+    fig.add_trace(go.Scatter(x=[4.2, 2.8], y=[2.5, 2.5], mode='lines', line=dict(color='#333', width=3), name='Brazo'))
+    # Comparador (cuerpo)
+    fig.add_trace(go.Scatter(x=[2.5, 3.1, 3.1, 2.5, 2.5], y=[2.3, 2.3, 3.3, 3.3, 2.3], mode='lines', fill='toself', fillcolor='#FFD700', line=dict(color='black', width=2), name='Comparador'))
+    # Esfera del comparador
+    theta = np.linspace(0, 2*np.pi, 50)
+    fig.add_trace(go.Scatter(x=2.8 + 0.35*np.cos(theta), y=2.95 + 0.35*np.sin(theta), mode='lines', fill='toself', fillcolor='white', line=dict(color='black', width=1), name='Esfera'))
+    # Aguja del comparador
+    fig.add_trace(go.Scatter(x=[2.8, 2.8 + 0.25*np.cos(np.pi/6)], y=[2.95, 2.95 + 0.25*np.sin(np.pi/6)], mode='lines', line=dict(color='#22d3ee', width=3), name='Aguja'))
+    # Palpador (vstago)
+    fig.add_trace(go.Scatter(x=[2.8, 2.8], y=[2.3, 1.5], mode='lines', line=dict(color='#666', width=2), name='Palpador'))
+    # Punta del palpador
+    fig.add_trace(go.Scatter(x=[2.8], y=[1.5], mode='markers', marker=dict(size=8, color='red', symbol='circle'), name='Punta'))
+    
+    # Flecha de contacto
+    fig.add_annotation(x=2.8, y=1.8, ax=2.8, ay=2.2, xref='x', yref='y', axref='x', ayref='y', showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=2, arrowcolor='red')
+    
+    fig.update_layout(
+        xaxis=dict(range=[-2.5, 5.5], visible=False, scaleanchor='y', scaleratio=1),
+        yaxis=dict(range=[-0.5, 4.5], visible=False),
+        showlegend=False, height=450, margin=dict(l=10, r=10, t=20, b=10),
+        plot_bgcolor='white'
+    )
+    return fig
 
 def plot_generic_zona(feature, tol):
-    """Zona de tolerancia genérica."""
-    return create_placeholder_plot(feature, "Zona de Tolerancia")
+    """Zona de tolerancia genérica con vista 2D."""
+    fig = go.Figure()
+    
+    if 'Redondez' in feature or 'Concentricidad' in feature:
+        # Zona de tolerancia anular
+        theta = np.linspace(0, 2*np.pi, 100)
+        r_nominal = 5
+        
+        fig.add_trace(go.Scatter(x=r_nominal*np.cos(theta), y=r_nominal*np.sin(theta), mode='lines', line=dict(color='#3b82f6', width=2, dash='dash'), name='Teórico'))
+        fig.add_trace(go.Scatter(x=(r_nominal+tol/2)*np.cos(theta), y=(r_nominal+tol/2)*np.sin(theta), mode='lines', line=dict(color='orange', width=2), name='Límite +'))
+        fig.add_trace(go.Scatter(x=(r_nominal-tol/2)*np.cos(theta), y=(r_nominal-tol/2)*np.sin(theta), mode='lines', line=dict(color='orange', width=2), name='Límite -'))
+        # Rellenar zona
+        r_fill = np.concatenate([np.linspace(r_nominal-tol/2, r_nominal+tol/2, 30), np.linspace(r_nominal+tol/2, r_nominal-tol/2, 30)])
+        theta_fill = np.concatenate([theta[:30], theta[:30][::-1]])
+        fig.add_trace(go.Scatter(x=r_fill*np.cos(theta_fill), y=r_fill*np.sin(theta_fill), mode='lines', fill='toself', fillcolor='rgba(255,165,0,0.2)', line=dict(width=0), name='Zona', showlegend=False))
+        
+        fig.update_layout(xaxis=dict(scaleanchor='y', scaleratio=1, visible=False), yaxis=dict(visible=False), showlegend=True, height=400, margin=dict(l=20, r=20, t=30, b=20))
+        
+    elif 'Cilindricidad' in feature or 'Oscilación' in feature or 'Posición' in feature:
+        # Zona de tolerancia cilíndrica (vista frontal)
+        fig.add_trace(go.Scatter(x=[-1, 1, 1, -1, -1], y=[0, 0, 10, 10, 0], mode='lines', line=dict(color='#3b82f6', width=2, dash='dash'), name='Teórico'))
+        fig.add_trace(go.Scatter(x=[-1-tol/2, 1+tol/2, 1+tol/2, -1-tol/2, -1-tol/2], y=[0, 0, 10, 10, 0], mode='lines', line=dict(color='orange', width=2), name='Límites'))
+        fig.add_trace(go.Scatter(x=[-1+tol/2, 1-tol/2, 1-tol/2, -1+tol/2, -1+tol/2], y=[0, 0, 10, 10, 0], mode='lines', line=dict(color='orange', width=2), showlegend=False))
+        # Zona de tolerancia
+        fig.add_trace(go.Scatter(x=[-1-tol/2, -1+tol/2, -1+tol/2, -1-tol/2, -1-tol/2], y=[0, 0, 10, 10, 0], mode='lines', fill='toself', fillcolor='rgba(255,165,0,0.2)', line=dict(width=0), name='Zona Izq', showlegend=False))
+        fig.add_trace(go.Scatter(x=[1-tol/2, 1+tol/2, 1+tol/2, 1-tol/2, 1-tol/2], y=[0, 0, 10, 10, 0], mode='lines', fill='toself', fillcolor='rgba(255,165,0,0.2)', line=dict(width=0), name='Zona Der', showlegend=False))
+        
+        fig.update_layout(xaxis=dict(visible=True, title='Radio'), yaxis=dict(visible=True, title='Altura'), showlegend=True, height=400, margin=dict(l=40, r=20, t=30, b=40))
+        
+    else:
+        # Zona de tolerancia planar (para planicidad, perfiles, orientaciones)
+        x = np.linspace(0, 10, 100)
+        y_teorico = np.zeros_like(x)
+        y_real = 0.15 * tol * np.sin(x*0.8)
+        
+        fig.add_trace(go.Scatter(x=x, y=y_teorico, mode='lines', line=dict(color='#3b82f6', width=2, dash='dash'), name='Teórico'))
+        fig.add_trace(go.Scatter(x=x, y=y_real, mode='lines', line=dict(color='black', width=2), name='Perfil Real'))
+        fig.add_trace(go.Scatter(x=x, y=np.ones_like(x)*tol/2, mode='lines', line=dict(color='orange', width=2), name='Límite +'))
+        fig.add_trace(go.Scatter(x=x, y=-np.ones_like(x)*tol/2, mode='lines', line=dict(color='orange', width=2), name='Límite -'))
+        # Rellenar zona
+        fig.add_trace(go.Scatter(x=np.concatenate([x, x[::-1]]), y=np.concatenate([np.ones_like(x)*tol/2, -np.ones_like(x)*tol/2]), mode='lines', fill='toself', fillcolor='rgba(255,165,0,0.2)', line=dict(width=0), name='Zona', showlegend=False))
+        
+        fig.update_layout(xaxis=dict(visible=True, title='Posición (mm)'), yaxis=dict(visible=True, title='Desviación (mm)'), showlegend=True, height=400, margin=dict(l=40, r=20, t=30, b=40))
+    
+    return fig
 
 def plot_generic_plano_tecnico(feature, tol):
-    """Plano técnico genérico con matplotlib."""
+    """Plano técnico completo para todas las características GD&T."""
+    # Configuración estética común
+    C_ESTATICO = 'black'
+    C_DINAMICO_NUM = '#D00000'
+    C_ZONA = '#e6007e'
+    C_EXPLICACION = '#009fe3'
+    C_FONDO_MARCO = 'white'
+    C_REFERENCIA = '#1e40af'
+    
+    # Obtener símbolo GD&T según característica
+    simbolos = {
+        'Planicidad': '⏥', 'Redondez': '○', 'Cilindricidad': '⌭',
+        'Perfil de Línea': '⌓', 'Perfil de Superficie': '⌒',
+        'Angularidad': '∠', 'Perpendicularidad': '⊥', 'Paralelismo': '∥',
+        'Posición': '⊕', 'Concentricidad': '◎',
+        'Oscilación Circular': '↗', 'Oscilación Total': '↗↗'
+    }
+    simbolo = simbolos.get(feature, '—')
+    
     fig, ax = plt.subplots(figsize=(12, 7))
-    ax.set_xlim(0, 12)
-    ax.set_ylim(0, 8)
+    
+    # Configurar geometría según característica
+    if 'Planicidad' in feature:
+        # Superficie plana vista superior
+        ax.set_xlim(-25, 70)
+        ax.set_ylim(-35, 45)
+        ANCHO, ALTO = 50, 30
+        ax.add_patch(patches.Rectangle((0, 0), ANCHO, ALTO, lw=2, ec=C_ESTATICO, fc='none'))
+        # Líneas de referencia
+        ax.plot([-5, ANCHO+5], [ALTO/2, ALTO/2], color=C_ESTATICO, ls='--', lw=1)
+        cota_dim = f'{ANCHO}×{ALTO}'
+        x_cota, y_cota = -12, ALTO/2
+        
+    elif 'Redondez' in feature or 'Concentricidad' in feature:
+        # Círculo en sección transversal
+        ax.set_xlim(-25, 55)
+        ax.set_ylim(-25, 25)
+        theta = np.linspace(0, 2*np.pi, 100)
+        r = 15
+        ax.plot(r*np.cos(theta), r*np.sin(theta), color=C_ESTATICO, lw=2)
+        # Cruz central
+        ax.plot([-r-5, r+5], [0, 0], color=C_ESTATICO, ls='--', lw=1)
+        ax.plot([0, 0], [-r-5, r+5], color=C_ESTATICO, ls='--', lw=1)
+        cota_dim = f'Ø{r*2}'
+        x_cota, y_cota = -12, r
+        ANCHO, ALTO = r*2, r*2
+        
+    elif 'Cilindricidad' in feature or 'Oscilación' in feature:
+        # Cilindro vista frontal
+        ax.set_xlim(-25, 70)
+        ax.set_ylim(-35, 45)
+        ANCHO, ALTO = 50, 30
+        ax.add_patch(patches.Rectangle((0, 0), ANCHO, ALTO, lw=2, ec=C_ESTATICO, fc='none'))
+        ax.plot([-5, ANCHO+5], [ALTO/2, ALTO/2], color=C_ESTATICO, ls='--', lw=1)
+        cota_dim = f'Ø{ALTO}'
+        x_cota, y_cota = -12, ALTO/2
+        
+    elif 'Perfil' in feature:
+        # Perfil curvo
+        ax.set_xlim(-25, 70)
+        ax.set_ylim(-20, 40)
+        x_perfil = np.linspace(0, 50, 100)
+        y_perfil = 15 + 8*np.sin(x_perfil/8)
+        ax.plot(x_perfil, y_perfil, color=C_ESTATICO, lw=2)
+        ANCHO, ALTO = 50, 30
+        cota_dim = 'Perfil'
+        x_cota, y_cota = -12, 15
+        
+    elif 'Perpendicularidad' in feature or 'Angularidad' in feature or 'Paralelismo' in feature:
+        # Dos superficies con relación angular
+        ax.set_xlim(-25, 70)
+        ax.set_ylim(-15, 55)
+        # Plano de referencia horizontal (datum)
+        ax.add_patch(patches.Rectangle((0, 0), 50, 5, lw=2, ec=C_ESTATICO, fc='lightgray'))
+        ax.text(25, 2.5, 'A', fontsize=16, ha='center', va='center', fontweight='bold')
+        # Superficie controlada vertical
+        ax.add_patch(patches.Rectangle((10, 5), 5, 35, lw=2, ec=C_ESTATICO, fc='none'))
+        ANCHO, ALTO = 5, 35
+        cota_dim = f'{ALTO}'
+        x_cota, y_cota = 5, 22.5
+        
+    elif 'Posición' in feature:
+        # Patrón de agujeros
+        ax.set_xlim(-15, 65)
+        ax.set_ylim(-15, 55)
+        # Placa base
+        ax.add_patch(patches.Rectangle((0, 0), 50, 40, lw=2, ec=C_ESTATICO, fc='none'))
+        # Agujeros
+        for x, y in [(15, 15), (35, 15), (15, 25), (35, 25)]:
+            circle = patches.Circle((x, y), 3, lw=2, ec=C_ESTATICO, fc='none')
+            ax.add_patch(circle)
+        ANCHO, ALTO = 50, 40
+        cota_dim = f'{ANCHO}×{ALTO}'
+        x_cota, y_cota = -8, 20
+        
+    else:
+        # Genérico
+        ax.set_xlim(-25, 70)
+        ax.set_ylim(-35, 45)
+        ANCHO, ALTO = 50, 30
+        ax.add_patch(patches.Rectangle((0, 0), ANCHO, ALTO, lw=2, ec=C_ESTATICO, fc='none'))
+        cota_dim = f'{ANCHO}×{ALTO}'
+        x_cota, y_cota = -12, ALTO/2
+    
+    ax.set_aspect('equal')
     ax.axis('off')
-    ax.text(6, 4, f'Plano Técnico de {feature}\n\nEn desarrollo', 
-            ha='center', va='center', fontsize=16, color='gray')
+    
+    # CUADRO DE CONTROL DE TOLERANCIA (FCF)
+    x_marco = ANCHO - 8
+    y_marco = -25
+    h_marco = 8
+    w_simbolo = 8
+    w_valor = 14
+    
+    # Símbolo GD&T
+    ax.add_patch(patches.Rectangle((x_marco, y_marco), w_simbolo, h_marco, 
+                                   fc=C_FONDO_MARCO, ec=C_ESTATICO, lw=2))
+    ax.text(x_marco + w_simbolo/2, y_marco + h_marco/2, simbolo, 
+            fontsize=20, va='center', ha='center', color=C_ESTATICO)
+    
+    # Valor de tolerancia
+    ax.add_patch(patches.Rectangle((x_marco + w_simbolo, y_marco), w_valor, h_marco, 
+                                   fc=C_FONDO_MARCO, ec=C_ESTATICO, lw=2))
+    ax.text(x_marco + w_simbolo + w_valor/2, y_marco + h_marco/2, 
+            f'{tol:.1f}', 
+            fontsize=24, va='center', ha='center', color=C_DINAMICO_NUM, fontweight='bold')
+    
+    # Línea de líder
+    start_x, start_y = x_marco, y_marco + h_marco/2
+    elbow_x, elbow_y = x_marco - 10, start_y
+    if 'Planicidad' in feature or 'Cilindricidad' in feature:
+        end_x, end_y = ANCHO/2, ALTO/2
+    elif 'Redondez' in feature:
+        end_x, end_y = 0, 0
+    else:
+        end_x, end_y = ANCHO - 15, ALTO - 5 if 'Perfil' not in feature else 20
+    
+    ax.plot([start_x, elbow_x, end_x], [start_y, elbow_y, end_y], color=C_ESTATICO, lw=1.5)
+    ax.annotate('', xy=(end_x, end_y), xytext=(elbow_x, elbow_y),
+                arrowprops=dict(arrowstyle='->', color=C_ESTATICO, lw=1.5))
+    
+    # Cota dimensional
+    if x_cota < 0:
+        ax.text(x_cota, y_cota + 2, cota_dim, fontsize=18, color=C_ESTATICO, ha='right')
+    
     plt.tight_layout()
     return fig
 
@@ -1092,36 +1564,93 @@ if main_mode == "Análisis Individual":
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat, view)
-        if view == "Simulación 3D":
-            st.markdown(f"<div class='pedagogic-box'><b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.</div>", unsafe_allow_html=True)
-        elif view == "Montaje Real":
-            st.markdown("""
-                <div class='pedagogic-box'>
-                    <b>¿Qué ves?</b> El palpador recorre el eje y la aguja <span style="color:#22d3ee">(cian)</span> traduce ese movimiento<br>
-                    en una lectura amplificada (desviación de rectitud visible en la escala).
-                </div>
-            """, unsafe_allow_html=True)
-        elif view == "Zona de Tolerancia":
-            st.markdown(f"""
-                <div class='pedagogic-box'>
-                    <b>¿Qué ves?</b> Zona gris clara: área permitida de tolerancia ({tol} mm de ancho).<br>
-                    Líneas naranjas: límites superior e inferior. Línea azul: eje ideal.<br>
-                    Escala derecha: referencia de desviación permitida.<br><br>
-                    <b>Interpretación:</b> El eje debe permanecer dentro de la zona para cumplir rectitud.
-                </div>
-            """, unsafe_allow_html=True)
-        elif view == "Plano Técnico Real":
-            st.markdown(f"""
-                <div class='pedagogic-box'>
-                    <b>¿Qué ves?</b> Dibujo técnico estándar con:<br>
-                    1) Valor y símbolo que representa la acotación y la tolerancia total (Ø10±{tol*2:.1f}).<br>
-                    2) Flecha guía al área controlada.<br>
-                    3) Símbolo de la característica que controla (rectitud).<br>
-                    4) Valor de tolerancia ({tol}).<br><br>
-                    <b>Interpretación:</b> El marco de control (FCF) comunica qué controlar, cuánto, y contra qué referencias (datums).<br>
-                    Las cotas (80.00, Ø10±{tol*2:.1f}) describen tamaño; el FCF especifica la forma/tolerancia geométrica.
-                </div>
-            """, unsafe_allow_html=True)
+        
+        # Textos pedagógicos dinámicos por característica y vista
+        pedagogic_texts = {
+            'Rectitud': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> El eje azul representa el elemento real, el cilindro naranja la zona de tolerancia. Si el eje azul permanece dentro del cilindro, la pieza cumple rectitud.",
+                'Montaje Real': f"<b>¿Qué ves?</b> El palpador recorre el eje y la aguja <span style='color:#22d3ee'>(cian)</span> traduce ese movimiento en una lectura amplificada (desviación de rectitud visible en la escala).",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona gris clara: área permitida de tolerancia ({tol} mm de ancho). Líneas naranjas: límites superior e inferior. Línea azul: eje ideal.<br><b>Interpretación:</b> El eje debe permanecer dentro de la zona para cumplir rectitud.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Dibujo técnico estándar con: 1) Acotación dimensional (Ø10±{tol*2:.1f}), 2) Flecha guía, 3) Símbolo de rectitud, 4) Valor de tolerancia ({tol}).<br><b>Interpretación:</b> El FCF especifica la forma/tolerancia geométrica."
+            },
+            'Planicidad': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie ondulada (real) entre dos planos paralelos naranjas (límites). La superficie debe permanecer entre ambos planos para cumplir planicidad de {tol} mm.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador midiendo la superficie en múltiples puntos. La desviación vertical indica qué tan plana es la superficie.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Vista lateral mostrando el perfil real (negro) entre límites de tolerancia (naranja) de {tol} mm. Zona sombreada indica área permitida.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie rectangular con símbolo de planicidad (⏥) y tolerancia {tol} mm. Controla la planitud total de la superficie sin referencia a otras características."
+            },
+            'Redondez': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Perfil circular real (azul) comparado con círculos concéntricos de tolerancia (naranja). El perfil debe estar dentro de la zona anular de {tol} mm.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Pieza rotando mientras el comparador mide variación radial. La aguja muestra desviaciones del círculo perfecto.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Dos círculos concéntricos (naranja) definen zona anular de {tol} mm. Perfil real debe estar dentro de esta zona.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Vista en sección transversal con símbolo de redondez (○) y tolerancia {tol} mm. Controla forma circular independiente de tamaño."
+            },
+            'Cilindricidad': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie cilíndrica real (azul) entre dos cilindros concéntricos (naranja) separados {tol} mm. Controla redondez, rectitud y conicidad simultáneamente.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador midiendo superficie cilíndrica en múltiples posiciones radiales y axiales para verificar cilindricidad.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Vista frontal mostrando zona de tolerancia cilíndrica de {tol} mm. Límites interior y exterior (naranja) contienen superficie real.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Cilindro con símbolo de cilindricidad (⌭) y tolerancia {tol} mm. Más estricto que redondez o rectitud individuales."
+            },
+            'Perfil de Línea': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Curva real (azul) siguiendo perfil teórico con zona de tolerancia bilateral de {tol} mm. Controla forma de línea en 2D.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador de perfil siguiendo la curva, midiendo desviaciones perpendiculares al perfil teórico.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Perfil teórico (azul discontinuo) con bandas de tolerancia ±{tol/2} mm (naranja). Perfil real debe estar dentro.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Perfil curvo con símbolo ⌓ y tolerancia {tol} mm. Controla forma completa de la línea."
+            },
+            'Perfil de Superficie': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie 3D real entre límites superior e inferior de {tol} mm. Controla forma completa de superficie.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Sistema de medición de coordenadas (CMM) escaneando superficie en 3D comparando con CAD teórico.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Superficie teórica con zona de tolerancia bilateral de {tol} mm. Controla forma, orientación y ubicación.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie compleja con símbolo ⌒ y tolerancia {tol} mm. Puede incluir datums de referencia."
+            },
+            'Angularidad': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie inclinada (real) con zona de tolerancia angular de {tol} mm respecto al datum (gris). Controla orientación angular precisa.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador midiendo superficie angular contra bloque patrón en ángulo específico respecto a datum.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona angular de {tol} mm entre planos paralelos inclinados. Superficie debe estar dentro de esta zona.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie con símbolo ∠, tolerancia {tol} mm y datum A. Controla ángulo específico respecto a referencia."
+            },
+            'Perpendicularidad': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie vertical (real) con zona de tolerancia de {tol} mm perpendicular al datum horizontal (gris). Debe ser 90° exactos.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Escuadra de precisión y comparador verificando perpendicularidad de {tol} mm respecto a superficie datum.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona de {tol} mm entre dos planos paralelos perpendiculares a datum A. Superficie controlada debe estar dentro.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie con símbolo ⊥, tolerancia {tol} mm y datum A. Garantiza 90° respecto a referencia."
+            },
+            'Paralelismo': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie superior (real) con zona de tolerancia de {tol} mm paralela a datum inferior (gris). Ambas deben ser paralelas.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador midiendo distancia entre superficies en múltiples puntos para verificar paralelismo de {tol} mm.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona de {tol} mm entre planos paralelos a datum A. Superficie debe mantener distancia constante.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie con símbolo ∥, tolerancia {tol} mm y datum A. Controla paralelismo estricto."
+            },
+            'Posición': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Agujero real con zona de tolerancia cilíndrica de Ø{tol} mm desde posición teórica. Controla ubicación precisa.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Sistema CMM midiendo centro del agujero comparando con coordenadas teóricas del plano.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona cilíndrica de Ø{tol} mm centrada en posición ideal. Eje del agujero debe estar dentro.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Patrón de agujeros con símbolo ⊕, tolerancia {tol} mm y datums. Controla ubicación exacta."
+            },
+            'Concentricidad': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Dos círculos: referencia (gris) e interno (azul) con desviación. Zona de tolerancia Ø{tol} mm en el centro. Centros deben coincidir.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Pieza rotando para medir desviación del centro del diámetro interno respecto al externo (datum).",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Círculo de tolerancia Ø{tol} mm. Centro del elemento controlado debe estar dentro de este círculo.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Diámetros concéntricos con símbolo ◎, tolerancia {tol} mm y datum A. Controla coaxialidad de centros."
+            },
+            'Oscilación Circular': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Perfil radial en una posición con variación de {tol} mm. Controla oscilación en un solo plano perpendicular.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Pieza rotando mientras comparador fijo mide variación radial en una posición específica.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona radial de {tol} mm en sección transversal. Lectura del indicador no debe exceder este valor durante rotación.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Superficie cilíndrica con símbolo ↗, tolerancia {tol} mm y datum A. Mide desviación en cada sección."
+            },
+            'Oscilación Total': {
+                'Simulación 3D': f"<b>¿Qué ves?</b> Superficie cilíndrica completa entre cilindros de tolerancia separados {tol} mm. Controla oscilación en toda la longitud.",
+                'Montaje Real': f"<b>¿Qué ves?</b> Comparador recorriendo axialmente mientras pieza rota, midiendo variación total de superficie.",
+                'Zona de Tolerancia': f"<b>¿Qué ves?</b> Zona cilíndrica completa de {tol} mm. Superficie entera debe estar dentro durante rotación completa.",
+                'Plano Técnico Real': f"<b>¿Qué ves?</b> Cilindro con símbolo ↗↗, tolerancia {tol} mm y datum A. Más estricto que oscilación circular."
+            }
+        }
+        
+        # Obtener texto pedagógico apropiado
+        text = pedagogic_texts.get(cat, {}).get(view, f"<b>¿Qué ves?</b> Visualización de {cat} con tolerancia de {tol} mm. Analiza cómo la geometría real se compara con los límites permitidos.")
+        
+        st.markdown(f"<div class='pedagogic-box'>{text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif main_mode == "Constructor de Plano":
