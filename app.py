@@ -328,6 +328,128 @@ def show_info_card(feature):
     """
     st.markdown(html, unsafe_allow_html=True)
 
+# ===================== FUNCIONES GENÉRICAS DE VISUALIZACIÓN =====================
+
+def create_placeholder_plot(feature, view_type):
+    """Crea un gráfico placeholder para características en desarrollo."""
+    fig = go.Figure()
+    fig.add_annotation(
+        text=f"{view_type} de {feature}<br><br>En desarrollo",
+        xref="paper", yref="paper",
+        x=0.5, y=0.5, showarrow=False,
+        font=dict(size=18, color="#666")
+    )
+    fig.update_layout(
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        height=400,
+        plot_bgcolor='white',
+        margin=dict(l=20, r=20, t=30, b=20)
+    )
+    return fig
+
+def plot_3d_planicidad(tol):
+    """Planicidad: superficie entre dos planos paralelos."""
+    fig = go.Figure()
+    x = np.linspace(-5, 5, 25)
+    y = np.linspace(-5, 5, 25)
+    X, Y = np.meshgrid(x, y)
+    Z = 0.15 * np.sin(X*0.8) * np.cos(Y*0.8) * tol
+    
+    fig.add_trace(go.Surface(x=X, y=Y, z=Z, colorscale='Viridis', opacity=0.8,
+                             name='Superficie Real', showscale=False))
+    Z_upper = np.ones_like(X) * (tol/2)
+    Z_lower = np.ones_like(X) * (-tol/2)
+    fig.add_trace(go.Surface(x=X, y=Y, z=Z_upper, colorscale=[[0, 'rgba(255,100,0,0.3)'], [1, 'rgba(255,100,0,0.3)']], 
+                             showscale=False, name='Plano Superior'))
+    fig.add_trace(go.Surface(x=X, y=Y, z=Z_lower, colorscale=[[0, 'rgba(255,100,0,0.3)'], [1, 'rgba(255,100,0,0.3)']], 
+                             showscale=False, name='Plano Inferior'))
+    
+    fig.update_layout(
+        scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False, range=[-tol*2, tol*2]),
+                   camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))),
+        showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500
+    )
+    return fig
+
+def plot_3d_redondez(tol):
+    """Redondez: círculo perfecto en sección transversal."""
+    fig = go.Figure()
+    theta = np.linspace(0, 2*np.pi, 100)
+    r_real = 5 + 0.4 * tol * np.sin(5*theta)
+    x_real = r_real * np.cos(theta)
+    y_real = r_real * np.sin(theta)
+    r_teorico, r_upper, r_lower = 5, 5 + tol/2, 5 - tol/2
+    
+    fig.add_trace(go.Scatter(x=x_real, y=y_real, mode='lines', line=dict(color='#3b82f6', width=3), name='Perfil Real'))
+    fig.add_trace(go.Scatter(x=r_teorico*np.cos(theta), y=r_teorico*np.sin(theta), mode='lines', 
+                             line=dict(color='black', width=1, dash='dash'), name='Teórico'))
+    fig.add_trace(go.Scatter(x=r_upper*np.cos(theta), y=r_upper*np.sin(theta), mode='lines', 
+                             line=dict(color='orange', width=2), name='Límite +'))
+    fig.add_trace(go.Scatter(x=r_lower*np.cos(theta), y=r_lower*np.sin(theta), mode='lines', 
+                             line=dict(color='orange', width=2), name='Límite -'))
+    
+    fig.update_layout(xaxis=dict(scaleanchor='y', scaleratio=1, visible=False), yaxis=dict(visible=False),
+                     showlegend=True, height=500, margin=dict(l=20, r=20, t=30, b=20))
+    return fig
+
+def plot_3d_cilindricidad(tol):
+    """Cilindricidad: cilindros concéntricos."""
+    fig = go.Figure()
+    theta = np.linspace(0, 2*np.pi, 50)
+    z = np.linspace(0, 10, 30)
+    Theta, Z = np.meshgrid(theta, z)
+    r_real = 3 + 0.2*tol*np.sin(5*Theta)*np.cos(Z*0.5)
+    X_real = r_real * np.cos(Theta)
+    Y_real = r_real * np.sin(Theta)
+    
+    fig.add_trace(go.Surface(x=X_real, y=Y_real, z=Z, colorscale='Blues', opacity=0.7, name='Superficie Real', showscale=False))
+    r_upper, r_lower = 3 + tol/2, 3 - tol/2
+    fig.add_trace(go.Surface(x=r_upper*np.cos(Theta), y=r_upper*np.sin(Theta), z=Z, 
+                             colorscale=[[0, 'rgba(255,100,0,0.3)'], [1, 'rgba(255,100,0,0.3)']], showscale=False, name='Límite Exterior'))
+    fig.add_trace(go.Surface(x=r_lower*np.cos(Theta), y=r_lower*np.sin(Theta), z=Z, 
+                             colorscale=[[0, 'rgba(255,100,0,0.3)'], [1, 'rgba(255,100,0,0.3)']], showscale=False, name='Límite Interior'))
+    
+    fig.update_layout(scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                                camera=dict(eye=dict(x=1.5, y=1.5, z=0.8))),
+                     showlegend=True, margin=dict(l=0, r=0, t=30, b=0), height=500)
+    return fig
+
+def plot_3d_perfil(feature, tol):
+    """Perfiles de línea o superficie."""
+    return create_placeholder_plot(feature, "Simulación 3D")
+
+def plot_3d_orientacion(feature, tol):
+    """Orientaciones: angularidad, perpendicularidad, paralelismo."""
+    return create_placeholder_plot(feature, "Simulación 3D")
+
+def plot_3d_ubicacion(feature, tol):
+    """Ubicación: posición, concentricidad."""
+    return create_placeholder_plot(feature, "Simulación 3D")
+
+def plot_3d_oscilacion(feature, tol):
+    """Oscilación circular y total."""
+    return create_placeholder_plot(feature, "Simulación 3D")
+
+def plot_generic_montaje(feature):
+    """Montaje real genérico."""
+    return create_placeholder_plot(feature, "Montaje Real")
+
+def plot_generic_zona(feature, tol):
+    """Zona de tolerancia genérica."""
+    return create_placeholder_plot(feature, "Zona de Tolerancia")
+
+def plot_generic_plano_tecnico(feature, tol):
+    """Plano técnico genérico con matplotlib."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0, 8)
+    ax.axis('off')
+    ax.text(6, 4, f'Plano Técnico de {feature}\n\nEn desarrollo', 
+            ha='center', va='center', fontsize=16, color='gray')
+    plt.tight_layout()
+    return fig
+
 
 def get_symbol_image_path(feature):
     """Devuelve la ruta relativa a la imagen del símbolo para la característica.
@@ -915,25 +1037,58 @@ if main_mode == "Análisis Individual":
         </style>
         """, unsafe_allow_html=True)
         
+        # Sistema de despacho inteligente según característica
         if view == "Simulación 3D":
-            fig = plot_3d_rectitud(tol)
+            if cat == 'Rectitud':
+                fig = plot_3d_rectitud(tol)
+            elif cat == 'Planicidad':
+                fig = plot_3d_planicidad(tol)
+            elif cat == 'Redondez':
+                fig = plot_3d_redondez(tol)
+            elif cat == 'Cilindricidad':
+                fig = plot_3d_cilindricidad(tol)
+            elif cat in ['Perfil de Línea', 'Perfil de Superficie']:
+                fig = plot_3d_perfil(cat, tol)
+            elif cat in ['Angularidad', 'Perpendicularidad', 'Paralelismo']:
+                fig = plot_3d_orientacion(cat, tol)
+            elif cat in ['Posición', 'Concentricidad']:
+                fig = plot_3d_ubicacion(cat, tol)
+            elif cat in ['Oscilación Circular', 'Oscilación Total']:
+                fig = plot_3d_oscilacion(cat, tol)
+            else:
+                fig = create_placeholder_plot(cat, "Simulación 3D")
+            
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            # Envolver con div y clase para CSS
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
             components.html(wrapped_html, height=540, scrolling=False)
+            
         elif view == "Montaje Real":
-            fig = plot_real_rectitud()
+            if cat == 'Rectitud':
+                fig = plot_real_rectitud()
+            else:
+                fig = plot_generic_montaje(cat)
+            
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
             components.html(wrapped_html, height=460, scrolling=False)
+            
         elif view == "Zona de Tolerancia":
-            fig = plot_blueprint_rectitud(tol)
+            if cat == 'Rectitud':
+                fig = plot_blueprint_rectitud(tol)
+            else:
+                fig = plot_generic_zona(cat, tol)
+            
             html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
             wrapped_html = f'<div class="plot-container">{html_plot}</div>'
             components.html(wrapped_html, height=400, scrolling=False)
+            
         elif view == "Plano Técnico Real":
-            fig = plot_technical_drawing_rectitud(tol)
-            st.pyplot(fig, use_container_width=True)
+            if cat == 'Rectitud':
+                fig = plot_technical_drawing_rectitud(tol)
+                st.pyplot(fig, use_container_width=True)
+            else:
+                fig = plot_generic_plano_tecnico(cat, tol)
+                st.pyplot(fig, use_container_width=True)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat, view)
