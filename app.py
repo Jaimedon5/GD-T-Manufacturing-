@@ -300,110 +300,127 @@ def plot_blueprint_rectitud(tol):
     return fig
 
 def plot_technical_drawing_rectitud(_tol):
-    """Copia exacta del plano técnico de referencia adjunto por el usuario."""
+    """Plano técnico usando matplotlib-style con coordenadas exactas de la referencia."""
     fig = go.Figure()
     
-    # ========== PIEZA (RECTÁNGULO) ==========
-    fig.add_shape(type='rect', x0=2, x1=10, y0=3.5, y1=5.5,
-                  fillcolor='#f8f9fa', line=dict(color='#000', width=2.5))
+    # Configuración de aspecto ratio y fondo limpio
+    fig.update_layout(
+        width=1000, height=600,
+        xaxis=dict(range=[0, 100], visible=False, scaleanchor='y', scaleratio=1),
+        yaxis=dict(range=[0, 60], visible=False),
+        plot_bgcolor='white', paper_bgcolor='white',
+        margin=dict(l=10, r=10, t=30, b=10),
+        font=dict(family='Arial', color='black')
+    )
     
-    # ========== LÍNEA DE CENTRO (DASH) ==========
-    fig.add_shape(type='line', x0=0.5, x1=10.5, y0=4.5, y1=4.5,
-                  line=dict(color='#000', width=1.5, dash='dash'))
+    # ========== PIEZA PRINCIPAL (RECTÁNGULO CENTRADO) ==========
+    piece_x0, piece_x1 = 15, 75
+    piece_y0, piece_y1 = 25, 40
+    fig.add_shape(type='rect', x0=piece_x0, x1=piece_x1, y0=piece_y0, y1=piece_y1,
+                  fillcolor='white', line=dict(color='black', width=3))
+    
+    # ========== LÍNEA DE CENTRO (DISCONTINUA HORIZONTAL) ==========
+    center_y = (piece_y0 + piece_y1) / 2
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=center_y, y1=center_y,
+                  line=dict(color='black', width=1.5, dash='dash'))
     
     # ========== COTA HORIZONTAL SUPERIOR (80.00) ==========
-    fig.add_shape(type='line', x0=2, x1=2, y0=5.5, y1=6.0, line=dict(color='#000', width=1))
-    fig.add_shape(type='line', x0=10, x1=10, y0=5.5, y1=6.0, line=dict(color='#000', width=1))
-    fig.add_shape(type='line', x0=2, x1=10, y0=5.85, y1=5.85, line=dict(color='#000', width=1.5))
-    fig.add_annotation(x=2, y=5.85, ax=2.35, ay=5.85, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
-    fig.add_annotation(x=10, y=5.85, ax=9.65, ay=5.85, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
-    fig.add_annotation(x=6, y=6.1, text="80.00", showarrow=False,
-                       font=dict(size=13, color='#000', family='Arial', weight='bold'))
+    cota_y = piece_y1 + 5
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x0, y0=piece_y1, y1=cota_y, 
+                  line=dict(color='black', width=1))
+    fig.add_shape(type='line', x0=piece_x1, x1=piece_x1, y0=piece_y1, y1=cota_y,
+                  line=dict(color='black', width=1))
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=cota_y-1, y1=cota_y-1,
+                  line=dict(color='black', width=1.5))
+    # Flechas de cota
+    fig.add_annotation(x=piece_x0, y=cota_y-1, ax=piece_x0+2, ay=cota_y-1, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    fig.add_annotation(x=piece_x1, y=cota_y-1, ax=piece_x1-2, ay=cota_y-1, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    fig.add_annotation(x=(piece_x0+piece_x1)/2, y=cota_y+1, text="80.00", showarrow=False,
+                       font=dict(size=14, weight='bold'))
     
     # ========== COTA VERTICAL DERECHA (Ø10±0.2) ==========
-    fig.add_shape(type='line', x0=10, x1=10.6, y0=3.5, y1=3.5, line=dict(color='#000', width=1))
-    fig.add_shape(type='line', x0=10, x1=10.6, y0=5.5, y1=5.5, line=dict(color='#000', width=1))
-    fig.add_shape(type='line', x0=10.45, x1=10.45, y0=3.5, y1=5.5, line=dict(color='#000', width=1.5))
-    fig.add_annotation(x=10.45, y=3.5, ax=10.45, ay=3.85, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
-    fig.add_annotation(x=10.45, y=5.5, ax=10.45, ay=5.15, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
-    fig.add_annotation(x=10.95, y=4.5, text="Ø10±0.2", showarrow=False,
-                       font=dict(size=12, color='#000', family='Arial', weight='bold'),
-                       textangle=-90)
+    cota_x = piece_x1 + 5
+    fig.add_shape(type='line', x0=piece_x1, x1=cota_x, y0=piece_y0, y1=piece_y0,
+                  line=dict(color='black', width=1))
+    fig.add_shape(type='line', x0=piece_x1, x1=cota_x, y0=piece_y1, y1=piece_y1,
+                  line=dict(color='black', width=1))
+    fig.add_shape(type='line', x0=cota_x-1, x1=cota_x-1, y0=piece_y0, y1=piece_y1,
+                  line=dict(color='black', width=1.5))
+    fig.add_annotation(x=cota_x-1, y=piece_y0, ax=cota_x-1, ay=piece_y0+1.5, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    fig.add_annotation(x=cota_x-1, y=piece_y1, ax=cota_x-1, ay=piece_y1-1.5, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    fig.add_annotation(x=cota_x+3, y=center_y, text="Ø10±0.2", showarrow=False,
+                       font=dict(size=13, weight='bold'), textangle=-90)
     
-    # ========== COTA VERTICAL IZQUIERDA (LÍNEA CON FLECHAS) ==========
-    fig.add_shape(type='line', x0=0.5, x1=0.5, y0=3.5, y1=5.5, line=dict(color='#000', width=1.5))
-    fig.add_annotation(x=0.5, y=3.5, ax=0.5, ay=3.85, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
-    fig.add_annotation(x=0.5, y=5.5, ax=0.5, ay=5.15, showarrow=True,
-                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
+    # ========== COTA VERTICAL IZQUIERDA (FLECHAS SIN TEXTO) ==========
+    cota_x_left = piece_x0 - 5
+    fig.add_shape(type='line', x0=cota_x_left, x1=cota_x_left, y0=piece_y0, y1=piece_y1,
+                  line=dict(color='black', width=1.5))
+    fig.add_annotation(x=cota_x_left, y=piece_y0, ax=cota_x_left, ay=piece_y0+1.5, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    fig.add_annotation(x=cota_x_left, y=piece_y1, ax=cota_x_left, ay=piece_y1-1.5, showarrow=True,
+                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
     
-    # ========== FCF (FEATURE CONTROL FRAME) ARRIBA A LA DERECHA ==========
-    fcf_x0, fcf_y0 = 8.5, 6.5
-    fcf_w1, fcf_w2 = 0.6, 0.9
-    fcf_h = 0.45
-    # Primer compartimento (símbolo de rectitud)
-    fig.add_shape(type='rect', x0=fcf_x0, x1=fcf_x0+fcf_w1, y0=fcf_y0, y1=fcf_y0+fcf_h,
-                  fillcolor='#fff', line=dict(color='#000', width=2.5))
-    fig.add_shape(type='line', x0=fcf_x0+0.1, x1=fcf_x0+fcf_w1-0.1, y0=fcf_y0+fcf_h/2, y1=fcf_y0+fcf_h/2,
-                  line=dict(color='#000', width=3))
-    # Segundo compartimento (valor 0.1)
-    fig.add_shape(type='rect', x0=fcf_x0+fcf_w1, x1=fcf_x0+fcf_w1+fcf_w2, y0=fcf_y0, y1=fcf_y0+fcf_h,
-                  fillcolor='#fff', line=dict(color='#000', width=2.5))
-    fig.add_annotation(x=fcf_x0+fcf_w1+fcf_w2/2, y=fcf_y0+fcf_h/2, text="0.1", showarrow=False,
-                       font=dict(size=11, color='#000', family='Arial'), xanchor='center', yanchor='middle')
-    # Flecha líder desde FCF hacia la pieza
-    fig.add_annotation(x=fcf_x0+fcf_w1/2, y=fcf_y0, ax=fcf_x0+fcf_w1/2, ay=5.5, showarrow=True,
-                       arrowhead=2, arrowsize=1.3, arrowwidth=2.5, arrowcolor='#000')
+    # ========== FCF (ARRIBA DERECHA CON FLECHA LÍDER) ==========
+    fcf_x, fcf_y = 75, 50
+    fcf_w1, fcf_w2, fcf_h = 5, 7, 4
+    # Compartimento 1: símbolo rectitud
+    fig.add_shape(type='rect', x0=fcf_x, x1=fcf_x+fcf_w1, y0=fcf_y, y1=fcf_y+fcf_h,
+                  fillcolor='white', line=dict(color='black', width=2.5))
+    fig.add_shape(type='line', x0=fcf_x+0.5, x1=fcf_x+fcf_w1-0.5, y0=fcf_y+fcf_h/2, y1=fcf_y+fcf_h/2,
+                  line=dict(color='black', width=2.5))
+    # Compartimento 2: valor 0.1
+    fig.add_shape(type='rect', x0=fcf_x+fcf_w1, x1=fcf_x+fcf_w1+fcf_w2, y0=fcf_y, y1=fcf_y+fcf_h,
+                  fillcolor='white', line=dict(color='black', width=2.5))
+    fig.add_annotation(x=fcf_x+fcf_w1+fcf_w2/2, y=fcf_y+fcf_h/2, text="0.1", showarrow=False,
+                       font=dict(size=13, weight='bold'), xanchor='center', yanchor='middle')
+    # Flecha líder hacia la pieza
+    fig.add_annotation(x=fcf_x+2.5, y=fcf_y, ax=piece_x1-5, ay=piece_y1, showarrow=True,
+                       arrowhead=1, arrowsize=1.2, arrowwidth=2.5, arrowcolor='black')
     
-    # ========== LÍNEAS MAGENTA PUNTEADAS (ZONA DE TOLERANCIA) ==========
+    # ========== ZONA DE TOLERANCIA (LÍNEAS MAGENTA + NEGRA CENTRAL) ==========
     magenta = "#d946ef"
-    y_top = 3.28
-    y_bot = 3.03
-    y_mid = (y_top + y_bot) / 2
-    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_top, y1=y_top,
+    tol_y_top = piece_y0 - 1.5
+    tol_y_bot = piece_y0 - 3.5
+    tol_y_mid = (tol_y_top + tol_y_bot) / 2
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_top, y1=tol_y_top,
                   line=dict(color=magenta, width=2, dash='dot'))
-    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_bot, y1=y_bot,
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_bot, y1=tol_y_bot,
                   line=dict(color=magenta, width=2, dash='dot'))
-    # Línea negra central (dentro de la zona)
-    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_mid, y1=y_mid,
-                  line=dict(color='#000', width=2))
+    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_mid, y1=tol_y_mid,
+                  line=dict(color='black', width=2))
     
-    # ========== BRACKET AZUL Y ETIQUETA (A LA DERECHA) ==========
+    # ========== BRACKET AZUL (DERECHA) ==========
     cyan = "#0ea5e9"
-    x_bracket = 10.15
-    fig.add_shape(type='line', x0=x_bracket, x1=x_bracket+0.15, y0=y_top, y1=y_top, line=dict(color=cyan, width=2))
-    fig.add_shape(type='line', x0=x_bracket, x1=x_bracket+0.15, y0=y_bot, y1=y_bot, line=dict(color=cyan, width=2))
-    fig.add_shape(type='line', x0=x_bracket+0.15, x1=x_bracket+0.15, y0=y_bot, y1=y_top, line=dict(color=cyan, width=2))
-    fig.add_annotation(x=10.9, y=y_mid, text="0.1 zona de tolerancia",
-                       showarrow=False, font=dict(color=cyan, size=11), xanchor='left')
+    bracket_x = piece_x1 + 1
+    fig.add_shape(type='line', x0=bracket_x, x1=bracket_x+1.5, y0=tol_y_top, y1=tol_y_top,
+                  line=dict(color=cyan, width=2))
+    fig.add_shape(type='line', x0=bracket_x, x1=bracket_x+1.5, y0=tol_y_bot, y1=tol_y_bot,
+                  line=dict(color=cyan, width=2))
+    fig.add_shape(type='line', x0=bracket_x+1.5, x1=bracket_x+1.5, y0=tol_y_bot, y1=tol_y_top,
+                  line=dict(color=cyan, width=2))
+    fig.add_annotation(x=bracket_x+8, y=tol_y_mid, text="0.1 zona de tolerancia",
+                       showarrow=False, font=dict(size=12, color=cyan), xanchor='left')
     
-    # ========== TÍTULO (CENTRADO ARRIBA) ==========
-    fig.add_annotation(x=6, y=7.5, text="PLANO TÉCNICO: EJE RECTIFICADO", showarrow=False,
-                       font=dict(size=13, color='#000', family='Arial'), xanchor='center', yanchor='top')
+    # ========== TÍTULO ==========
+    fig.add_annotation(x=50, y=58, text="PLANO TÉCNICO: EJE RECTIFICADO", showarrow=False,
+                       font=dict(size=15, weight='bold'), xanchor='center')
     
-    # ========== NOTAS TÉCNICAS (ESQUINA INFERIOR DERECHA) ==========
-    fig.add_shape(type='rect', x0=8.2, x1=11.5, y0=0.3, y1=1.2,
-                  fillcolor='#fff', line=dict(color='#000', width=1.5))
-    fig.add_annotation(x=9.85, y=1.05, text="NOTAS TÉCNICAS", showarrow=False,
-                       font=dict(size=9, color='#000', family='Arial', weight='bold'))
-    fig.add_annotation(x=9.85, y=0.85, text="Material: AISI 1045", showarrow=False,
-                       font=dict(size=8, color='#000', family='Arial'), xanchor='center')
-    fig.add_annotation(x=9.85, y=0.65, text="Acabado: Rectificado", showarrow=False,
-                       font=dict(size=8, color='#000', family='Arial'), xanchor='center')
-    fig.add_annotation(x=9.85, y=0.45, text="Escala 1:1", showarrow=False,
-                       font=dict(size=8, color='#000', family='Arial'), xanchor='center')
+    # ========== NOTAS TÉCNICAS ==========
+    fig.add_shape(type='rect', x0=70, x1=95, y0=2, y1=10,
+                  fillcolor='white', line=dict(color='black', width=1.5))
+    fig.add_annotation(x=82.5, y=9, text="NOTAS TÉCNICAS", showarrow=False,
+                       font=dict(size=10, weight='bold'))
+    fig.add_annotation(x=82.5, y=7, text="Material: AISI 1045", showarrow=False,
+                       font=dict(size=9))
+    fig.add_annotation(x=82.5, y=5.5, text="Acabado: Rectificado", showarrow=False,
+                       font=dict(size=9))
+    fig.add_annotation(x=82.5, y=4, text="Escala 1:1", showarrow=False,
+                       font=dict(size=9))
     
-    fig.update_layout(
-        margin=dict(l=20, r=20, t=20, b=20), height=520,
-        xaxis=dict(range=[0, 12], visible=False),
-        yaxis=dict(range=[0, 8], visible=False),
-        paper_bgcolor='#f5f5f5', plot_bgcolor='#ffffff',
-        font=dict(color='#000')
-    )
     return fig
 
     # Contorno principal de la pieza (rectángulo sólido - vista frontal del eje)
