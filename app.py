@@ -299,128 +299,90 @@ def plot_blueprint_rectitud(tol):
                           xanchor='left', yanchor='middle')
     return fig
 
-def plot_technical_drawing_rectitud(_tol):
-    """Plano técnico usando matplotlib-style con coordenadas exactas de la referencia."""
-    fig = go.Figure()
+def plot_technical_drawing_rectitud(tol):
+    """Plano técnico usando matplotlib (adaptado de tolerancias.txt)."""
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as patches
     
-    # Configuración de aspecto ratio y fondo limpio
-    fig.update_layout(
-        width=1000, height=600,
-        xaxis=dict(range=[0, 100], visible=False, scaleanchor='y', scaleratio=1),
-        yaxis=dict(range=[0, 60], visible=False),
-        plot_bgcolor='white', paper_bgcolor='white',
-        margin=dict(l=10, r=10, t=30, b=10),
-        font=dict(family='Arial', color='black')
-    )
+    # Configuración estética
+    ANCHO_PIEZA = 40
+    ALTO_PIEZA = 15
+    C_ESTATICO = 'black'
+    C_DINAMICO_NUM = '#D00000'
+    C_ZONA = '#e6007e'
+    C_EXPLICACION = '#009fe3'
+    C_FONDO_MARCO = 'white'
     
-    # ========== PIEZA PRINCIPAL (RECTÁNGULO CENTRADO) ==========
-    piece_x0, piece_x1 = 15, 75
-    piece_y0, piece_y1 = 25, 40
-    fig.add_shape(type='rect', x0=piece_x0, x1=piece_x1, y0=piece_y0, y1=piece_y1,
-                  fillcolor='white', line=dict(color='black', width=3))
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax.set_xlim(-25, ANCHO_PIEZA + 35)
+    ax.set_ylim(-35, ALTO_PIEZA + 15)
+    ax.set_aspect('equal')
+    ax.axis('off')
     
-    # ========== LÍNEA DE CENTRO (DISCONTINUA HORIZONTAL) ==========
-    center_y = (piece_y0 + piece_y1) / 2
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=center_y, y1=center_y,
-                  line=dict(color='black', width=1.5, dash='dash'))
+    y_sup = ALTO_PIEZA / 2
+    y_inf = -ALTO_PIEZA / 2
     
-    # ========== COTA HORIZONTAL SUPERIOR (80.00) ==========
-    cota_y = piece_y1 + 5
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x0, y0=piece_y1, y1=cota_y, 
-                  line=dict(color='black', width=1))
-    fig.add_shape(type='line', x0=piece_x1, x1=piece_x1, y0=piece_y1, y1=cota_y,
-                  line=dict(color='black', width=1))
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=cota_y-1, y1=cota_y-1,
-                  line=dict(color='black', width=1.5))
-    # Flechas de cota
-    fig.add_annotation(x=piece_x0, y=cota_y-1, ax=piece_x0+2, ay=cota_y-1, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
-    fig.add_annotation(x=piece_x1, y=cota_y-1, ax=piece_x1-2, ay=cota_y-1, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
-    fig.add_annotation(x=(piece_x0+piece_x1)/2, y=cota_y+1, text="80.00", showarrow=False,
-                       font=dict(size=14, weight='bold'))
+    # Pieza rectangular
+    ax.add_patch(patches.Rectangle((0, y_inf), ANCHO_PIEZA, ALTO_PIEZA, 
+                                   lw=2, ec=C_ESTATICO, fc='none'))
+    # Eje central
+    ax.plot([-5, ANCHO_PIEZA + 5], [0, 0], color=C_ESTATICO, ls='--', lw=1)
     
-    # ========== COTA VERTICAL DERECHA (Ø10±0.2) ==========
-    cota_x = piece_x1 + 5
-    fig.add_shape(type='line', x0=piece_x1, x1=cota_x, y0=piece_y0, y1=piece_y0,
-                  line=dict(color='black', width=1))
-    fig.add_shape(type='line', x0=piece_x1, x1=cota_x, y0=piece_y1, y1=piece_y1,
-                  line=dict(color='black', width=1))
-    fig.add_shape(type='line', x0=cota_x-1, x1=cota_x-1, y0=piece_y0, y1=piece_y1,
-                  line=dict(color='black', width=1.5))
-    fig.add_annotation(x=cota_x-1, y=piece_y0, ax=cota_x-1, ay=piece_y0+1.5, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
-    fig.add_annotation(x=cota_x-1, y=piece_y1, ax=cota_x-1, ay=piece_y1-1.5, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
-    fig.add_annotation(x=cota_x+3, y=center_y, text="Ø10±0.2", showarrow=False,
-                       font=dict(size=13, weight='bold'), textangle=-90)
+    # COTA DIMENSIONAL (IZQUIERDA)
+    x_cota = -12
+    ax.plot([0, x_cota], [y_sup, y_sup], color=C_ESTATICO, lw=0.8)
+    ax.plot([0, x_cota], [y_inf, y_inf], color=C_ESTATICO, lw=0.8)
+    ax.annotate('', xy=(x_cota, y_sup), xytext=(x_cota, y_inf),
+                arrowprops=dict(arrowstyle='<->', color=C_ESTATICO, lw=1.5))
+    ax.text(x_cota, y_sup + 2, 'Ø 10 ±', fontsize=22, color=C_ESTATICO, ha='right')
+    ax.text(x_cota + 1, y_sup + 2, f'{tol*2:.1f}', 
+            fontsize=24, color=C_DINAMICO_NUM, ha='left', fontweight='bold')
     
-    # ========== COTA VERTICAL IZQUIERDA (FLECHAS SIN TEXTO) ==========
-    cota_x_left = piece_x0 - 5
-    fig.add_shape(type='line', x0=cota_x_left, x1=cota_x_left, y0=piece_y0, y1=piece_y1,
-                  line=dict(color='black', width=1.5))
-    fig.add_annotation(x=cota_x_left, y=piece_y0, ax=cota_x_left, ay=piece_y0+1.5, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
-    fig.add_annotation(x=cota_x_left, y=piece_y1, ax=cota_x_left, ay=piece_y1-1.5, showarrow=True,
-                       arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor='black')
+    # CUADRO DE CONTROL DE TOLERANCIA (GD&T)
+    x_marco = ANCHO_PIEZA - 5
+    y_marco = y_inf - 25
+    h_marco = 8
+    w_simbolo = 8
+    w_valor = 14
     
-    # ========== FCF (ARRIBA DERECHA CON FLECHA LÍDER) ==========
-    fcf_x, fcf_y = 75, 50
-    fcf_w1, fcf_w2, fcf_h = 5, 7, 4
-    # Compartimento 1: símbolo rectitud
-    fig.add_shape(type='rect', x0=fcf_x, x1=fcf_x+fcf_w1, y0=fcf_y, y1=fcf_y+fcf_h,
-                  fillcolor='white', line=dict(color='black', width=2.5))
-    fig.add_shape(type='line', x0=fcf_x+0.5, x1=fcf_x+fcf_w1-0.5, y0=fcf_y+fcf_h/2, y1=fcf_y+fcf_h/2,
-                  line=dict(color='black', width=2.5))
-    # Compartimento 2: valor 0.1
-    fig.add_shape(type='rect', x0=fcf_x+fcf_w1, x1=fcf_x+fcf_w1+fcf_w2, y0=fcf_y, y1=fcf_y+fcf_h,
-                  fillcolor='white', line=dict(color='black', width=2.5))
-    fig.add_annotation(x=fcf_x+fcf_w1+fcf_w2/2, y=fcf_y+fcf_h/2, text="0.1", showarrow=False,
-                       font=dict(size=13, weight='bold'), xanchor='center', yanchor='middle')
-    # Flecha líder hacia la pieza
-    fig.add_annotation(x=fcf_x+2.5, y=fcf_y, ax=piece_x1-5, ay=piece_y1, showarrow=True,
-                       arrowhead=1, arrowsize=1.2, arrowwidth=2.5, arrowcolor='black')
+    ax.add_patch(patches.Rectangle((x_marco, y_marco), w_simbolo, h_marco, 
+                                   fc=C_FONDO_MARCO, ec=C_ESTATICO, lw=2))
+    ax.text(x_marco + w_simbolo/2, y_marco + h_marco/2, '—', 
+            fontsize=20, va='center', ha='center', color=C_ESTATICO)
     
-    # ========== ZONA DE TOLERANCIA (LÍNEAS MAGENTA + NEGRA CENTRAL) ==========
-    magenta = "#d946ef"
-    tol_y_top = piece_y0 - 1.5
-    tol_y_bot = piece_y0 - 3.5
-    tol_y_mid = (tol_y_top + tol_y_bot) / 2
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_top, y1=tol_y_top,
-                  line=dict(color=magenta, width=2, dash='dot'))
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_bot, y1=tol_y_bot,
-                  line=dict(color=magenta, width=2, dash='dot'))
-    fig.add_shape(type='line', x0=piece_x0, x1=piece_x1, y0=tol_y_mid, y1=tol_y_mid,
-                  line=dict(color='black', width=2))
+    ax.add_patch(patches.Rectangle((x_marco + w_simbolo, y_marco), w_valor, h_marco, 
+                                   fc=C_FONDO_MARCO, ec=C_ESTATICO, lw=2))
+    ax.text(x_marco + w_simbolo + w_valor/2, y_marco + h_marco/2, 
+            f'{tol:.1f}', 
+            fontsize=24, va='center', ha='center', color=C_DINAMICO_NUM, fontweight='bold')
     
-    # ========== BRACKET AZUL (DERECHA) ==========
-    cyan = "#0ea5e9"
-    bracket_x = piece_x1 + 1
-    fig.add_shape(type='line', x0=bracket_x, x1=bracket_x+1.5, y0=tol_y_top, y1=tol_y_top,
-                  line=dict(color=cyan, width=2))
-    fig.add_shape(type='line', x0=bracket_x, x1=bracket_x+1.5, y0=tol_y_bot, y1=tol_y_bot,
-                  line=dict(color=cyan, width=2))
-    fig.add_shape(type='line', x0=bracket_x+1.5, x1=bracket_x+1.5, y0=tol_y_bot, y1=tol_y_top,
-                  line=dict(color=cyan, width=2))
-    fig.add_annotation(x=bracket_x+8, y=tol_y_mid, text="0.1 zona de tolerancia",
-                       showarrow=False, font=dict(size=12, color=cyan), xanchor='left')
+    # LÍNEA QUEBRADA (LEADER LINE)
+    start_x, start_y = x_marco, y_marco + h_marco/2
+    elbow_x, elbow_y = x_marco - 10, start_y
+    end_x, end_y = x_marco - 25, y_inf
+    ax.plot([start_x, elbow_x, end_x], [start_y, elbow_y, end_y], color=C_ESTATICO, lw=1.5)
+    ax.annotate('', xy=(end_x, end_y), xytext=(elbow_x, elbow_y),
+                arrowprops=dict(arrowstyle='->', color=C_ESTATICO, lw=1.5))
     
-    # ========== TÍTULO ==========
-    fig.add_annotation(x=50, y=58, text="PLANO TÉCNICO: EJE RECTIFICADO", showarrow=False,
-                       font=dict(size=15, weight='bold'), xanchor='center')
+    # ZONA DE TOLERANCIA (LÍNEAS ROSAS)
+    offset = tol * 10
+    ax.plot([-2, ANCHO_PIEZA+2], [y_inf + offset, y_inf + offset], 
+            color=C_ZONA, ls=':', lw=2.5)
+    ax.plot([-2, ANCHO_PIEZA+2], [y_inf - offset, y_inf - offset], 
+            color=C_ZONA, ls=':', lw=2.5)
     
-    # ========== NOTAS TÉCNICAS ==========
-    fig.add_shape(type='rect', x0=70, x1=95, y0=2, y1=10,
-                  fillcolor='white', line=dict(color='black', width=1.5))
-    fig.add_annotation(x=82.5, y=9, text="NOTAS TÉCNICAS", showarrow=False,
-                       font=dict(size=10, weight='bold'))
-    fig.add_annotation(x=82.5, y=7, text="Material: AISI 1045", showarrow=False,
-                       font=dict(size=9))
-    fig.add_annotation(x=82.5, y=5.5, text="Acabado: Rectificado", showarrow=False,
-                       font=dict(size=9))
-    fig.add_annotation(x=82.5, y=4, text="Escala 1:1", showarrow=False,
-                       font=dict(size=9))
+    # EXPLICACIÓN LATERAL (AZUL)
+    x_azul = ANCHO_PIEZA + 15
+    ax.annotate('', xy=(x_azul, y_inf + offset), xytext=(x_azul, y_inf + offset + 4),
+                arrowprops=dict(arrowstyle='->', color=C_EXPLICACION, lw=1.5))
+    ax.annotate('', xy=(x_azul, y_inf - offset), xytext=(x_azul, y_inf - offset - 4),
+                arrowprops=dict(arrowstyle='->', color=C_EXPLICACION, lw=1.5))
+    ax.text(x_azul + 3, y_inf, f'{tol:.1f} zona', 
+            color=C_EXPLICACION, fontsize=14, va='center', fontweight='bold')
+    ax.text(x_azul + 3, y_inf - 3, 'de tolerancia', 
+            color=C_EXPLICACION, fontsize=12, va='top')
     
+    plt.tight_layout()
     return fig
 
     # Contorno principal de la pieza (rectángulo sólido - vista frontal del eje)
