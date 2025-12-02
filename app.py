@@ -5,6 +5,8 @@ import plotly.io as pio
 import streamlit.components.v1 as components
 import numpy as np
 import time
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 # ===================== CONFIGURACIÓN GENERAL =====================
 st.set_page_config(layout="wide", page_title="GD&T Master Lab - Nueva Versión")
@@ -301,9 +303,6 @@ def plot_blueprint_rectitud(tol):
 
 def plot_technical_drawing_rectitud(tol):
     """Plano técnico usando matplotlib (adaptado de tolerancias.txt)."""
-    import matplotlib.pyplot as plt
-    import matplotlib.patches as patches
-    
     # Configuración estética
     ANCHO_PIEZA = 40
     ALTO_PIEZA = 15
