@@ -391,12 +391,12 @@ def plot_technical_drawing_rectitud(tol):
             color=C_ZONA, ls=':', lw=2.5)
     
     # EXPLICACIÓN LATERAL (AZUL)
-    x_azul = ANCHO_PIEZA + 15
-    ax.annotate('', xy=(x_azul, y_inf + offset), xytext=(x_azul, y_inf + offset + 4),
+    x_azul = ANCHO_PIEZA + 3
+    ax.annotate('', xy=(x_azul, y_inf + offset), xytext=(x_azul, y_inf + offset + 2),
                 arrowprops=dict(arrowstyle='->', color=C_EXPLICACION, lw=1.5))
-    ax.annotate('', xy=(x_azul, y_inf - offset), xytext=(x_azul, y_inf - offset - 4),
+    ax.annotate('', xy=(x_azul, y_inf - offset), xytext=(x_azul, y_inf - offset - 2),
                 arrowprops=dict(arrowstyle='->', color=C_EXPLICACION, lw=1.5))
-    ax.text(x_azul + 3, y_inf, f'{tol:.1f} zona de tolerancia', 
+    ax.text(x_azul + 2, y_inf, f'{tol:.1f} zona de tolerancia', 
             color=C_EXPLICACION, fontsize=14, va='center', fontweight='bold')
     
     plt.tight_layout()
