@@ -30,27 +30,33 @@ ST_SYMBOL_SIZE = 200
 st.markdown(f"""<style>.symbol-box{{background:#fff;border:2.5px solid #23272e;border-radius:8px;display:flex;align-items:center;justify-content:center;height:{ST_SYMBOL_SIZE}px;width:{ST_SYMBOL_SIZE}px;margin:0 auto;margin-top:18px;margin-bottom:18px;}}.legend-stack{{display:flex;flex-direction:column;gap:18px;margin-top:0;margin-bottom:0;}}.legend-box,.pedagogic-box{{margin-bottom:0!important;}}.stApp{{background-color:#e5e7eb!important;color:#222!important;}}[data-testid=\"stSidebar\"]{{background-color:#23272e!important;}}[data-testid=\"stSidebar\"] *{{color:#f3f4f6!important;}}.legend-box{{background:#f3f4f6;border-left:6px solid #1976d2;padding:16px;border-radius:8px;margin-bottom:18px;font-size:1.05em;color:#23272e;}}.info-card{{background:#f3f4f6;border-left:8px solid #004B87;padding:12px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;color:#23272e;height:{ST_SYMBOL_SIZE}px;overflow:auto;display:flex;align-items:flex-start;}}.info-card table{{line-height:1.3;}}.pedagogic-box{{background:#e0e7ef;border:1px solid #2196f3;border-left:6px solid #2196f3;padding:15px;border-radius:4px;color:#0d47a1;font-family:\'Courier New\',monospace;margin-top:15px;}}.category-label{{font-weight:bold;color:#004B87;background:#e0e7ef;border-radius:6px;padding:2px 8px;margin-right:8px;}}h1,h2,h3,h4,h5,h6{{color:#23272e!important;}}</style>""", unsafe_allow_html=True)
 
 # ===================== BASE DE DATOS DE CARACTERÍSTICAS =====================
-# Incluye puntos clave y diferenciadores pedagógicos
+# Incluye puntos clave y diferenciadores pedagógicos según ASME Y14.5-2018
 def get_gd_data():
     return {
+        # ============ TOLERANCIAS DE FORMA ============
         'Rectitud': {
-            'symbol': '⏤',
-            'def': 'Condición donde un elemento lineal es una línea recta.',
-            'zona_tol': 'Líneas paralelas, dónde debe estar el elemento de superficie.',
+            'category': 'Forma',
+            'symbol': '—',
+            'def': 'Condición en la que todos los puntos forman una línea recta.',
+            'zona_tol': 'Dos líneas paralelas (2D) o dos planos paralelos (3D).',
             'app': 'Vástagos, ejes largos, rieles.',
-            'medicion': 'comparador o proyector de perfiles.',
+            'medicion': 'Comparador o proyector de perfiles.',
             'key_points': [
                 'Solo controla la línea central o generatriz, no la forma completa.',
-                'No requiere datum.'
+                'No requiere datum.',
+                'La tolerancia se especifica con dos líneas paralelas.'
             ],
             'diff': 'No confundir con planicidad: la rectitud es 1D, la planicidad es 2D.',
             'pedagogic': 'Rectitud evalúa si un eje o borde es perfectamente recto, útil para piezas largas.',
             'legend': 'Línea azul: eje real. Cilindro naranja: zona de tolerancia.',
         },
         'Planicidad': {
+            'category': 'Forma',
             'symbol': '⏥',
-            'def': 'Todos los puntos de una superficie están en un solo plano.',
-            'app': 'Mesas de granito, culatas, sellos.',
+            'def': 'Todos los puntos de una superficie están en un plano.',
+            'zona_tol': 'Dos planos paralelos.',
+            'app': 'Mesas de granito, culatas, sellos, placas base.',
+            'medicion': 'Palpador, láser, mármol de verificación.',
             'key_points': [
                 'Controla toda la superficie, no solo una línea.',
                 'No requiere datum.',
@@ -60,7 +66,191 @@ def get_gd_data():
             'pedagogic': 'Planicidad asegura que una superficie no tenga picos o valles fuera de tolerancia.',
             'legend': 'Superficie verde: real. Planos rojos: límites de tolerancia.'
         },
-        # ...agrega el resto de características siguiendo el PDF...
+        'Redondez': {
+            'category': 'Forma',
+            'symbol': '○',
+            'def': 'Todos los puntos de una superficie forman un círculo.',
+            'zona_tol': 'Dos círculos concéntricos.',
+            'app': 'Rodamientos, sellos, cojinetes, cilindros hidráulicos.',
+            'medicion': 'Comparador en V, máquina de redondez.',
+            'key_points': [
+                'Se mide en sección transversal perpendicular al eje.',
+                'No requiere datum.',
+                'Diferente de cilindricidad (que controla toda la longitud).'
+            ],
+            'diff': 'Redondez: un solo plano. Cilindricidad: toda la superficie cilíndrica.',
+            'pedagogic': 'Redondez verifica que una sección circular sea perfecta, sin ovalamiento.',
+            'legend': 'Círculo azul: perfil real. Anillos rojos: zona de tolerancia.'
+        },
+        'Cilindricidad': {
+            'category': 'Forma',
+            'symbol': '⌭',
+            'def': 'Todos los puntos de una superficie son equidistantes a un eje común.',
+            'zona_tol': 'Dos cilindros concéntricos.',
+            'app': 'Ejes de precisión, pistones, árboles de transmisión.',
+            'medicion': 'Máquina de cilindricidad, CMM.',
+            'key_points': [
+                'Controla forma cilíndrica completa (redondez + rectitud + conicidad).',
+                'No requiere datum.',
+                'Más restrictiva que redondez o rectitud individual.'
+            ],
+            'diff': 'Cilindricidad combina redondez y rectitud en toda la superficie.',
+            'pedagogic': 'Cilindricidad garantiza que un cilindro sea perfecto en toda su longitud.',
+            'legend': 'Cilindro azul: superficie real. Cilindros concéntricos rojos: zona.'
+        },
+        
+        # ============ TOLERANCIAS DE PERFIL ============
+        'Perfil de Línea': {
+            'category': 'Perfil',
+            'symbol': '⌓',
+            'def': 'Controla la forma de una línea en cualquier sección.',
+            'zona_tol': 'Dos líneas paralelas al perfil teórico.',
+            'app': 'Superficies irregulares, álabes de turbina, contornos complejos.',
+            'medicion': 'CMM, proyector de perfiles, escáner 3D.',
+            'key_points': [
+                'Puede requerir o no datum.',
+                'Controla forma 2D en una sección específica.',
+                'Útil para geometrías no estándar.'
+            ],
+            'diff': 'Perfil de línea: 2D (una sección). Perfil de superficie: 3D (toda la superficie).',
+            'pedagogic': 'Perfil de línea valida contornos complejos que no son círculos ni líneas rectas.',
+            'legend': 'Curva azul: perfil real. Banda roja: zona de tolerancia.'
+        },
+        'Perfil de Superficie': {
+            'category': 'Perfil',
+            'symbol': '⌓',
+            'def': 'Controla la forma de toda la superficie tridimensional.',
+            'zona_tol': 'Dos superficies paralelas al perfil teórico.',
+            'app': 'Carrocerías, moldes, matrices, piezas aeroespaciales.',
+            'medicion': 'CMM, escáner 3D, brazo articulado.',
+            'key_points': [
+                'Puede requerir o no datum.',
+                'Controla forma 3D completa.',
+                'La más versátil de las tolerancias geométricas.'
+            ],
+            'diff': 'Perfil de superficie: 3D completa. Perfil de línea: solo una sección 2D.',
+            'pedagogic': 'Perfil de superficie es la herramienta más poderosa para formas complejas.',
+            'legend': 'Superficie azul: real. Envolvente roja: zona de tolerancia 3D.'
+        },
+        
+        # ============ TOLERANCIAS DE ORIENTACIÓN ============
+        'Angularidad': {
+            'category': 'Orientación',
+            'symbol': '∠',
+            'def': 'Superficie o eje forma un ángulo específico respecto al datum.',
+            'zona_tol': 'Dos planos paralelos al ángulo básico o dos líneas paralelas.',
+            'app': 'Biselados, rampas, soportes angulares.',
+            'medicion': 'Goniómetro, CMM, escuadra de ángulos.',
+            'key_points': [
+                'SIEMPRE requiere datum.',
+                'El ángulo básico se especifica por separado.',
+                'Controla orientación, no ubicación.'
+            ],
+            'diff': 'Angularidad: ángulo específico. Perpendicularidad: 90°. Paralelismo: 0°.',
+            'pedagogic': 'Angularidad verifica que una superficie esté inclinada correctamente.',
+            'legend': 'Superficie azul: real. Planos rojos: zona a ángulo del datum.'
+        },
+        'Perpendicularidad': {
+            'category': 'Orientación',
+            'symbol': '⊥',
+            'def': 'Superficie o eje forma un ángulo de 90° con el datum.',
+            'zona_tol': 'Dos planos perpendiculares al datum o dos líneas paralelas.',
+            'app': 'Ensambles perpendiculares, escuadras, soportes de montaje.',
+            'medicion': 'Escuadra de precisión, CMM, comparador.',
+            'key_points': [
+                'SIEMPRE requiere datum.',
+                'Caso especial de angularidad a 90°.',
+                'Controla orientación, no posición.'
+            ],
+            'diff': 'Perpendicularidad: 90° exacto. Angularidad: cualquier ángulo.',
+            'pedagogic': 'Perpendicularidad garantiza ensambles a 90° perfectos.',
+            'legend': 'Plano azul: superficie real. Planos rojos: zona perpendicular al datum.'
+        },
+        'Paralelismo': {
+            'category': 'Orientación',
+            'symbol': '∥',
+            'def': 'Superficie o eje es equidistante al datum en toda su extensión.',
+            'zona_tol': 'Dos planos paralelos al datum o dos líneas paralelas.',
+            'app': 'Guías lineales, carriles, superficies de montaje.',
+            'medicion': 'Comparador con superficie de referencia, CMM.',
+            'key_points': [
+                'SIEMPRE requiere datum.',
+                'Controla orientación, no distancia.',
+                'La superficie debe ser paralela, pero puede estar a cualquier distancia.'
+            ],
+            'diff': 'Paralelismo: superficies equidistantes. Planicidad: no requiere datum.',
+            'pedagogic': 'Paralelismo asegura que dos superficies sean paralelas entre sí.',
+            'legend': 'Plano azul: superficie real. Planos rojos: zona paralela al datum.'
+        },
+        
+        # ============ TOLERANCIAS DE UBICACIÓN ============
+        'Posición': {
+            'category': 'Ubicación',
+            'symbol': '⊕',
+            'def': 'Define una zona donde el eje central o plano puede variar de posición.',
+            'zona_tol': 'Cilindro (para agujeros) o dos planos paralelos.',
+            'app': 'Agujeros de pernos, patrones de perforaciones, montajes.',
+            'medicion': 'CMM, plantillas de verificación, calibradores.',
+            'key_points': [
+                'SIEMPRE requiere datum.',
+                'La tolerancia más común en GD&T.',
+                'Puede usar modificadores MMC/LMC para bonus tolerance.'
+            ],
+            'diff': 'Posición controla ubicación. Concentricidad controla centro de masa.',
+            'pedagogic': 'Posición es crítica para garantizar que agujeros y características se alineen.',
+            'legend': 'Círculo azul: agujero real. Zona cilíndrica roja: posición teórica.'
+        },
+        'Concentricidad': {
+            'category': 'Ubicación',
+            'symbol': '◎',
+            'def': 'Eje de superficie de revolución coincide con eje del datum.',
+            'zona_tol': 'Cilindro concéntrico al datum.',
+            'app': 'Ejes de alta velocidad, balanceo dinámico, centrífugas.',
+            'medicion': 'CMM con múltiples secciones, indicador de carátula.',
+            'key_points': [
+                'SIEMPRE requiere datum de eje.',
+                'Controla centros de masa, no solo geometría.',
+                'Difícil y costosa de medir.',
+                'Para balanceo, usar oscilación circular en su lugar.'
+            ],
+            'diff': 'Concentricidad: centro de masa. Posición: ubicación geométrica.',
+            'pedagogic': 'Concentricidad se usa cuando el balanceo dinámico es crítico.',
+            'legend': 'Eje azul: elemento real. Cilindro rojo: zona concéntrica al datum.'
+        },
+        
+        # ============ TOLERANCIAS DE OSCILACIÓN (RUNOUT) ============
+        'Oscilación Circular': {
+            'category': 'Oscilación',
+            'symbol': '↗',
+            'def': 'Controla elementos circulares respecto al datum durante rotación.',
+            'zona_tol': 'Dos círculos concéntricos en cada posición medida.',
+            'app': 'Rodamientos, poleas, discos de freno, árboles rotatorios.',
+            'medicion': 'Comparador mientras la pieza rota 360° sobre datum.',
+            'key_points': [
+                'SIEMPRE requiere datum de eje.',
+                'Se mide en una posición a la vez.',
+                'Más fácil de medir que concentricidad.'
+            ],
+            'diff': 'Oscilación circular: una posición. Oscilación total: toda la superficie.',
+            'pedagogic': 'Oscilación circular detecta excentricidad en piezas rotativas.',
+            'legend': 'Pieza azul rotando. Indicador muestra variación en 360°.'
+        },
+        'Oscilación Total': {
+            'category': 'Oscilación',
+            'symbol': '↗↗',
+            'def': 'Controla toda la superficie durante rotación completa del datum.',
+            'zona_tol': 'Dos cilindros concéntricos para toda la superficie.',
+            'app': 'Ejes de transmisión, rotores, turbinas.',
+            'medicion': 'Comparador recorre toda superficie mientras pieza rota.',
+            'key_points': [
+                'SIEMPRE requiere datum de eje.',
+                'Controla cilindricidad + perpendicularidad + posición simultáneamente.',
+                'La más restrictiva de las tolerancias de oscilación.'
+            ],
+            'diff': 'Oscilación total: superficie completa. Oscilación circular: posición puntual.',
+            'pedagogic': 'Oscilación total garantiza que toda la superficie gire sin variación.',
+            'legend': 'Pieza azul rotando. Indicador recorre eje completo durante rotación.'
+        },
     }
 
 GD_DATA = get_gd_data()
@@ -591,8 +781,34 @@ st.sidebar.title("Menú GD&T")
 main_mode = st.sidebar.radio("Modo:", ["Análisis Individual", "Constructor de Plano"])
 
 if main_mode == "Análisis Individual":
-    menu = list(GD_DATA.keys())
-    cat = st.sidebar.selectbox("Característica", menu)
+    # Organizar características por categoría
+    categories = {
+        'Forma': [],
+        'Perfil': [],
+        'Orientación': [],
+        'Ubicación': [],
+        'Oscilación': []
+    }
+    
+    for feature, data in GD_DATA.items():
+        categories[data['category']].append(feature)
+    
+    # Selector de categoría
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 📐 Tipo de Tolerancia")
+    selected_category = st.sidebar.radio(
+        "Categoría:",
+        list(categories.keys()),
+        format_func=lambda x: f"{x} ({len(categories[x])})"
+    )
+    
+    # Selector de característica dentro de la categoría
+    st.sidebar.markdown(f"**Características de {selected_category}:**")
+    cat = st.sidebar.selectbox(
+        "Seleccionar:",
+        categories[selected_category],
+        format_func=lambda x: f"{GD_DATA[x]['symbol']}  {x}"
+    )
     # Símbolo con tamaño fijo (200x200)
     st.sidebar.markdown("<div style='color:#f3f4f6; font-size:13px; margin-bottom:0px;'>Tolerancia (mm)</div>", unsafe_allow_html=True)
     tol = st.sidebar.slider("", 0.1, 2.0, 0.5, key="slider_tol")
