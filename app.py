@@ -299,11 +299,79 @@ def plot_blueprint_rectitud(tol):
                           xanchor='left', yanchor='middle')
     return fig
 
-def plot_technical_drawing_rectitud(tol):
-    """Genera un plano técnico realista estilo industrial con todos los elementos GD&T correctamente indicados."""
+def plot_technical_drawing_rectitud(_tol):
+    """Copia fiel del plano técnico adjunto por el usuario (sin FCF ni callouts)."""
     fig = go.Figure()
-    
-    # ========== VISTA FRONTAL DE LA PIEZA (EJE) ==========
+    # Pieza (rectángulo)
+    fig.add_shape(type='rect', x0=2, x1=10, y0=3.5, y1=5.5,
+                  fillcolor='#f8f9fa', line=dict(color='#000', width=2.5))
+    # Línea de centro (segmento dash)
+    fig.add_shape(type='line', x0=2, x1=10, y0=4.5, y1=4.5,
+                  line=dict(color='#000', width=1, dash='dash'))
+    # Cota horizontal (80.00)
+    fig.add_shape(type='line', x0=2, x1=2, y0=5.5, y1=6.2, line=dict(color='#000', width=1))
+    fig.add_shape(type='line', x0=10, x1=10, y0=5.5, y1=6.2, line=dict(color='#000', width=1))
+    fig.add_shape(type='line', x0=2, x1=10, y0=6.0, y1=6.0, line=dict(color='#000', width=1.5))
+    fig.add_annotation(x=2, y=6.0, ax=2.35, ay=6.0, showarrow=True,
+                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
+    fig.add_annotation(x=10, y=6.0, ax=9.65, ay=6.0, showarrow=True,
+                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
+    fig.add_annotation(x=6, y=6.3, text="80.00", showarrow=False,
+                       font=dict(size=13, color='#000', family='Arial', weight='bold'))
+    # Cota vertical (Ø10±0.2)
+    fig.add_shape(type='line', x0=10, x1=10.7, y0=3.5, y1=3.5, line=dict(color='#000', width=1))
+    fig.add_shape(type='line', x0=10, x1=10.7, y0=5.5, y1=5.5, line=dict(color='#000', width=1))
+    fig.add_shape(type='line', x0=10.5, x1=10.5, y0=3.5, y1=5.5, line=dict(color='#000', width=1.5))
+    fig.add_annotation(x=10.5, y=3.5, ax=10.5, ay=3.85, showarrow=True,
+                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
+    fig.add_annotation(x=10.5, y=5.5, ax=10.5, ay=5.15, showarrow=True,
+                       arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor='#000')
+    fig.add_annotation(x=11.2, y=4.5, text="Ø10±0.2", showarrow=False,
+                       font=dict(size=12, color='#000', family='Arial', weight='bold'),
+                       textangle=-90)
+    # Líneas magenta punteadas (zona de tolerancia)
+    magenta = "#d946ef"
+    y_top = 3.30
+    y_bot = y_top - 0.25
+    y_mid = (y_top + y_bot) / 2
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_top, y1=y_top,
+                  line=dict(color=magenta, width=2, dash='dot'))
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_bot, y1=y_bot,
+                  line=dict(color=magenta, width=2, dash='dot'))
+    # Línea negra central
+    fig.add_shape(type='line', x0=2.0, x1=10.0, y0=y_mid, y1=y_mid,
+                  line=dict(color='#000', width=2))
+    # Bracket azul y etiqueta
+    cyan = "#0ea5e9"
+    x_ref = 10.3
+    fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_top, y1=y_top, line=dict(color=cyan, width=2))
+    fig.add_shape(type='line', x0=x_ref-0.2, x1=x_ref+0.2, y0=y_bot, y1=y_bot, line=dict(color=cyan, width=2))
+    fig.add_shape(type='line', x0=x_ref, x1=x_ref, y0=y_bot+0.03, y1=y_top-0.03, line=dict(color=cyan, width=2))
+    fig.add_annotation(x=11.0, y=y_mid, text="0.1 zona de tolerancia",
+                       showarrow=False, font=dict(color=cyan, size=12))
+    # Título
+    fig.add_annotation(x=2, y=7.2, text="PLANO TÉCNICO: EJE RECTIFICADO", showarrow=False,
+                       font=dict(size=14, color='#000', family='Arial'), xanchor='left', yanchor='top')
+    # Notas técnicas
+    fig.add_shape(type='rect', x0=8.5, x1=11.5, y0=0.3, y1=1.3,
+                  fillcolor='#fff', line=dict(color='#000', width=1.5))
+    fig.add_annotation(x=10, y=1.1, text="NOTAS TÉCNICAS", showarrow=False,
+                       font=dict(size=10, color='#000', family='Arial'))
+    fig.add_annotation(x=10, y=0.85, text="Material: AISI 1045", showarrow=False,
+                       font=dict(size=9, color='#000', family='Arial'), xanchor='center')
+    fig.add_annotation(x=10, y=0.65, text="Acabado: Rectificado", showarrow=False,
+                       font=dict(size=9, color='#000', family='Arial'), xanchor='center')
+    fig.add_annotation(x=10, y=0.45, text="Escala 1:1", showarrow=False,
+                       font=dict(size=9, color='#000', family='Arial'), xanchor='center')
+    fig.update_layout(
+        margin=dict(l=20, r=20, t=20, b=20), height=520,
+        xaxis=dict(range=[0, 12], visible=False),
+        yaxis=dict(range=[0, 8], visible=False),
+        paper_bgcolor='#f5f5f5', plot_bgcolor='#ffffff',
+        font=dict(color='#000')
+    )
+    return fig
+
     # Contorno principal de la pieza (rectángulo sólido - vista frontal del eje)
     fig.add_shape(type='rect', x0=2, x1=10, y0=3.5, y1=5.5, 
                   fillcolor='#f8f9fa', line=dict(color='#000', width=2.5))
