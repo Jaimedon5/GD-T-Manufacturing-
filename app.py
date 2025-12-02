@@ -699,9 +699,7 @@ if main_mode == "Análisis Individual":
             components.html(wrapped_html, height=400, scrolling=False)
         elif view == "Plano Técnico Real":
             fig = plot_technical_drawing_rectitud(tol)
-            html_plot = pio.to_html(fig, include_plotlyjs='cdn', full_html=False)
-            wrapped_html = f'<div class="plot-container">{html_plot}</div>'
-            components.html(wrapped_html, height=520, scrolling=False)
+            st.pyplot(fig, use_container_width=True)
     with bot2:
         st.markdown("<div class='legend-stack'>", unsafe_allow_html=True)
         show_legend(cat, view)
